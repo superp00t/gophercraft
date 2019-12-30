@@ -47,6 +47,10 @@ Gophercraft uses [xorm](https://xorm.io/) for storing data.
 By default, Gophercraft permits only the use of MySQL/MariaDB as a connection backend. SQLite3 is currently broken, although other servers supported by xorm may be theoretically usable.
 
 ```bash
+# install packages
+sudo apt-get install git golang mysql-server
+
+# create default databases
 cat >/tmp/gcraft_gen.sql <<EOL
 CREATE DATABASE gcraft_auth;
 CREATE DATABASE gcraft_world_1;
@@ -55,15 +59,9 @@ EOL
 cat /tmp/gcraft_gen.sql | mysql -u root -p
 ```
 
-Only one auth database is used. If you want to operate multiple world servers, you must create a new database for each.
+Only one auth database is used. If you want to operate multiple world servers, you must create a new database for each. Coordination between servers is accomplished through GRPC endpoints.
 
 ```bash
-# install packages
-sudo apt-get install git golang mysql-server
-
-# create database
-echo "CREATE DATABASE gcraft_core;" | mysql -u root -p
-
 go get -u -v github.com/superp00t/gophercraft/cmd/gcraft_wizard
 go get -u -v github.com/superp00t/gophercraft/cmd/gcraft_core_auth
 go get -u -v github.com/superp00t/gophercraft/cmd/gcraft_core_world
