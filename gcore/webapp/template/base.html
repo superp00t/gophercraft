@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>{{.Title}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/assets/style.css" rel="stylesheet"></link>
+    <link rel="icon" 
+      type="image/png" 
+      href="/assets/favicon.png"/>
+  </head>
+<body>
+  <div class="ctr">
+    <img class="gcraft-logo" src="/assets/gopher.png"/>
+    <h1 class="title central-title">{{.Brand}}</h1>
+    <div style="text-align: center;">
+    <div class="card nav-bar">
+        {{range $el := .NavElements}}<a class="nav-elem" {{if $el.Active}} data-active-page="true" {{end}} href="{{$el.Link}}"><p>{{$el.Name}}</p></a>{{end}}
+      </div>
+    </div>
+
+    {{.PageBody}}
+  </div>
+</body>
+</html>

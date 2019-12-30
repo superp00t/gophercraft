@@ -1,0 +1,7 @@
+name: "Gophercraft Zipped Mod"
+
+depends: 
+  - '@Gophercraft>=0.1'
+  - 'MarySueProtocol>=0.1'
+
+autoupdate: false

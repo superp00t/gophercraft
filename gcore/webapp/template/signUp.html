@@ -1,0 +1,51 @@
+<script>
+window.resetCaptcha = async () => {
+    document.querySelector("#signUpCaptchaSolution").value = "";
+
+    var response = await fetch("/v1/newCaptcha");
+    var data = await response.json();
+    document.querySelector("#signUpCaptcha").setAttribute("src", "/v1/captcha/" + data.captchaID + ".png");
+
+    window._captchaID = data.captchaID;
+}
+
+window.addEventListener("load", async () => {
+    window.resetCaptcha();
+
+    document.querySelector("#signUpSubmit").addEventListener("click", async () => {
+        var r = {};
+        r.username = document.querySelector("#signUpUsername").value;
+        r.password = document.querySelector("#signUpPassword").value;
+        r.captchaID = window._captchaID;
+        r.captchaSolution = document.querySelector("#signUpCaptchaSolution").value;
+        var response = await fetch("/v1/register", {
+            method: "POST",
+            body: JSON.stringify(r),
+        });
+
+        var data = await response.json();
+        if (data.resetCaptcha == true) {
+            window.resetCaptcha();
+        }
+
+        if (data.error !== "") {
+            alert(data.error);
+        } else {
+            window.localStorage["gcraft-token"] = data.webToken;
+            window.location.href = "/";
+        }
+    });
+});
+</script>
+
+<div class="card accountInfoArea">
+    <input class="textInput" type="text" id="signUpUsername" placeholder="Username"></input>
+    <br/>
+    <input class="textInput" type="password" id="signUpPassword" placeholder="Password"></input>
+    <br/>
+    <img id="signUpCaptcha" src="#"/>
+    <br/>
+    <input class="textInput" type="text" id="signUpCaptchaSolution" placeholder="Solve the captcha"></input>
+    <br/>
+    <button id="signUpSubmit">Sign up</button>
+</div>

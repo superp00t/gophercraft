@@ -1,0 +1,1 @@
+protoc -I sys sys/Sys.proto --go_out=plugins=grpc:sys

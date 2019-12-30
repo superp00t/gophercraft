@@ -1,0 +1,444 @@
+package packet
+
+//go:generate stringer -type=ObjectField
+type ObjectField uint32
+
+//go:generate stringer -type=ItemField
+type ItemField uint32
+
+//go:generate stringer -type=UnitField
+type UnitField uint32
+
+//go:generate stringer -type=GameObjectField
+type GameObjectField uint32
+
+//go:generate stringer -type=DynamicObjectField
+type DynamicObjectField uint32
+
+//go:generate stringer -type=CorpseField
+type CorpseField uint32
+
+const (
+	OBJECT_FIELD_GUID    ObjectField = 0x00 // Size:2
+	OBJECT_FIELD_TYPE    ObjectField = 0x02 // Size:1
+	OBJECT_FIELD_ENTRY   ObjectField = 0x03 // Size:1
+	OBJECT_FIELD_SCALE_X ObjectField = 0x04 // Size:1
+	OBJECT_FIELD_PADDING ObjectField = 0x05 // Size:1
+	OBJECT_END           ObjectField = 0x06
+
+	ITEM_FIELD_OWNER                ItemField = ItemField(OBJECT_END) + 0x00 // Size:2
+	ITEM_FIELD_CONTAINED            ItemField = ItemField(OBJECT_END) + 0x02 // Size:2
+	ITEM_FIELD_CREATOR              ItemField = ItemField(OBJECT_END) + 0x04 // Size:2
+	ITEM_FIELD_GIFTCREATOR          ItemField = ItemField(OBJECT_END) + 0x06 // Size:2
+	ITEM_FIELD_STACK_COUNT          ItemField = ItemField(OBJECT_END) + 0x08 // Size:1
+	ITEM_FIELD_DURATION             ItemField = ItemField(OBJECT_END) + 0x09 // Size:1
+	ITEM_FIELD_SPELL_CHARGES        ItemField = ItemField(OBJECT_END) + 0x0A // Size:5
+	ITEM_FIELD_SPELL_CHARGES_01     ItemField = ItemField(OBJECT_END) + 0x0B
+	ITEM_FIELD_SPELL_CHARGES_02     ItemField = ItemField(OBJECT_END) + 0x0C
+	ITEM_FIELD_SPELL_CHARGES_03     ItemField = ItemField(OBJECT_END) + 0x0D
+	ITEM_FIELD_SPELL_CHARGES_04     ItemField = ItemField(OBJECT_END) + 0x0E
+	ITEM_FIELD_FLAGS                ItemField = ItemField(OBJECT_END) + 0x0F // Size:1
+	ITEM_FIELD_ENCHANTMENT          ItemField = ItemField(OBJECT_END) + 0x10 // count=21
+	ITEM_FIELD_PROPERTY_SEED        ItemField = ItemField(OBJECT_END) + 0x25 // Size:1
+	ITEM_FIELD_RANDOM_PROPERTIES_ID ItemField = ItemField(OBJECT_END) + 0x26 // Size:1
+	ITEM_FIELD_ITEM_TEXT_ID         ItemField = ItemField(OBJECT_END) + 0x27 // Size:1
+	ITEM_FIELD_DURABILITY           ItemField = ItemField(OBJECT_END) + 0x28 // Size:1
+	ITEM_FIELD_MAXDURABILITY        ItemField = ItemField(OBJECT_END) + 0x29 // Size:1
+	ITEM_END                        ItemField = ItemField(OBJECT_END) + 0x2A
+	CONTAINER_FIELD_NUM_SLOTS       ItemField = ItemField(ITEM_END) + 0x00 // Size:1
+	CONTAINER_ALIGN_PAD             ItemField = ItemField(ITEM_END) + 0x01 // Size:1
+	CONTAINER_FIELD_SLOT_1          ItemField = ItemField(ITEM_END) + 0x02 // count=72
+	CONTAINER_FIELD_SLOT_LAST       ItemField = ItemField(ITEM_END) + 0x48
+	CONTAINER_END                   ItemField = ItemField(ITEM_END) + 0x4A
+
+	UNIT_FIELD_CHARM                          UnitField = 0x00 + UnitField(OBJECT_END) // Size:2
+	UNIT_FIELD_SUMMON                         UnitField = 0x02 + UnitField(OBJECT_END) // Size:2
+	UNIT_FIELD_CHARMEDBY                      UnitField = 0x04 + UnitField(OBJECT_END) // Size:2
+	UNIT_FIELD_SUMMONEDBY                     UnitField = 0x06 + UnitField(OBJECT_END) // Size:2
+	UNIT_FIELD_CREATEDBY                      UnitField = 0x08 + UnitField(OBJECT_END) // Size:2
+	UNIT_FIELD_TARGET                         UnitField = 0x0A + UnitField(OBJECT_END) // Size:2
+	UNIT_FIELD_PERSUADED                      UnitField = 0x0C + UnitField(OBJECT_END) // Size:2
+	UNIT_FIELD_CHANNEL_OBJECT                 UnitField = 0x0E + UnitField(OBJECT_END) // Size:2
+	UNIT_FIELD_HEALTH                         UnitField = 0x10 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_POWER1                         UnitField = 0x11 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_POWER2                         UnitField = 0x12 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_POWER3                         UnitField = 0x13 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_POWER4                         UnitField = 0x14 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_POWER5                         UnitField = 0x15 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MAXHEALTH                      UnitField = 0x16 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MAXPOWER1                      UnitField = 0x17 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MAXPOWER2                      UnitField = 0x18 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MAXPOWER3                      UnitField = 0x19 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MAXPOWER4                      UnitField = 0x1A + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MAXPOWER5                      UnitField = 0x1B + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_LEVEL                          UnitField = 0x1C + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_FACTIONTEMPLATE                UnitField = 0x1D + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_BYTES_0                        UnitField = 0x1E + UnitField(OBJECT_END) // Size:1
+	UNIT_VIRTUAL_ITEM_SLOT_DISPLAY            UnitField = 0x1F + UnitField(OBJECT_END) // Size:3
+	UNIT_VIRTUAL_ITEM_SLOT_DISPLAY_01         UnitField = 0x20 + UnitField(OBJECT_END)
+	UNIT_VIRTUAL_ITEM_SLOT_DISPLAY_02         UnitField = 0x21 + UnitField(OBJECT_END)
+	UNIT_VIRTUAL_ITEM_INFO                    UnitField = 0x22 + UnitField(OBJECT_END) // Size:6
+	UNIT_VIRTUAL_ITEM_INFO_01                 UnitField = 0x23 + UnitField(OBJECT_END)
+	UNIT_VIRTUAL_ITEM_INFO_02                 UnitField = 0x24 + UnitField(OBJECT_END)
+	UNIT_VIRTUAL_ITEM_INFO_03                 UnitField = 0x25 + UnitField(OBJECT_END)
+	UNIT_VIRTUAL_ITEM_INFO_04                 UnitField = 0x26 + UnitField(OBJECT_END)
+	UNIT_VIRTUAL_ITEM_INFO_05                 UnitField = 0x27 + UnitField(OBJECT_END)
+	UNIT_FIELD_FLAGS                          UnitField = 0x28 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_AURA                           UnitField = 0x29 + UnitField(OBJECT_END) // Size:48
+	UNIT_FIELD_AURA_LAST                      UnitField = 0x58 + UnitField(OBJECT_END)
+	UNIT_FIELD_AURAFLAGS                      UnitField = 0x59 + UnitField(OBJECT_END) // Size:6
+	UNIT_FIELD_AURAFLAGS_01                   UnitField = 0x5a + UnitField(OBJECT_END)
+	UNIT_FIELD_AURAFLAGS_02                   UnitField = 0x5b + UnitField(OBJECT_END)
+	UNIT_FIELD_AURAFLAGS_03                   UnitField = 0x5c + UnitField(OBJECT_END)
+	UNIT_FIELD_AURAFLAGS_04                   UnitField = 0x5d + UnitField(OBJECT_END)
+	UNIT_FIELD_AURAFLAGS_05                   UnitField = 0x5e + UnitField(OBJECT_END)
+	UNIT_FIELD_AURALEVELS                     UnitField = 0x5f + UnitField(OBJECT_END) // Size:12
+	UNIT_FIELD_AURALEVELS_LAST                UnitField = 0x6a + UnitField(OBJECT_END)
+	UNIT_FIELD_AURAAPPLICATIONS               UnitField = 0x6b + UnitField(OBJECT_END) // Size:12
+	UNIT_FIELD_AURAAPPLICATIONS_LAST          UnitField = 0x76 + UnitField(OBJECT_END)
+	UNIT_FIELD_AURASTATE                      UnitField = 0x77 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_BASEATTACKTIME                 UnitField = 0x78 + UnitField(OBJECT_END) // Size:2
+	UNIT_FIELD_OFFHANDATTACKTIME              UnitField = 0x79 + UnitField(OBJECT_END) // Size:2
+	UNIT_FIELD_RANGEDATTACKTIME               UnitField = 0x7a + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_BOUNDINGRADIUS                 UnitField = 0x7b + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_COMBATREACH                    UnitField = 0x7c + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_DISPLAYID                      UnitField = 0x7d + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_NATIVEDISPLAYID                UnitField = 0x7e + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MOUNTDISPLAYID                 UnitField = 0x7f + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MINDAMAGE                      UnitField = 0x80 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MAXDAMAGE                      UnitField = 0x81 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MINOFFHANDDAMAGE               UnitField = 0x82 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MAXOFFHANDDAMAGE               UnitField = 0x83 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_BYTES_1                        UnitField = 0x84 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_PETNUMBER                      UnitField = 0x85 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_PET_NAME_TIMESTAMP             UnitField = 0x86 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_PETEXPERIENCE                  UnitField = 0x87 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_PETNEXTLEVELEXP                UnitField = 0x88 + UnitField(OBJECT_END) // Size:1
+	UNIT_DYNAMIC_FLAGS                        UnitField = 0x89 + UnitField(OBJECT_END) // Size:1
+	UNIT_CHANNEL_SPELL                        UnitField = 0x8a + UnitField(OBJECT_END) // Size:1
+	UNIT_MOD_CAST_SPEED                       UnitField = 0x8b + UnitField(OBJECT_END) // Size:1
+	UNIT_CREATED_BY_SPELL                     UnitField = 0x8c + UnitField(OBJECT_END) // Size:1
+	UNIT_NPC_FLAGS                            UnitField = 0x8d + UnitField(OBJECT_END) // Size:1
+	UNIT_NPC_EMOTESTATE                       UnitField = 0x8e + UnitField(OBJECT_END) // Size:1
+	UNIT_TRAINING_POINTS                      UnitField = 0x8f + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_STAT0                          UnitField = 0x90 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_STAT1                          UnitField = 0x91 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_STAT2                          UnitField = 0x92 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_STAT3                          UnitField = 0x93 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_STAT4                          UnitField = 0x94 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_RESISTANCES                    UnitField = 0x95 + UnitField(OBJECT_END) // Size:7
+	UNIT_FIELD_RESISTANCES_01                 UnitField = 0x96 + UnitField(OBJECT_END)
+	UNIT_FIELD_RESISTANCES_02                 UnitField = 0x97 + UnitField(OBJECT_END)
+	UNIT_FIELD_RESISTANCES_03                 UnitField = 0x98 + UnitField(OBJECT_END)
+	UNIT_FIELD_RESISTANCES_04                 UnitField = 0x99 + UnitField(OBJECT_END)
+	UNIT_FIELD_RESISTANCES_05                 UnitField = 0x9a + UnitField(OBJECT_END)
+	UNIT_FIELD_RESISTANCES_06                 UnitField = 0x9b + UnitField(OBJECT_END)
+	UNIT_FIELD_BASE_MANA                      UnitField = 0x9c + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_BASE_HEALTH                    UnitField = 0x9d + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_BYTES_2                        UnitField = 0x9e + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_ATTACK_POWER                   UnitField = 0x9f + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_ATTACK_POWER_MODS              UnitField = 0xa0 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_ATTACK_POWER_MULTIPLIER        UnitField = 0xa1 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_RANGED_ATTACK_POWER            UnitField = 0xa2 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_RANGED_ATTACK_POWER_MODS       UnitField = 0xa3 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER UnitField = 0xa4 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MINRANGEDDAMAGE                UnitField = 0xa5 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_MAXRANGEDDAMAGE                UnitField = 0xa6 + UnitField(OBJECT_END) // Size:1
+	UNIT_FIELD_POWER_COST_MODIFIER            UnitField = 0xa7 + UnitField(OBJECT_END) // Size:7
+	UNIT_FIELD_POWER_COST_MODIFIER_01         UnitField = 0xa8 + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MODIFIER_02         UnitField = 0xa9 + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MODIFIER_03         UnitField = 0xaa + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MODIFIER_04         UnitField = 0xab + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MODIFIER_05         UnitField = 0xac + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MODIFIER_06         UnitField = 0xad + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MULTIPLIER          UnitField = 0xae + UnitField(OBJECT_END) // Size:7
+	UNIT_FIELD_POWER_COST_MULTIPLIER_01       UnitField = 0xaf + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MULTIPLIER_02       UnitField = 0xb0 + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MULTIPLIER_03       UnitField = 0xb1 + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MULTIPLIER_04       UnitField = 0xb2 + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MULTIPLIER_05       UnitField = 0xb3 + UnitField(OBJECT_END)
+	UNIT_FIELD_POWER_COST_MULTIPLIER_06       UnitField = 0xb4 + UnitField(OBJECT_END)
+	UNIT_FIELD_PADDING                        UnitField = 0xb5 + UnitField(OBJECT_END)
+	UNIT_END                                  UnitField = 0xb6 + UnitField(OBJECT_END)
+	PLAYER_DUEL_ARBITER                       UnitField = 0x00 + UNIT_END // Size:2
+	PLAYER_FLAGS                              UnitField = 0x02 + UNIT_END // Size:1
+	PLAYER_GUILDID                            UnitField = 0x03 + UNIT_END // Size:1
+	PLAYER_GUILDRANK                          UnitField = 0x04 + UNIT_END // Size:1
+	PLAYER_BYTES                              UnitField = 0x05 + UNIT_END // Size:1
+	PLAYER_BYTES_2                            UnitField = 0x06 + UNIT_END // Size:1
+	PLAYER_BYTES_3                            UnitField = 0x07 + UNIT_END // Size:1
+	PLAYER_DUEL_TEAM                          UnitField = 0x08 + UNIT_END // Size:1
+	PLAYER_GUILD_TIMESTAMP                    UnitField = 0x09 + UNIT_END // Size:1
+	PLAYER_QUEST_LOG_1_1                      UnitField = 0x0A + UNIT_END // count UnitField =  20
+	PLAYER_QUEST_LOG_1_2                      UnitField = 0x0B + UNIT_END
+	PLAYER_QUEST_LOG_1_3                      UnitField = 0x0C + UNIT_END
+	PLAYER_QUEST_LOG_LAST_1                   UnitField = 0x43 + UNIT_END
+	PLAYER_QUEST_LOG_LAST_2                   UnitField = 0x44 + UNIT_END
+	PLAYER_QUEST_LOG_LAST_3                   UnitField = 0x45 + UNIT_END
+	PLAYER_VISIBLE_ITEM_1_CREATOR             UnitField = 0x46 + UNIT_END // Size:2 count UnitField =  19
+	PLAYER_VISIBLE_ITEM_1_0                   UnitField = 0x48 + UNIT_END // Size:8
+	PLAYER_VISIBLE_ITEM_1_PROPERTIES          UnitField = 0x50 + UNIT_END // Size:1
+	PLAYER_VISIBLE_ITEM_1_PAD                 UnitField = 0x51 + UNIT_END // Size:1
+	PLAYER_VISIBLE_ITEM_LAST_CREATOR          UnitField = 0x11e + UNIT_END
+	PLAYER_VISIBLE_ITEM_LAST_0                UnitField = 0x120 + UNIT_END
+	PLAYER_VISIBLE_ITEM_LAST_PROPERTIES       UnitField = 0x128 + UNIT_END
+	PLAYER_VISIBLE_ITEM_LAST_PAD              UnitField = 0x129 + UNIT_END
+	PLAYER_FIELD_INV_SLOT_HEAD                UnitField = 0x12a + UNIT_END // Size:46
+	PLAYER_FIELD_PACK_SLOT_1                  UnitField = 0x158 + UNIT_END // Size:32
+	PLAYER_FIELD_PACK_SLOT_LAST               UnitField = 0x176 + UNIT_END
+	PLAYER_FIELD_BANK_SLOT_1                  UnitField = 0x178 + UNIT_END // Size:48
+	PLAYER_FIELD_BANK_SLOT_LAST               UnitField = 0x1a6 + UNIT_END
+	PLAYER_FIELD_BANKBAG_SLOT_1               UnitField = 0x1a8 + UNIT_END // Size:12
+	PLAYER_FIELD_BANKBAG_SLOT_LAST            UnitField = 0x1b2 + UNIT_END
+	PLAYER_FIELD_VENDORBUYBACK_SLOT_1         UnitField = 0x1b4 + UNIT_END // Size:24
+	PLAYER_FIELD_VENDORBUYBACK_SLOT_LAST      UnitField = 0x1ca + UNIT_END
+	PLAYER_FIELD_KEYRING_SLOT_1               UnitField = 0x1cc + UNIT_END // Size:64
+	PLAYER_FIELD_KEYRING_SLOT_LAST            UnitField = 0x20a + UNIT_END
+	PLAYER_FARSIGHT                           UnitField = 0x20c + UNIT_END // Size:2
+	PLAYER_FIELD_COMBO_TARGET                 UnitField = 0x20e + UNIT_END // Size:2
+	PLAYER_XP                                 UnitField = 0x210 + UNIT_END // Size:1
+	PLAYER_NEXT_LEVEL_XP                      UnitField = 0x211 + UNIT_END // Size:1
+	PLAYER_SKILL_INFO_1_1                     UnitField = 0x212 + UNIT_END // Size:384
+	PLAYER_CHARACTER_POINTS1                  UnitField = 0x392 + UNIT_END // Size:1
+	PLAYER_CHARACTER_POINTS2                  UnitField = 0x393 + UNIT_END // Size:1
+	PLAYER_TRACK_CREATURES                    UnitField = 0x394 + UNIT_END // Size:1
+	PLAYER_TRACK_RESOURCES                    UnitField = 0x395 + UNIT_END // Size:1
+	PLAYER_BLOCK_PERCENTAGE                   UnitField = 0x396 + UNIT_END // Size:1
+	PLAYER_DODGE_PERCENTAGE                   UnitField = 0x397 + UNIT_END // Size:1
+	PLAYER_PARRY_PERCENTAGE                   UnitField = 0x398 + UNIT_END // Size:1
+	PLAYER_CRIT_PERCENTAGE                    UnitField = 0x399 + UNIT_END // Size:1
+	PLAYER_RANGED_CRIT_PERCENTAGE             UnitField = 0x39a + UNIT_END // Size:1
+	PLAYER_EXPLORED_ZONES_1                   UnitField = 0x39b + UNIT_END // Size:64
+	PLAYER_REST_STATE_XP                      UnitField = 0x3db + UNIT_END // Size:1
+	PLAYER_FIELD_COINAGE                      UnitField = 0x3dc + UNIT_END // Size:1
+	PLAYER_FIELD_POSSTAT0                     UnitField = 0x3DD + UNIT_END // Size:1
+	PLAYER_FIELD_POSSTAT1                     UnitField = 0x3DE + UNIT_END // Size:1
+	PLAYER_FIELD_POSSTAT2                     UnitField = 0x3DF + UNIT_END // Size:1
+	PLAYER_FIELD_POSSTAT3                     UnitField = 0x3E0 + UNIT_END // Size:1
+	PLAYER_FIELD_POSSTAT4                     UnitField = 0x3E1 + UNIT_END // Size:1
+	PLAYER_FIELD_NEGSTAT0                     UnitField = 0x3E2 + UNIT_END // Size:1
+	PLAYER_FIELD_NEGSTAT1                     UnitField = 0x3E3 + UNIT_END // Size:1
+	PLAYER_FIELD_NEGSTAT2                     UnitField = 0x3E4 + UNIT_END // Size:1
+	PLAYER_FIELD_NEGSTAT3                     UnitField = 0x3E5 + UNIT_END // Size:1
+	PLAYER_FIELD_NEGSTAT4                     UnitField = 0x3E6 + UNIT_END // Size:1
+	PLAYER_FIELD_RESISTANCEBUFFMODSPOSITIVE   UnitField = 0x3E7 + UNIT_END // Size:7
+	PLAYER_FIELD_RESISTANCEBUFFMODSNEGATIVE   UnitField = 0x3EE + UNIT_END // Size:7
+	PLAYER_FIELD_MOD_DAMAGE_DONE_POS          UnitField = 0x3F5 + UNIT_END // Size:7
+	PLAYER_FIELD_MOD_DAMAGE_DONE_NEG          UnitField = 0x3FC + UNIT_END // Size:7
+	PLAYER_FIELD_MOD_DAMAGE_DONE_PCT          UnitField = 0x403 + UNIT_END // Size:7
+	PLAYER_FIELD_BYTES                        UnitField = 0x40A + UNIT_END // Size:1
+	PLAYER_AMMO_ID                            UnitField = 0x40B + UNIT_END // Size:1
+	PLAYER_SELF_RES_SPELL                     UnitField = 0x40C + UNIT_END // Size:1
+	PLAYER_FIELD_PVP_MEDALS                   UnitField = 0x40D + UNIT_END // Size:1
+	PLAYER_FIELD_BUYBACK_PRICE_1              UnitField = 0x40E + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_2              UnitField = 0x40F + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_3              UnitField = 0x410 + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_4              UnitField = 0x411 + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_5              UnitField = 0x412 + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_6              UnitField = 0x413 + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_7              UnitField = 0x414 + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_8              UnitField = 0x415 + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_9              UnitField = 0x416 + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_10             UnitField = 0x417 + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_11             UnitField = 0x418 + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_PRICE_12             UnitField = 0x419 + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_TIMESTAMP_1          UnitField = 0x41A + UNIT_END // count=12
+	PLAYER_FIELD_BUYBACK_TIMESTAMP_LAST       UnitField = 0x425 + UNIT_END
+	PLAYER_FIELD_SESSION_KILLS                UnitField = 0x426 + UNIT_END // Size:1
+	PLAYER_FIELD_YESTERDAY_KILLS              UnitField = 0x427 + UNIT_END // Size:1
+	PLAYER_FIELD_LAST_WEEK_KILLS              UnitField = 0x428 + UNIT_END // Size:1
+	PLAYER_FIELD_THIS_WEEK_KILLS              UnitField = 0x429 + UNIT_END // Size:1
+	PLAYER_FIELD_THIS_WEEK_CONTRIBUTION       UnitField = 0x42a + UNIT_END // Size:1
+	PLAYER_FIELD_LIFETIME_HONORABLE_KILLS     UnitField = 0x42b + UNIT_END // Size:1
+	PLAYER_FIELD_LIFETIME_DISHONORABLE_KILLS  UnitField = 0x42c + UNIT_END // Size:1
+	PLAYER_FIELD_YESTERDAY_CONTRIBUTION       UnitField = 0x42d + UNIT_END // Size:1
+	PLAYER_FIELD_LAST_WEEK_CONTRIBUTION       UnitField = 0x42e + UNIT_END // Size:1
+	PLAYER_FIELD_LAST_WEEK_RANK               UnitField = 0x42f + UNIT_END // Size:1
+	PLAYER_FIELD_BYTES2                       UnitField = 0x430 + UNIT_END // Size:1
+	PLAYER_FIELD_WATCHED_FACTION_INDEX        UnitField = 0x431 + UNIT_END // Size:1
+	PLAYER_FIELD_COMBAT_RATING_1              UnitField = 0x432 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_2              UnitField = 0x433 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_3              UnitField = 0x434 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_4              UnitField = 0x435 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_5              UnitField = 0x436 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_6              UnitField = 0x437 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_7              UnitField = 0x438 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_8              UnitField = 0x439 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_9              UnitField = 0x43A + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_10             UnitField = 0x43B + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_12             UnitField = 0x43C + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_13             UnitField = 0x43D + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_14             UnitField = 0x43E + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_15             UnitField = 0x43F + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_16             UnitField = 0x440 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_17             UnitField = 0x441 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_18             UnitField = 0x442 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_19             UnitField = 0x443 + UNIT_END // Size:20
+	PLAYER_FIELD_COMBAT_RATING_20             UnitField = 0x444 + UNIT_END // Size:20
+
+	PLAYER_END UnitField = 0x446 + UNIT_END
+
+	GAMEOBJECT_FIELD_CREATEDBY GameObjectField = GameObjectField(OBJECT_END) + 0x00
+	GAMEOBJECT_DISPLAYID       GameObjectField = GameObjectField(OBJECT_END) + 0x02
+	GAMEOBJECT_FLAGS           GameObjectField = GameObjectField(OBJECT_END) + 0x03
+	GAMEOBJECT_ROTATION        GameObjectField = GameObjectField(OBJECT_END) + 0x04
+	GAMEOBJECT_STATE           GameObjectField = GameObjectField(OBJECT_END) + 0x08
+	GAMEOBJECT_POS_X           GameObjectField = GameObjectField(OBJECT_END) + 0x09
+	GAMEOBJECT_POS_Y           GameObjectField = GameObjectField(OBJECT_END) + 0x0A
+	GAMEOBJECT_POS_Z           GameObjectField = GameObjectField(OBJECT_END) + 0x0B
+	GAMEOBJECT_FACING          GameObjectField = GameObjectField(OBJECT_END) + 0x0C
+	GAMEOBJECT_DYN_FLAGS       GameObjectField = GameObjectField(OBJECT_END) + 0x0D
+	GAMEOBJECT_FACTION         GameObjectField = GameObjectField(OBJECT_END) + 0x0E
+	GAMEOBJECT_TYPE_ID         GameObjectField = GameObjectField(OBJECT_END) + 0x0F
+	GAMEOBJECT_LEVEL           GameObjectField = GameObjectField(OBJECT_END) + 0x10
+	GAMEOBJECT_ARTKIT          GameObjectField = GameObjectField(OBJECT_END) + 0x11
+	GAMEOBJECT_ANIMPROGRESS    GameObjectField = GameObjectField(OBJECT_END) + 0x12
+	GAMEOBJECT_PADDING         GameObjectField = GameObjectField(OBJECT_END) + 0x13
+	GAMEOBJECT_END             GameObjectField = GameObjectField(OBJECT_END) + 0x14
+
+	DYNAMICOBJECT_CASTER  DynamicObjectField = DynamicObjectField(OBJECT_END) + 0x00
+	DYNAMICOBJECT_BYTES   DynamicObjectField = DynamicObjectField(OBJECT_END) + 0x02
+	DYNAMICOBJECT_SPELLID DynamicObjectField = DynamicObjectField(OBJECT_END) + 0x03
+	DYNAMICOBJECT_RADIUS  DynamicObjectField = DynamicObjectField(OBJECT_END) + 0x04
+	DYNAMICOBJECT_POS_X   DynamicObjectField = DynamicObjectField(OBJECT_END) + 0x05
+	DYNAMICOBJECT_POS_Y   DynamicObjectField = DynamicObjectField(OBJECT_END) + 0x06
+	DYNAMICOBJECT_POS_Z   DynamicObjectField = DynamicObjectField(OBJECT_END) + 0x07
+	DYNAMICOBJECT_FACING  DynamicObjectField = DynamicObjectField(OBJECT_END) + 0x08
+	DYNAMICOBJECT_PAD     DynamicObjectField = DynamicObjectField(OBJECT_END) + 0x09
+	DYNAMICOBJECT_END     DynamicObjectField = DynamicObjectField(OBJECT_END) + 0x0A
+
+	CORPSE_FIELD_OWNER         CorpseField = 0x18
+	CORPSE_FIELD_FACING        CorpseField = 0x20
+	CORPSE_FIELD_POS_X         CorpseField = 0x24
+	CORPSE_FIELD_POS_Y         CorpseField = 0x28
+	CORPSE_FIELD_POS_Z         CorpseField = 0x2C
+	CORPSE_FIELD_DISPLAY_ID    CorpseField = 0x30
+	CORPSE_FIELD_ITEM          CorpseField = 0x34
+	CORPSE_FIELD_BYTES_1       CorpseField = 0x80
+	CORPSE_FIELD_BYTES_2       CorpseField = 0x84
+	CORPSE_FIELD_GUILD         CorpseField = 0x88
+	CORPSE_FIELD_FLAGS         CorpseField = 0x8C
+	CORPSE_FIELD_DYNAMIC_FLAGS CorpseField = 0x90
+	CORPSE_FIELD_PAD           CorpseField = 0x94
+
+	PLAYER_FIELD_BUYBACK_NPC UnitField = 0xB0 + 0x9C
+)
+
+func (u ObjectField) IsGUID() bool {
+	if u == OBJECT_FIELD_GUID {
+		return true
+	}
+
+	return false
+}
+
+func (u UnitField) IsGUID() bool {
+	for _, v := range []UnitField{
+		UNIT_FIELD_CHARM,
+		UNIT_FIELD_SUMMON,
+		UNIT_FIELD_CHARMEDBY,
+		UNIT_FIELD_SUMMONEDBY,
+		UNIT_FIELD_CREATEDBY,
+		UNIT_FIELD_TARGET,
+		UNIT_FIELD_PERSUADED,
+		UNIT_FIELD_CHANNEL_OBJECT,
+		PLAYER_DUEL_ARBITER,
+		PLAYER_FIELD_INV_SLOT_HEAD,
+		PLAYER_FIELD_PACK_SLOT_1,
+		PLAYER_FIELD_BANK_SLOT_1,
+		PLAYER_FIELD_BANKBAG_SLOT_1,
+		PLAYER_FIELD_VENDORBUYBACK_SLOT_1,
+		PLAYER_FARSIGHT,
+		PLAYER_FIELD_COMBO_TARGET,
+		PLAYER_VISIBLE_ITEM_1_CREATOR,
+	} {
+		if v == u {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (i ItemField) IsGUID() bool {
+	for _, v := range []ItemField{
+		ITEM_FIELD_OWNER,
+		ITEM_FIELD_CONTAINED,
+		ITEM_FIELD_CREATOR,
+		ITEM_FIELD_GIFTCREATOR,
+		CONTAINER_FIELD_SLOT_1,
+	} {
+		if v == i {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (g ObjectField) From(v uint32) ValuesField {
+	return ObjectField(v)
+}
+
+func (d DynamicObjectField) IsGUID() bool {
+	return d == DYNAMICOBJECT_CASTER
+}
+
+func (g GameObjectField) IsGUID() bool {
+	return false
+}
+
+func (g ItemField) From(v uint32) ValuesField {
+	return ItemField(v)
+}
+
+func (g UnitField) From(v uint32) ValuesField {
+	return UnitField(v)
+}
+
+func (g DynamicObjectField) From(v uint32) ValuesField {
+	return DynamicObjectField(v)
+}
+
+func (g GameObjectField) From(v uint32) ValuesField {
+	return GameObjectField(v)
+}
+
+func (g CorpseField) From(v uint32) ValuesField {
+	return CorpseField(v)
+}
+
+func (g CorpseField) IsGUID() bool {
+	return g == CORPSE_FIELD_OWNER
+}
+
+type ValuesField interface {
+	IsGUID() bool
+	From(v uint32) ValuesField
+	Uint32() uint32
+	String() string
+}
+
+func (g ObjectField) Uint32() uint32 {
+	return uint32(g)
+}
+
+func (g GameObjectField) Uint32() uint32 {
+	return uint32(g)
+}
+
+func (g UnitField) Uint32() uint32 {
+	return uint32(g)
+}
+
+func (g ItemField) Uint32() uint32 {
+	return uint32(g)
+}
+
+func (g DynamicObjectField) Uint32() uint32 {
+	return uint32(g)
+}
+
+func (g CorpseField) Uint32() uint32 {
+	return uint32(g)
+}

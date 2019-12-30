@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = "sys";
+
+enum Status {
+    SysOK = 0;
+	SysUnauthorized = 1;
+	SysOffline = 2;
+	SysDisabled = 3;
+	SysRatelimited = 4;
+}
+
+enum Tier {
+	NormalPlayer = 0;
+	Privileged = 1;
+	GameMaster = 2;
+	Admin = 3;
+}
+
+message StatusMsg {
+    Status Status = 1;
+}
+
+message VersionData {
+    string CoreVersion = 1;
+}
+
+message PingMsg {
+    uint64 Time = 1;
+}
+
+message VerifyWorldQuery {
+    uint64 RealmID = 1;
+    uint32 Build = 2;
+    string Account = 3;
+    string IP = 4;
+    bytes  Digest = 5;
+    bytes  Seed = 6;
+    bytes  Salt = 7;
+    string GameAccount = 8;
+}
+
+message AnnounceRealmMsg {
+    uint64 RealmID = 1;
+    string Type = 3;
+    string RealmName = 4;
+    string RealmDescription = 5;
+    uint32 Build = 6;
+    string Address = 7;
+    uint32 ActivePlayers = 8;
+}
+
+message VerifyWorldResponse {
+    Status Status = 1;
+    Tier   Tier = 2;
+    bytes  SessionKey = 3;
+    uint64 GameAccount = 4;
+}
+
+message Info {
+}
+
+service AuthService {
+    rpc GetVersionData(google.protobuf.Empty) returns (VersionData) {}
+    rpc Ping(PingMsg) returns (PingMsg) {}
+    rpc AnnounceRealm(AnnounceRealmMsg) returns (StatusMsg) {}
+    rpc VerifyWorld(VerifyWorldQuery) returns (VerifyWorldResponse) {}
+    rpc ReportInfo(Info) returns (StatusMsg) {}
+}
+
+service WorldListener {
+    
+}

@@ -1,0 +1,6 @@
+name: "Gophercraft Base Package"
+
+depends: 
+  - '@Gophercraft:>=0.1' # selects for gcore version
+  - 'MarySueProtocol:>=0.1'
+
