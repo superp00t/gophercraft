@@ -19,15 +19,23 @@ var (
 
 func main() {
 	yo.Stringf("w", "gamepath", "game path", "")
-	yo.Stringf("o", "outpath", "datapack output path", "")
+	yo.Stringf("f", "folder", "where your files will get dropped automatically", etc.LocalDirectory().Render())
+	yo.Stringf("o", "outpath", "worldserver output folder", "")
 	yo.Int64f("r", "realm", "the realm ID for generating configuration folders", 1)
-	// yo.AddSubroutine("csv", nil, "debug csv", csvfn)
 	yo.Main("server setup", _main)
 	yo.Init()
 }
 
+func getLocal() etc.Path {
+	loc := etc.ParseSystemPath(yo.StringG("f"))
+	if !loc.IsExtant() {
+		loc.MakeDir()
+	}
+	return loc
+}
+
 func getAuth() *config.Auth {
-	authLoc := etc.LocalDirectory().Concat("gcraft_auth")
+	authLoc := getLocal().Concat("gcraft_auth")
 
 	if !authLoc.IsExtant() {
 		if err := config.GenerateDefaultAuth(authLoc.Render()); err != nil {
@@ -71,7 +79,7 @@ func _main(a []string) {
 	realmID := getRealmID()
 
 	if worldfolder == "" {
-		worldfolder = etc.LocalDirectory().Concat(fmt.Sprintf("gcraft_world_%d", realmID)).Render()
+		worldfolder = getLocal().Concat(fmt.Sprintf("gcraft_world_%d", realmID)).Render()
 	}
 
 	wf := etc.ParseSystemPath(worldfolder)
