@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha1"
+	"crypto/subtle"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -110,7 +111,7 @@ func (c *Core) VerifyWorld(ctx context.Context, req *sys.VerifyWorldQuery) (*sys
 		sk.K,
 	)
 
-	if !bytes.Equal(digest, req.Digest) {
+	if subtle.ConstantTimeCompare(digest, req.Digest) == 0 {
 		yo.Warn("connection authentication failure: phony connection attempt to", req.Account, "from", req.IP)
 		return &sys.VerifyWorldResponse{
 			Status: sys.Status_SysUnauthorized,
