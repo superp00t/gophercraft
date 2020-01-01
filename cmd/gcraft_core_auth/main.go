@@ -13,10 +13,10 @@ import (
 
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/auth"
-	"github.com/superp00t/gophercraft/auth/sys"
 	"github.com/superp00t/gophercraft/bnet"
 	"github.com/superp00t/gophercraft/gcore"
 	_ "github.com/superp00t/gophercraft/gcore/dbsupport"
+	"github.com/superp00t/gophercraft/gcore/sys"
 )
 
 var core *gcore.Core

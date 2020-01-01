@@ -93,7 +93,7 @@ func (c *Core) VerifyWorld(ctx context.Context, req *sys.VerifyWorldQuery) (*sys
 	}
 
 	var sk SessionKey
-	found, err := c.DB.Where("id = ?", user.ID).Get(&sk)
+	found, err = c.DB.Where("id = ?", user.ID).Get(&sk)
 	if !found {
 		yo.Println("Database error: ", err)
 		yo.Warn("connection authentication failure: no session key", req.Account, "from", req.IP)
