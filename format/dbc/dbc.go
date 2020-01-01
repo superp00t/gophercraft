@@ -321,8 +321,6 @@ func (d *DBC) setField(fld reflect.Value, buf *etc.Buffer, tp *_fieldType) {
 				ln = 17
 			}
 
-			fmt.Println("ln", ln)
-
 			lc := make([]uint32, ln)
 			for x := 0; x < ln; x++ {
 				lc[x] = buf.ReadUint32()

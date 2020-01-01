@@ -2,6 +2,7 @@ package vsn
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math"
 	"os"
 	"strconv"
@@ -13,8 +14,18 @@ import (
 	pe "github.com/Velocidex/go-pe"
 )
 
+type VolumeType uint8
+
+const (
+	NotAVolume VolumeType = iota
+	MPQ
+	NGDP
+)
+
 var (
 	CoreVersion = "0.1"
+
+	ErrInvalidPath = fmt.Errorf("vsn: invalid game path")
 )
 
 type Selector string
@@ -66,6 +77,10 @@ func (b Build) String() string {
 func DetectGame(folder string) (Build, error) {
 	path := etc.ParseSystemPath(folder)
 
+	if len(path) == 0 {
+		return 0, ErrInvalidPath
+	}
+
 	fmt.Println("detecting game in ", folder)
 
 	head := path[len(path)-1]
@@ -89,6 +104,41 @@ func DetectGame(folder string) (Build, error) {
 	}
 
 	return 0, fmt.Errorf("version: could not find executable")
+}
+
+func DetectVolumeLocation(folder string) (VolumeType, string, error) {
+	path := etc.ParseSystemPath(folder)
+
+	if len(path) == 0 {
+		return 0, "", ErrInvalidPath
+	}
+
+	head := strings.ToLower(path[len(path)-1])
+
+	if head != "data" {
+		if path.Concat("Data").IsExtant() {
+			return DetectVolumeLocation(path.Concat("Data").Render())
+		}
+
+		return 0, "", ErrInvalidPath
+	}
+
+	f, err := ioutil.ReadDir(path.Render())
+	if err != nil {
+		return 0, "", err
+	}
+
+	for _, fl := range f {
+		if strings.HasSuffix(fl.Name(), ".MPQ") {
+			return MPQ, path.Render(), nil
+		}
+	}
+
+	if path.Exists("config") {
+		return NGDP, "", nil
+	}
+
+	return NotAVolume, "", ErrInvalidPath
 }
 
 // todo: implement test cases

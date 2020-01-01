@@ -6,14 +6,14 @@ import (
 	"github.com/superp00t/etc"
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/datapack"
-	"github.com/superp00t/gophercraft/format/mpq"
+	"github.com/superp00t/gophercraft/format/content"
 	"github.com/superp00t/gophercraft/gcore/config"
 	"github.com/superp00t/gophercraft/vsn"
 )
 
 var (
 	pack    *datapack.Pack
-	pool    *mpq.Pool
+	pool    content.Volume
 	version vsn.Build = 0
 )
 
@@ -59,10 +59,12 @@ func _main(a []string) {
 	}
 
 	var err error
-	version, err = vsn.DetectGame(gamePath)
+	pool, err = content.Open(gamePath)
 	if err != nil {
 		yo.Fatal(err)
 	}
+
+	version = pool.Build()
 
 	worldfolder := yo.StringG("o")
 

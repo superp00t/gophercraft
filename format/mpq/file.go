@@ -146,7 +146,6 @@ func (f *File) ReadBlock() ([]byte, error) {
 		outBuf.Write(buf)
 	}
 
-	f.Close()
 	return outBuf.Bytes(), nil
 }
 

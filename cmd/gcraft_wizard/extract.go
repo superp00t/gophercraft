@@ -11,22 +11,11 @@ import (
 	"github.com/superp00t/gophercraft/datapack"
 	"github.com/superp00t/gophercraft/datapack/csv"
 	"github.com/superp00t/gophercraft/format/dbc"
-	"github.com/superp00t/gophercraft/format/mpq"
 	"github.com/superp00t/gophercraft/gcore"
 )
 
-func getFile(name string) *mpq.File {
-	f, err := pool.OpenFile(name)
-	if err != nil {
-		yo.Fatal(name, err)
-	}
-
-	return f
-}
-
 func getDBC(name string) *dbc.DBC {
-	d := getFile(name)
-	bts, err := d.ReadBlock()
+	bts, err := pool.ReadFile(name)
 	if err != nil {
 		yo.Fatal(name, err)
 	}
@@ -82,20 +71,7 @@ func copyFile(in string, out string) {
 }
 
 func generateDatapack(gamePath, dPack string) {
-	list, err := mpq.GetFiles(gamePath)
-	if err != nil {
-		yo.Fatal("cannot find MPQ path:", err)
-	}
-
-	pool, err = mpq.OpenPool(list)
-	if err != nil {
-		if yo.StringG("w") == "" {
-			yo.Fatal("supply valid game path to load content: -w X:\\Path\\To\\Game\\")
-			return
-		}
-		yo.Fatal("error opening mpq", err)
-	}
-
+	var err error
 	// Open pack folder in temp
 	pack, err = datapack.Author(datapack.PackConfig{
 		"Gophercraft Base Content Pack",
@@ -122,8 +98,6 @@ func generateDatapack(gamePath, dPack string) {
 	var races []dbc.Ent_ChrRaces
 	extractDBC("ChrRaces", "DB/DBC_ChrRaces.csv", &races)
 
-	yo.Spew(races)
-
 	var classes []dbc.Ent_ChrClasses
 	extractDBC("ChrClasses", "DB/DBC_ChrClasses.csv", &classes)
 
@@ -134,7 +108,7 @@ func generateDatapack(gamePath, dPack string) {
 
 	fmt.Println("Generating", dPack, "...")
 
-	if err = pack.ZipToFile(dPack); err != nil {
+	if err := pack.ZipToFile(dPack); err != nil {
 		panic(err)
 	}
 
