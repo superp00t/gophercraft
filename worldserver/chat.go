@@ -5,6 +5,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/superp00t/gophercraft/gcore/sys"
+
 	"github.com/superp00t/etc"
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/packet"
@@ -46,7 +48,7 @@ func (s *Session) PlayerName() string {
 }
 
 func (s *Session) Tag() uint8 {
-	if s.Tier == Admin {
+	if s.Tier == sys.Tier_Admin {
 		return packet.CHAT_TAG_GM
 	}
 
@@ -54,7 +56,7 @@ func (s *Session) Tag() uint8 {
 }
 
 func (s *Session) IsGM() bool {
-	return s.Tier > GameMaster
+	return s.Tier > sys.Tier_GameMaster
 }
 
 func (s *Session) HandleChat(b []byte) {

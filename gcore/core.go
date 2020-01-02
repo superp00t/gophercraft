@@ -45,7 +45,6 @@ func NewCore(cfg *config.Auth) (*Core, error) {
 		new(GameAccount),
 		new(Realm),
 		new(LoginTicket),
-		new(TrustedKey),
 		new(WebToken),
 		new(CVar),
 	}

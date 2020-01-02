@@ -6,6 +6,7 @@ import (
 
 	"github.com/superp00t/etc/yo"
 
+	"github.com/superp00t/gophercraft/gcore/sys"
 	"github.com/superp00t/gophercraft/guid"
 	"github.com/superp00t/gophercraft/packet/update"
 	"github.com/superp00t/gophercraft/worldserver/wdb"
@@ -39,7 +40,7 @@ func (c *C) Float32(index int) float32 {
 type Command struct {
 	Signature   string
 	ArgDemos    [][]string
-	Required    Tier
+	Required    sys.Tier
 	Description string
 	Function    func(*C)
 }
@@ -51,7 +52,7 @@ var (
 			[][]string{
 				{"displayID"},
 			},
-			GameMaster,
+			sys.Tier_GameMaster,
 			"changes your displayID",
 			x_Morph,
 		},
@@ -61,7 +62,7 @@ var (
 			[][]string{
 				{"scale"},
 			},
-			GameMaster,
+			sys.Tier_GameMaster,
 			"changes your scale",
 			x_Scale,
 		},
@@ -72,7 +73,7 @@ var (
 				{"portID"},
 				{"mapID", "x", "y", "z", "o"},
 			},
-			GameMaster,
+			sys.Tier_GameMaster,
 			"teleport to a location",
 			x_Tele,
 		},
@@ -82,7 +83,7 @@ var (
 			[][]string{
 				{"playerName"},
 			},
-			GameMaster,
+			sys.Tier_GameMaster,
 			"appear to a player",
 			x_Appear,
 		},
@@ -92,7 +93,7 @@ var (
 			[][]string{
 				{"soundID"},
 			},
-			GameMaster,
+			sys.Tier_GameMaster,
 			"plays a sound throughout the current Map",
 			x_Sound,
 		},
@@ -100,7 +101,7 @@ var (
 		{
 			"vmod",
 			[][]string{{"Global=valueType:Value"}},
-			GameMaster,
+			sys.Tier_Admin,
 			"modifies a set of values",
 			x_VMod,
 		},
@@ -224,14 +225,9 @@ func x_VMod(c *C) {
 	}
 
 	if tgt.HighType() == guid.Player {
-		plyr, err := c.Session.WS.GetSessionByGUID(tgt)
+		_, err := c.Session.WS.GetSessionByGUID(tgt)
 		if err != nil {
 			c.Session.Warnf("%s", err.Error())
-			return
-		}
-
-		if plyr.Tier != Admin && plyr.Tier == GameMaster {
-			c.Session.Warnf("you cannot modify other GMs with your current permissions.")
 			return
 		}
 	}

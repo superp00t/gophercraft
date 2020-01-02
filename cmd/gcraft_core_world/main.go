@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/superp00t/gophercraft/gcore/sys"
+
 	"os"
 
 	"github.com/superp00t/etc"
@@ -35,6 +37,10 @@ func main() {
 		if err != nil {
 			yo.Fatal(err)
 		}
+
+		fp, _ := sys.GetCertFileFingerprint(cfg.Path.Concat("cert.pem").Render())
+
+		yo.Ok("This server's fingerprint is", fp)
 
 		log.Fatal(worldserver.Start(cfg))
 	})

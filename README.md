@@ -79,3 +79,5 @@ gcraft_core_world
 ```
 
 To register, point your browser to http://localhost:8086 and fill out the registration form.
+
+It's important to do this before exposing your server, as the first user to register is granted administrator privileges.

@@ -2,6 +2,8 @@ package gcore
 
 import (
 	"time"
+
+	"github.com/superp00t/gophercraft/gcore/sys"
 )
 
 type LoginTicket struct {
@@ -18,6 +20,7 @@ type WebToken struct {
 
 type Account struct {
 	ID           uint64 `xorm:"'id' pk autoincr"`
+	Tier         sys.Tier
 	Username     string
 	IdentityHash []byte
 }
@@ -43,12 +46,6 @@ type Realm struct {
 	Description   string    `json:"description"`
 	ActivePlayers uint32    `json:"activePlayers"`
 	LastUpdated   time.Time `json:"lastUpdated"`
-}
-
-type TrustedKey struct {
-	Type       uint8  `xorm:"'type'"` // rpc = 0, auth shell = 1
-	ID         uint64 `xorm:"'id'"`
-	TrustedKey string `xorm:"'trusted_key'"`
 }
 
 type RegistrationBody struct {

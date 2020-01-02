@@ -81,6 +81,9 @@ func (ws *WorldServer) connectRPC() {
 		if err != nil {
 			yo.Warn(err)
 		}
+		if st != nil && st.Status != sys.Status_SysOK {
+			yo.Warn("Recieved non-ok status", st.Status)
+		}
 		time.Sleep(8 * time.Second)
 	}
 }

@@ -128,6 +128,7 @@ func (c *Core) VerifyWorld(ctx context.Context, req *sys.VerifyWorldQuery) (*sys
 
 	return &sys.VerifyWorldResponse{
 		Status:      sys.Status_SysOK,
+		Tier:        user.Tier,
 		SessionKey:  sk.K,
 		GameAccount: ga.ID,
 	}, nil

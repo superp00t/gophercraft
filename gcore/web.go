@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/superp00t/gophercraft/gcore/sys"
+
 	"github.com/superp00t/etc"
 
 	"github.com/dchest/captcha"
@@ -92,6 +94,11 @@ func (c *Core) DoRegistration(u, p string) error {
 	_, err = c.DB.Insert(&acct)
 	if err != nil {
 		return err
+	}
+
+	if acct.ID == 1 {
+		acct.Tier = sys.Tier_Admin
+		c.DB.Cols("tier").Update(&acct)
 	}
 
 	_, err = c.DB.Insert(&GameAccount{
