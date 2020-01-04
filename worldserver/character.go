@@ -192,7 +192,7 @@ func (s *Session) CreateCharacter(b []byte) {
 	found2, _ := s.DB().Where("id = ?", pch.Class).Get(&class)
 
 	if !found || !found2 {
-		s.SendCharacterOp(packet.CHAR_CREATE_EXPANSION_CLASS)
+		s.SendCharacterOp(packet.CHAR_CREATE_ERROR)
 		return
 	}
 
@@ -255,4 +255,20 @@ func (s *Session) CreateCharacter(b []byte) {
 
 func (s *Session) Version() uint32 {
 	return s.WS.Config.Version
+}
+
+func (s *WorldServer) GetNative(race packet.Race, gender uint8) uint32 {
+	var races dbc.Ent_ChrRaces
+	found, _ := s.DB.Where("id = ?", race).Get(&races)
+	if !found {
+		// become a gopher if no datapack is installed
+		return 2838
+	}
+
+	// I know there are more than two genders, don't get mad at me...
+	if gender == 1 {
+		return races.FemaleDisplayID
+	}
+
+	return races.MaleDisplayID
 }

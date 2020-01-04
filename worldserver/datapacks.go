@@ -33,6 +33,8 @@ func (ws *WorldServer) LoadCSV(csvPath string, prototype interface{}) error {
 
 	ws.PackLoader.ReadAll(csvPath, slice.Interface())
 
+	yo.Ok("Loaded", csvPath, "successfully,", slice.Elem().Len(), "records read")
+
 	_, err = ws.DB.Insert(slice.Interface())
 	return err
 }

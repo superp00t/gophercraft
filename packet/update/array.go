@@ -23,8 +23,25 @@ type Array struct {
 
 type ArrayField struct {
 	Key string
+	Len int64
 	FieldType
 	FieldFlags
+}
+
+func (ad *ArrayData) SetValue(column string, row int, value interface{}) {
+	for idx, v := range ad.Cols {
+		if column == v {
+			if len(ad.Rows) <= row {
+				diff := make([][]interface{}, (row-len(ad.Rows))+1)
+				ad.Rows = append(ad.Rows, diff...)
+			}
+
+			ad.Rows[row][idx] = value
+			return
+		}
+	}
+
+	panic("unknown column " + column)
 }
 
 func (c *Class) Array(glob Global, ln int64) *Array {
@@ -44,9 +61,21 @@ func (c *Class) Array(glob Global, ln int64) *Array {
 	return arr
 }
 
+func (arr *Array) Uint32Array(key string, ln int64, view FieldFlags) {
+	arr.Fields = append(arr.Fields, ArrayField{
+		key,
+		ln,
+		Uint32Array,
+		view,
+	})
+
+	arr.BlockOffset += ln
+}
+
 func (arr *Array) Uint32(key string, view FieldFlags) {
 	arr.Fields = append(arr.Fields, ArrayField{
 		key,
+		0,
 		Uint32,
 		view,
 	})
@@ -57,6 +86,7 @@ func (arr *Array) Uint32(key string, view FieldFlags) {
 func (arr *Array) Pad() {
 	arr.Fields = append(arr.Fields, ArrayField{
 		"",
+		0,
 		Pad,
 		Private,
 	})
@@ -67,6 +97,7 @@ func (arr *Array) Pad() {
 func (arr *Array) GUID(key string, view FieldFlags) {
 	arr.Fields = append(arr.Fields, ArrayField{
 		key,
+		0,
 		GUID,
 		view,
 	})

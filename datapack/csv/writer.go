@@ -2,6 +2,7 @@ package csv
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"io"
 	"reflect"
@@ -19,6 +20,16 @@ func NewWriter(wrc io.WriteCloser) *Writer {
 	wr.writer = csv.NewWriter(wrc)
 	wr.closer = wrc
 	return wr
+}
+
+func escapeString(in string) string {
+	b, err := json.Marshal(in)
+	if err != nil {
+		panic(err)
+	}
+	// // Trim the beginning and trailing " character
+	// return string(b[1 : len(b)-1])
+	return string(b)
 }
 
 func encodeCell(cell reflect.Value) string {

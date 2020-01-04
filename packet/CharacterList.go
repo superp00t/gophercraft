@@ -236,6 +236,7 @@ func EquipLen(build uint32) int {
 	}
 }
 
+//go:generate gcraft_stringer -type=CharacterOp
 type CharacterOp uint8
 
 const (
@@ -417,7 +418,7 @@ func EncodeCharacterOp(version uint32, out *etc.Buffer, value CharacterOp) error
 
 	opcode, ok := desc[value]
 	if !ok {
-		return fmt.Errorf("packet: no opcode for the descriptor")
+		return fmt.Errorf("packet: no opcode for %s in the descriptor", value)
 	}
 
 	out.WriteByte(opcode)

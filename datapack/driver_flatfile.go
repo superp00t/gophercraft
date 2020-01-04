@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/superp00t/etc"
@@ -64,6 +65,9 @@ func (f *flatFile) List() []string {
 		if info.IsDir() == false {
 			path = strings.Replace(path, f.Base.Render(), "", 1)
 			path = strings.TrimLeft(path, "\\/")
+			if runtime.GOOS == "windows" {
+				path = strings.Replace(path, "\\", "/", -1)
+			}
 			files = append(files, path)
 		}
 		return nil

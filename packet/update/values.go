@@ -371,7 +371,7 @@ offsetScan:
 		case ArrayType:
 			anyRowsEnabled := false
 
-			ad := ArrayData{}
+			ad := &ArrayData{}
 			for _, v := range field.array.Fields {
 				if v.Key != "" {
 					ad.Cols = append(ad.Cols, v.Key)
@@ -397,6 +397,18 @@ offsetScan:
 							row = append(row, nil)
 						}
 						offset++
+					case Uint32Array:
+						u32Array := make([]uint32, int(f.Len))
+						for ux := int(0); ux < int(f.Len); ux++ {
+							if decoder.offsetEnabled(offset) {
+								anyFieldsEnabled = true
+								u32Array[ux] = decoder.ReadUint32()
+							}
+
+							offset++
+						}
+
+						row = append(row, u32Array)
 					case GUID:
 						if decoder.offsetEnabled(offset) || decoder.offsetEnabled(offset+1) {
 							g, err := decoder.decodeGUID(offset)
@@ -623,7 +635,7 @@ valueScan:
 					offsetBase := uint32(field.AbsBlockOffset())
 					offset := offsetBase
 
-					ad := value.(ArrayData)
+					ad := value.(*ArrayData)
 
 					// validate input data
 					for i, v := range field.array.Fields {
@@ -635,11 +647,14 @@ valueScan:
 					}
 
 					for x := int64(0); x < field.array.Len; x++ {
-						row := ad.Rows[x]
+						var row []interface{}
+						if int(x) < len(ad.Rows) {
+							row = ad.Rows[x]
+						}
 
 						for i, vfield := range field.array.Fields {
 							if vfield.FieldType != Pad {
-								if row[i] != nil {
+								if row != nil {
 									switch vfield.FieldType {
 									case GUID:
 										v.encodeGUID(offset, row[i].(guid.GUID))
@@ -650,6 +665,12 @@ valueScan:
 									case Float32:
 										v.encodeFloat32(offset, row[i].(float32))
 										offset++
+									case Uint32Array:
+										arrayVal := row[i].([]uint32)
+										for arrayValIndex := int64(0); arrayValIndex < vfield.Len; arrayValIndex++ {
+											v.encodeUint32(offset, arrayVal[int(arrayValIndex)])
+											offset++
+										}
 									default:
 										panic(vfield.FieldType.String())
 									}

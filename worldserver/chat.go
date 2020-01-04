@@ -126,13 +126,13 @@ func (s *Session) HandleCommand(c string) {
 				v.Function(inv)
 				return
 			} else {
-				s.Annf("Sorry, you lack the required permissions to invoke this command. Contact an admin if you believe this is in error.")
+				s.Warnf("Sorry, you lack the required permissions to invoke this command. Contact an admin if you believe this is in error.")
+				return
 			}
-			break
 		}
 	}
 
-	s.Annf("Unknown command: %s", cmd)
+	s.Warnf("Unknown command: %s", cmd)
 }
 
 func parseCmd(s string) (string, []string, error) {

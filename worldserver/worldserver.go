@@ -13,7 +13,6 @@ import (
 
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/datapack"
-	"github.com/superp00t/gophercraft/format/dbc"
 	"github.com/superp00t/gophercraft/gcore/config"
 	"github.com/superp00t/gophercraft/guid"
 	"github.com/superp00t/gophercraft/packet"
@@ -209,25 +208,6 @@ func loginFail(c net.Conn) {
 
 func hash(input ...[]byte) []byte {
 	return packet.Hash(input...)
-}
-
-type Char struct {
-	Race   packet.Race
-	Gender uint8
-}
-
-func (s *WorldServer) GetNative(race packet.Race, gender uint8) uint32 {
-	var races dbc.Ent_ChrRaces
-	found, _ := s.DB.Where("id = ?", race).Get(&races)
-	if !found {
-		return 2838
-	}
-
-	if gender == 1 {
-		return races.FemaleDisplayID
-	}
-
-	return races.MaleDisplayID
 }
 
 func (s *WorldServer) GetSessionByGUID(g guid.GUID) (*Session, error) {

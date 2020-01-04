@@ -161,7 +161,8 @@ func Open(directory string) (*Loader, error) {
 	sort.Strings(s)
 
 	for _, v := range s {
-		pack, err := OpenPack(bp.Concat(v).Render())
+		path := bp.Concat(v).Render()
+		pack, err := OpenPack(path)
 		if err != nil {
 			return nil, err
 		}
@@ -173,6 +174,7 @@ func Open(directory string) (*Loader, error) {
 
 func (p *Pack) Exists(path string) bool {
 	list := p.List()
+	// yo.Spew(list)
 	for _, v := range list {
 		if v == path {
 			return true
@@ -273,7 +275,6 @@ func (p *Pack) ZipToFile(filename string) error {
 
 	newZipFile, err := os.Create(filename)
 	if err != nil {
-		fmt.Println("open")
 		return err
 	}
 	defer newZipFile.Close()

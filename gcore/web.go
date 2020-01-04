@@ -2,9 +2,11 @@ package gcore
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -168,6 +170,20 @@ func (c *Core) Register(r *Request) {
 		return
 	}
 
+	if err := validateUsername(rr.Username); err != nil {
+		r.Encode(http.StatusOK, registerResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
+	if err := validatePassword(rr.Password); err != nil {
+		r.Encode(http.StatusOK, registerResponse{
+			Error: err.Error(),
+		})
+		return
+	}
+
 	if !captcha.VerifyString(rr.CaptchaID, rr.CaptchaSolution) {
 		r.Encode(http.StatusOK, registerResponse{
 			Error:        "Captcha failed.",
@@ -299,4 +315,51 @@ func (c *Core) InfoHandler() http.Handler {
 		rw.Write([]byte(`<p><a href="https://github.com/superp00t/gophercraft">Gophercraft ` + Version + `<a/></p>`))
 	})
 	return r
+}
+
+func validateUsername(input string) error {
+	err := ""
+	if len(input) > 16 {
+		err = "username too long"
+		goto end
+	}
+
+	if len(input) < 3 {
+		err = "username too short"
+		goto end
+	}
+
+	if ok, _ := regexp.MatchString("^[a-zA-Z]+$", input); ok == false {
+		err = "invalid characters in name"
+		goto end
+	}
+
+end:
+
+	if err == "" {
+		return nil
+	}
+	return errors.New(err)
+}
+
+func validatePassword(in string) error {
+	err := ""
+
+	input := []rune(in)
+
+	if len(input) > 16 {
+		err = "password too long"
+		goto end
+	}
+
+	if len(input) < 6 {
+		err = "password too short"
+		goto end
+	}
+
+end:
+	if err == "" {
+		return nil
+	}
+	return errors.New(err)
 }

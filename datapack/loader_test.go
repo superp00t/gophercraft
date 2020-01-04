@@ -5,8 +5,13 @@ import (
 
 	"github.com/superp00t/etc"
 	"github.com/superp00t/etc/yo"
-	"github.com/superp00t/gophercraft/gcore"
+	"github.com/superp00t/gophercraft/worldserver/wdb"
 )
+
+type celebRecord struct {
+	Name     string
+	KnownFor []string
+}
 
 func TestLoader(t *testing.T) {
 	ld, err := Open(etc.Import("github.com/superp00t/gophercraft/datapack/testdata").Render())
@@ -14,7 +19,7 @@ func TestLoader(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var pl []gcore.PortLocation
+	var pl []wdb.PortLocation
 	ld.ReadAll("DB/PortLocation.csv", &pl)
 
 	yo.Spew(pl)

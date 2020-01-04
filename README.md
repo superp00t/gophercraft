@@ -44,7 +44,13 @@ Some caveats: Gophercraft is currently in development and **extremely** unstable
 
 Gophercraft uses [xorm](https://xorm.io/) for storing data.
 
-By default, Gophercraft permits only the use of MySQL/MariaDB as a connection backend. SQLite3 is currently broken, although other servers supported by xorm may be theoretically usable.
+MaNGOS-based cores require the installation of an entire SQL database to use their content, whereas Gophercraft Core uses [datapacks.](datapack).
+
+Datapacks are ZIP archives (alternatively uncompressed folders), which containerize both tabular data (CSV) and scripting (Lua). Upon the launch of the worldserver, these datapacks are combined and dynamically loaded into your SQL database, where they can be quickly queried. This makes them ideal for making modifications to the game.
+
+Currently, Gophercraft permits only the use of MySQL/MariaDB as a connection backend. [SQLite3](https://github.com/superp00t/gophercraft/blob/master/gcore/dbsupport/sqlite3.go) is currently broken due to the limitations of the C implementation, although other backends supported by xorm may be theoretically usable.
+
+If you'd like to inquire about adding support for a new database, open an issue or a pull request!
 
 ```bash
 # install packages
@@ -66,7 +72,7 @@ go get -u -v github.com/superp00t/gophercraft/cmd/gcraft_wizard
 go get -u -v github.com/superp00t/gophercraft/cmd/gcraft_core_auth
 go get -u -v github.com/superp00t/gophercraft/cmd/gcraft_core_world
 
-# generate config based on game
+# generate config and datapack based on game
 gcraft_wizard -w /path/to/game/
 
 # Edit your configurations in ~/.local/share/gcraft_auth/config.yml
