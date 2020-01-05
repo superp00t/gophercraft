@@ -1,6 +1,7 @@
 package worldserver
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"strings"
@@ -45,6 +46,10 @@ type Session struct {
 
 	PlayerSpeeds   update.Speeds
 	PlayerPosition update.Quaternion
+
+	messageBroker chan *packet.WorldPacket
+	brokerClosed  bool
+	objectDebug   bool
 }
 
 func (s *Session) Living() bool {
@@ -57,7 +62,7 @@ func (s *Session) TypeID() guid.TypeID {
 }
 
 func (s *Session) GUID() guid.GUID {
-	return guid.RealmSpecific(guid.Player, s.Char.RealmID, s.Char.ID)
+	return guid.RealmSpecific(guid.Player, s.WS.RealmID(), s.Char.ID)
 }
 
 func (s *Session) Values() *update.ValuesBlock {
@@ -83,9 +88,15 @@ func (s *Session) ReadCrypt() (packet.WorldType, []byte, error) {
 
 // todo: make more consistent
 func (s *Session) SendAsync(p *packet.WorldPacket) {
-	go func() {
-		s.Crypter.SendFrame(p.Frame())
-	}()
+	if !s.brokerClosed {
+		s.messageBroker <- p
+	} else {
+		yo.Warn("Broker is clossed")
+	}
+}
+
+func (s *Session) oldGUID() bool {
+	return s.Version() <= 20000
 }
 
 func (s *Session) decodeUnpackedGUID(in io.Reader) guid.GUID {
@@ -94,16 +105,21 @@ func (s *Session) decodeUnpackedGUID(in io.Reader) guid.GUID {
 		return guid.Nil
 	}
 
-	// The realm ID isn't present in older versions. We still have to add it in so the GUIDs are equal server side.
-	if s.Version() <= 12340 {
-		if g.Counter() != 0 && g.HighType() == guid.Player { // support other types later
-			g = g.SetRealmID(s.WS.RealmID)
-		}
+	return s.convertClientGUID(g)
+}
 
-		if g.RealmID() == 0 && g.Counter() == 0 && g.HighType() == guid.Player {
-			g = guid.Nil
-		}
+func (s *Session) convertClientGUID(g guid.GUID) guid.GUID {
+	fmt.Println("Before", g)
+	// The realm ID isn't present in older versions. We still have to add it in so the GUIDs are equal server side.
+	if s.oldGUID() && g != guid.Nil {
+		g = g.SetRealmID(s.WS.RealmID())
 	}
+
+	if g.RealmID() == 0 && g.Counter() == 0 && g.HighType() == guid.Player {
+		g = guid.Nil
+	}
+
+	fmt.Println("After conversion", g)
 
 	return g
 }
@@ -111,14 +127,11 @@ func (s *Session) decodeUnpackedGUID(in io.Reader) guid.GUID {
 func (s *Session) decodePackedGUID(in io.Reader) guid.GUID {
 	g, err := guid.DecodePacked(s.Version(), in)
 	if err != nil {
+		yo.Warn(err)
 		return guid.Nil
 	}
 
-	if s.Version() <= 20000 {
-		g = g.SetRealmID(s.WS.RealmID)
-	}
-
-	return g
+	return s.convertClientGUID(g)
 }
 
 func (s *Session) SendSync(p *packet.WorldPacket) error {
@@ -186,6 +199,9 @@ func (s *Session) Handle() {
 				s.Map().RemoveObject(s.GUID())
 			}
 
+			s.Crypter.Conn.Close()
+			s.brokerClosed = true
+			close(s.messageBroker)
 			return
 		}
 

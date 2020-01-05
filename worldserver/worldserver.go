@@ -20,7 +20,6 @@ import (
 )
 
 type WorldServer struct {
-	RealmID           uint64
 	Config            *config.World
 	DB                *wdb.Core
 	PhaseL            sync.Mutex
@@ -85,6 +84,10 @@ func Start(opts *config.World) error {
 	}
 }
 
+func (ws *WorldServer) RealmID() uint64 {
+	return ws.Config.RealmID
+}
+
 func (ws *WorldServer) Handle(c net.Conn) {
 	if ws.AuthServiceClient == nil {
 		panic("no auth service")
@@ -129,6 +132,8 @@ func (ws *WorldServer) Handle(c net.Conn) {
 
 	yo.Ok("Accepted connection with version", cmsg.Build)
 
+	// Invoke the GRPC server.
+	// This connects back to gcraft_core_auth, checking to see if this client is actually a registered user.
 	resp, err := ws.AuthServiceClient.VerifyWorld(context.Background(), &sys.VerifyWorldQuery{
 		RealmID:     ws.Config.RealmID,
 		Build:       cmsg.Build,
@@ -156,13 +161,14 @@ func (ws *WorldServer) Handle(c net.Conn) {
 
 	crypt := packet.NewCrypter(cmsg.Build, c, resp.SessionKey, true)
 	session := &Session{
-		GameAccount: resp.GameAccount,
-		AddonData:   cmsg.AddonData,
-		SessionKey:  resp.SessionKey,
-		WS:          ws,
-		C:           c,
-		Crypter:     crypt,
-		Tier:        resp.Tier,
+		GameAccount:   resp.GameAccount,
+		AddonData:     cmsg.AddonData,
+		SessionKey:    resp.SessionKey,
+		WS:            ws,
+		C:             c,
+		Crypter:       crypt,
+		Tier:          resp.Tier,
+		messageBroker: make(chan *packet.WorldPacket, 64),
 	}
 
 	// TODO: Position user in queue if server is over capacity
@@ -184,6 +190,20 @@ func (ws *WorldServer) Handle(c net.Conn) {
 	if session.WS.Config.WardenEnabled {
 		session.InitWarden()
 	}
+
+	go func() {
+		for {
+			data, ok := <-session.messageBroker
+			if !ok {
+				return
+			}
+
+			if err := session.SendSync(data); err != nil {
+				yo.Warn(err)
+				return
+			}
+		}
+	}()
 
 	session.IntroductoryPackets()
 	session.State = CharacterSelectMenu
@@ -239,7 +259,7 @@ func (s *WorldServer) GetUnitNameByGUID(g guid.GUID) (string, error) {
 	case guid.Creature:
 		return "", fmt.Errorf("npc names nyi")
 	default:
-		return "", fmt.Errorf("cannot name this type")
+		return "", fmt.Errorf("cannot name this type (%s)", g.HighType())
 	}
 }
 
@@ -248,4 +268,5 @@ func (s *Session) SendAuthWaitQueue(position uint32) {
 	p.WriteByte(packet.AUTH_WAIT_QUEUE)
 	p.WriteUint32(position)
 	p.WriteByte(0)
+	s.SendSync(p)
 }

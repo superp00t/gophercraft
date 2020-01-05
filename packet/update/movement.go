@@ -23,7 +23,9 @@ const (
 	FlightBackward
 	Turn
 	Pitch
+)
 
+const (
 	UpdateFlagNone UpdateFlags = 1 << iota
 	UpdateFlagSelf
 	UpdateFlagTransport
@@ -32,7 +34,9 @@ const (
 	UpdateFlagAll
 	UpdateFlagLiving
 	UpdateFlagHasPosition
+)
 
+const (
 	MoveFlagNone MoveFlags = 1 << iota
 	MoveFlagForward
 	MoveFlagBackward

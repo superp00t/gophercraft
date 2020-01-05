@@ -45,7 +45,7 @@ func (s *Session) HandleTextEmote(e *etc.Buffer) {
 
 	textEmote := e.ReadUint32()
 	emoteID := e.ReadUint32()
-	target := s.decodePackedGUID(e)
+	target := s.decodeUnpackedGUID(e)
 
 	yo.Warn(textEmote, emoteID)
 
@@ -97,10 +97,14 @@ func (s *Session) HandleTextEmote(e *etc.Buffer) {
 	// 	toSelfString = fmt.Sprintf(emTextData.Text, data)
 	// }
 
-	data, err := s.WS.GetUnitNameByGUID(target)
-	if err != nil {
-		s.Warnf("%s", err.Error())
-		return
+	var data string
+	var err error
+	if target != guid.Nil {
+		data, err = s.WS.GetUnitNameByGUID(target)
+		if err != nil {
+			s.Warnf("%s guid=%s", err.Error(), target.Summary())
+			return
+		}
 	}
 
 	// // toSelfPacket := packet.NewWorldPacket(packet.SMSG_TEXT_EMOTE)

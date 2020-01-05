@@ -212,6 +212,22 @@ func buildCreate(obj Object, self bool) *update.Data {
 }
 
 func (s *Session) SendObjectCreate(wo Object) {
+	name, _ := s.WS.GetUnitNameByGUID(wo.GUID())
+
+	if s.objectDebug {
+		s.Warnf("Sending create of %s (%s)", wo.GUID(), name)
+
+		sass, ok := wo.(*Session)
+		if ok {
+			s.Warnf("Map: %d", sass.CurrentMap)
+		}
+
+		wobj, ok := wo.(WorldObject)
+		if ok {
+			s.Warnf("Position: %+v", wobj.Position())
+		}
+	}
+
 	self := s.GUID() == wo.GUID()
 	uData := buildCreate(wo, self)
 	relMask := s.WS.queryRelationshipMask(wo.GUID(), s.GUID())

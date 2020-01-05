@@ -35,10 +35,21 @@ func (s *Session) SetupOnLogin() {
 	}()
 }
 
+func packTime(t time.Time) int32 {
+	year, month, day := t.Date()
+	tm_year := int32(year)
+	tm_mon := int32(month)
+	tm_mday := int32(day)
+	tm_wday := int32(t.Weekday())
+	tm_hour := int32(t.Hour())
+	tm_min := int32(t.Minute())
+
+	return (tm_year-100)<<24 | tm_mon<<20 | (tm_mday-1)<<14 | tm_wday<<11 | tm_hour<<6 | tm_min
+}
+
 func (s *Session) SetTimeSpeed() {
 	pkt := packet.NewWorldPacket(packet.SMSG_LOGIN_SETTIMESPEED)
-
-	pkt.WriteUint32(packet.GetMSTime() / 1000)
+	pkt.WriteInt32(packTime(time.Now()))
 	pkt.WriteFloat32(0.01666667)
 
 	s.SendAsync(pkt)
@@ -315,12 +326,10 @@ func (s *Session) HandleMoves(t packet.WorldType, b []byte) {
 		return
 	}
 
-	yo.Spew(e)
-
 	s.PlayerPosition = e.Position
 
 	for _, v := range s.Map().NearbySessions(s) {
-		yo.Ok("Relaying moves", t, s.Char.Name, "->", v.Char.Name)
+		// yo.Ok("Relaying moves", t, s.Char.Name, "->", v.Char.Name)
 		out := packet.NewWorldPacket(t)
 		s.encodePackedGUID(out, s.GUID())
 		update.EncodeMovementInfo(v.Version(), out.Buffer, e)

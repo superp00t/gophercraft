@@ -37,6 +37,11 @@ func (s *Session) SendTransferPending(mapID uint32) {
 func (s *Session) HandleWorldportAck(b []byte) {
 	// Tell the client they've successfully teleported.
 	s.SendObjectCreate(s)
+
+	// Notify our client of existing clients
+	for _, sess := range s.Map().NearbySessions(s) {
+		s.SendObjectCreate(sess)
+	}
 }
 
 // TeleportTo teleports a player to a new location. This function should be called carefully.

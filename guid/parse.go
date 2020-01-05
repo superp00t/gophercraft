@@ -6,8 +6,6 @@ import (
 	"io"
 	"strconv"
 	"strings"
-
-	"github.com/superp00t/etc/yo"
 )
 
 var Nil = GUID{0, 0}
@@ -34,7 +32,6 @@ func Classic(u64 uint64) GUID {
 }
 
 func DecodePacked(version uint32, reader io.Reader) (GUID, error) {
-	yo.Warn(version)
 	switch {
 	case version <= 12340:
 		u64 := DecodePacked64(reader)

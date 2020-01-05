@@ -45,10 +45,13 @@ func (ws *WorldServer) initHandlers() {
 	h.On(p.MSG_MOVE_STOP_TURN, c, 1, (*Session).HandleMoves)
 	h.On(p.MSG_MOVE_START_PITCH_UP, c, 1, (*Session).HandleMoves)
 	h.On(p.MSG_MOVE_START_PITCH_DOWN, c, 1, (*Session).HandleMoves)
+	h.On(p.MSG_MOVE_SET_PITCH, c, 1, (*Session).HandleMoves)
 	h.On(p.MSG_MOVE_STOP_PITCH, c, 1, (*Session).HandleMoves)
 	h.On(p.MSG_MOVE_SET_RUN_MODE, c, 1, (*Session).HandleMoves)
 	h.On(p.MSG_MOVE_SET_FACING, c, 1, (*Session).HandleMoves)
 	h.On(p.MSG_MOVE_FALL_LAND, c, 1, (*Session).HandleMoves)
+	h.On(p.MSG_MOVE_START_SWIM, c, 1, (*Session).HandleMoves)
+	h.On(p.MSG_MOVE_STOP_SWIM, c, 1, (*Session).HandleMoves)
 	h.On(p.MSG_MOVE_WORLDPORT_ACK, c, 1, (*Session).HandleWorldportAck)
 
 	// Animation

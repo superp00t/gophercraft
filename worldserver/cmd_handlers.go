@@ -74,7 +74,7 @@ var (
 				{"mapID", "x", "y", "z", "o"},
 			},
 			sys.Tier_GameMaster,
-			"teleport to a location",
+			"Teleports you to a location.",
 			x_Tele,
 		},
 
@@ -84,7 +84,7 @@ var (
 				{"playerName"},
 			},
 			sys.Tier_GameMaster,
-			"appear to a player",
+			"Teleports you to a location.",
 			x_Appear,
 		},
 

@@ -46,6 +46,10 @@ func (g GUID) String() string {
 	}
 }
 
+func (g GUID) Summary() string {
+	return fmt.Sprintf("%s (%016X,%016X)", g.String(), g.Hi, g.Lo)
+}
+
 func rb(r io.Reader) uint8 {
 	b := make([]byte, 1)
 	r.Read(b)

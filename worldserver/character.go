@@ -93,14 +93,14 @@ func (s *Session) CharacterList(b []byte) {
 	var chars []wdb.Character
 	var pktChars []packet.Character
 
-	err := s.WS.DB.Where("game_account = ?", s.GameAccount).Where("realm_id = ?", s.WS.RealmID).Find(&chars)
+	err := s.WS.DB.Where("game_account = ?", s.GameAccount).Find(&chars)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, v := range chars {
 		pktChars = append(pktChars, packet.Character{
-			GUID:       guid.RealmSpecific(guid.Player, s.WS.RealmID, v.ID),
+			GUID:       guid.RealmSpecific(guid.Player, s.WS.RealmID(), v.ID),
 			Name:       v.Name,
 			Race:       packet.Race(v.Race),
 			Class:      packet.Class(v.Class),
@@ -168,7 +168,7 @@ func (s *Session) CreateCharacter(b []byte) {
 	pch := wdb.Character{}
 	pch.ID = 0 // will be overwritten by insert
 	pch.GameAccount = s.GameAccount
-	pch.RealmID = s.WS.RealmID
+	pch.RealmID = s.WS.RealmID()
 	pch.Name = name
 	pch.Race = e.ReadByte()
 	pch.Class = e.ReadByte()
