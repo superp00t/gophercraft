@@ -61,41 +61,11 @@ func (s *Session) HandleTextEmote(e *etc.Buffer) {
 
 	em := emotes[0]
 
-	yo.Ok("textemote", textEmote, emoteID, target)
-
 	switch em.EmoteID {
 	case 12, 13, 16, 0: //sleep, sit, kneel, none
 	default:
 		s.HandleEmoteCommand(em.EmoteID)
 	}
-
-	// toSelfCode := 0
-	// if target == guid.Nil {
-	// 	toSelfCode = 10
-	// } else {
-	// 	toSelfCode = 6
-	// }
-
-	// toSelfID := em.EmoteText[toSelfCode]
-
-	// var emTextData dbc.Ent_EmotesTextData
-	// if found, err := s.DB().Where("id = ?", toSelfID).Get(&emTextData); !found {
-	// 	panic(err)
-	// }
-
-	// toSelfString := ""
-
-	// if target == guid.Nil {
-	// 	// toSelfString = fmt.Sprintf(emTextData.Text, s.PlayerName())
-	// 	toSelfString = emTextData.Text
-	// } else {
-	// 	data, err := s.WS.GetUnitNameByGUID(target)
-	// 	if err != nil {
-	// 		s.Warnf("%s", err.Error())
-	// 		return
-	// 	}
-	// 	toSelfString = fmt.Sprintf(emTextData.Text, data)
-	// }
 
 	var data string
 	var err error

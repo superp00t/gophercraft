@@ -1,7 +1,6 @@
 package worldserver
 
 import (
-	"fmt"
 	"io"
 	"net"
 	"strings"
@@ -109,7 +108,6 @@ func (s *Session) decodeUnpackedGUID(in io.Reader) guid.GUID {
 }
 
 func (s *Session) convertClientGUID(g guid.GUID) guid.GUID {
-	fmt.Println("Before", g)
 	// The realm ID isn't present in older versions. We still have to add it in so the GUIDs are equal server side.
 	if s.oldGUID() && g != guid.Nil {
 		g = g.SetRealmID(s.WS.RealmID())
@@ -118,8 +116,6 @@ func (s *Session) convertClientGUID(g guid.GUID) guid.GUID {
 	if g.RealmID() == 0 && g.Counter() == 0 && g.HighType() == guid.Player {
 		g = guid.Nil
 	}
-
-	fmt.Println("After conversion", g)
 
 	return g
 }
@@ -219,7 +215,7 @@ func (s *Session) Handle() {
 
 		if h.RequiredState <= s.State {
 			switch fn := h.Fn.(type) {
-			case func(*Session, []byte):
+			case func(*Session, []byte):	
 				fn(s, f.Data)
 			case func(*Session, packet.WorldType, []byte):
 				fn(s, f.Type, f.Data)
