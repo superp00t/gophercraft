@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/superp00t/etc"
+	"github.com/superp00t/gophercraft/datapack/csv"
+	"github.com/superp00t/gophercraft/packet/update"
 	"github.com/superp00t/gophercraft/worldserver/wdb"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/superp00t/etc/yo"
 	"xorm.io/xorm"
 )
 
@@ -159,13 +161,72 @@ type ItemTemplate struct {
 	ExtraFlags   uint8  `xorm:"'ExtraFlags'"`
 }
 
+func (it ItemTemplate) GetItemStat(idx int) wdb.ItemStat {
+	st := fmt.Sprintf("Stat_type%d", idx)
+	sv := fmt.Sprintf("Stat_value%d", idx)
+	val := reflect.ValueOf(it)
+	_, ok := val.Type().FieldByName(st)
+	if !ok {
+		panic("no field for " + st)
+	}
+
+	return wdb.ItemStat{
+		uint8(val.FieldByName(st).Uint()),
+		int32(val.FieldByName(sv).Int()),
+	}
+}
+
+func (it ItemTemplate) GetItemDamage(idx int) wdb.ItemDamage {
+	dt := fmt.Sprintf("DMG_type%d", idx)
+	dmn := fmt.Sprintf("DMG_min%d", idx)
+	dmx := fmt.Sprintf("DMG_max%d", idx)
+
+	val := reflect.ValueOf(it)
+	_, ok := val.Type().FieldByName(dt)
+	if !ok {
+		panic("no field for " + dt)
+	}
+
+	return wdb.ItemDamage{
+		uint8(val.FieldByName(dt).Uint()),
+		float32(val.FieldByName(dmn).Float()),
+		float32(val.FieldByName(dmx).Float()),
+	}
+}
+
+func (it ItemTemplate) GetItemSpell(idx int) wdb.ItemSpell {
+	st := fmt.Sprintf("Spellid_%d", idx)
+	strigger := fmt.Sprintf("Spelltrigger_%d", idx)
+	scharges := fmt.Sprintf("Spellcharges_%d", idx)
+	ppm := fmt.Sprintf("SpellppmRate_%d", idx)
+	cool := fmt.Sprintf("Spellcooldown_%d", idx)
+	scategory := fmt.Sprintf("Spellcategory_%d", idx)
+	scategoryCooldown := fmt.Sprintf("Spellcategorycooldown_%d", idx)
+
+	val := reflect.ValueOf(it)
+	_, ok := val.Type().FieldByName(st)
+	if !ok {
+		panic("no field for " + st)
+	}
+
+	return wdb.ItemSpell{
+		uint32(val.FieldByName(st).Uint()),
+		uint32(val.FieldByName(strigger).Uint()),
+		int32(val.FieldByName(scharges).Int()),
+		float32(val.FieldByName(ppm).Float()),
+		int64(val.FieldByName(cool).Int()),
+		uint32(val.FieldByName(scategory).Uint()),
+		int64(val.FieldByName(scategoryCooldown).Int()),
+	}
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println(os.Args[0], "<xorm url>")
 		return
 	}
 
-	outdir := etc.Import("github.com/superp00t/gophercraft/datapack/contrib/DB/ItemTemplate.5875.csv")
+	outdir := etc.Import("github.com/superp00t/gophercraft/datapack/contrib/DB")
 
 	c, err := xorm.NewEngine("mysql", os.Args[1])
 	if err != nil {
@@ -178,15 +239,52 @@ func main() {
 		panic(err)
 	}
 
+	outFile, err := os.OpenFile(outdir.Concat("ItemTemplate.5875.csv").Render(), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0700)
+	if err != nil {
+		panic(err)
+	}
+
+	wr := csv.NewWriter(outFile)
+
 	for _, t := range itt {
+		var stats []wdb.ItemStat
+
+		for i := 0; i < 10; i++ {
+			st := t.GetItemStat(i + 1)
+			if st.Type != 0 {
+				stats = append(stats, st)
+			}
+		}
+
+		var dmg []wdb.ItemDamage
+		for i := 0; i < 5; i++ {
+			d := t.GetItemDamage(i + 1)
+			if d.Type != 0 {
+				dmg = append(dmg, d)
+			}
+		}
+
+		var spell []wdb.ItemSpell
+		for i := 0; i < 5; i++ {
+			sp := t.GetItemSpell(i + 1)
+			if sp.ID != 0 {
+				spell = append(spell, sp)
+			}
+		}
+
+		flags, err := update.DecodeItemFlagInteger(5875, uint64(t.Flags))
+		if err != nil {
+			panic(err)
+		}
+
 		witem := wdb.ItemTemplate{
-			ID:                        fmt.Sprintf("wow:%d", t.Entry),
+			ID:                        fmt.Sprintf("ent:%d", t.Entry),
 			Class:                     t.Class,
-			Subclass:                  t.Class,
+			Subclass:                  t.Subclass,
 			Name:                      t.Name,
 			DisplayID:                 t.DisplayID,
 			Quality:                   t.Quality,
-			Flags:                     t.Flags, //todo: convert flags to a readable form
+			Flags:                     flags.String(), //todo: convert flags to a readable form
 			BuyCount:                  t.BuyCount,
 			BuyPrice:                  t.BuyPrice,
 			SellPrice:                 t.SellPrice,
@@ -204,8 +302,48 @@ func main() {
 			MaxCount:                  t.Maxcount,
 			Stackable:                 t.Stackable,
 			ContainerSlots:            t.ContainerSlots,
+			Stats:                     stats,
+			Damage:                    dmg,
+			Armor:                     t.Armor,
+			HolyRes:                   t.Holy_res,
+			FireRes:                   t.Fire_res,
+			NatureRes:                 t.Nature_res,
+			FrostRes:                  t.Frost_res,
+			ShadowRes:                 t.Shadow_res,
+			ArcaneRes:                 t.Arcane_res,
+			Delay:                     t.Delay,
+			AmmoType:                  t.Ammo_type,
+			RangedModRange:            t.RangedModRange,
+			Spells:                    spell,
+			Bonding:                   t.Bonding,
+			Description:               t.Description,
+			PageText:                  t.PageText,
+			LanguageID:                t.LanguageID,
+			PageMaterial:              t.PageMaterial,
+			StartQuest:                t.Startquest,
+			LockID:                    t.Lockid,
+			Material:                  t.Material,
+			Sheath:                    t.Sheath,
+			RandomProperty:            t.RandomProperty,
+			Block:                     t.Block,
+			Itemset:                   t.Itemset,
+			MaxDurability:             t.MaxDurability,
+			Area:                      t.Area,
+			Map:                       t.Map,
+			BagFamily:                 t.BagFamily,
+			ScriptName:                t.ScriptName,
+			DisenchantID:              t.DisenchantID,
+			FoodType:                  t.FoodType,
+			MinMoneyLoot:              t.MinMoneyLoot,
+			MaxMoneyLoot:              t.MaxMoneyLoot,
+			Duration:                  t.Duration,
+			ExtraFlags:                t.ExtraFlags,
 		}
+		if err := wr.AddRecord(witem); err != nil {
+			panic(err)
+		}
+
 	}
 
-	yo.Puke(itt)
+	wr.Close()
 }

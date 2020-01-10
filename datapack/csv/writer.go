@@ -7,6 +7,8 @@ import (
 	"io"
 	"reflect"
 	"strings"
+
+	"github.com/superp00t/etc"
 )
 
 type Writer struct {
@@ -32,6 +34,26 @@ func escapeString(in string) string {
 	return string(b)
 }
 
+func encodeStruct(cell reflect.Value) string {
+	str := etc.NewBuffer()
+	nmField := cell.NumField()
+	for i := 0; i < nmField; i++ {
+		comma := false
+		if i != nmField-1 {
+			comma = true
+		}
+		fieldName := cell.Type().Field(i).Name
+		str.Write([]byte(fieldName))
+		str.WriteRune(':')
+		str.Write([]byte(encodeCell(cell.Field(i))))
+		if comma {
+			str.WriteRune(';')
+		}
+	}
+
+	return str.ToString()
+}
+
 func encodeCell(cell reflect.Value) string {
 	switch cell.Kind() {
 	case reflect.Uint8:
@@ -50,10 +72,9 @@ func encodeCell(cell reflect.Value) string {
 		return fmt.Sprintf("%d", cell.Interface())
 	case reflect.Int64:
 		return fmt.Sprintf("%d", cell.Interface())
-	case reflect.Float32:
-		return fmt.Sprintf("%f", cell.Interface())
-	case reflect.Float64:
-		return fmt.Sprintf("%f", cell.Interface())
+	case reflect.Float32, reflect.Float64:
+		str, _ := json.Marshal(cell.Interface())
+		return string(str)
 	case reflect.String:
 		return cell.String()
 	case reflect.Bool:
@@ -64,11 +85,18 @@ func encodeCell(cell reflect.Value) string {
 	case reflect.Ptr:
 		return encodeCell(cell.Elem())
 	case reflect.Slice:
+		// str, err := json.Marshal(cell.Interface())
+		// if err != nil {
+		// 	panic(err)
+		// }
+		// return string(str)
 		strSlice := make([]string, cell.Len())
 		for i := range strSlice {
 			strSlice[i] = encodeCell(cell.Index(i))
 		}
 		return strings.Join(strSlice, ",")
+	case reflect.Struct:
+		return encodeStruct(cell)
 	default:
 		panic(cell.Kind())
 	}

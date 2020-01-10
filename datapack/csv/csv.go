@@ -75,59 +75,7 @@ func (rd *Scanner) Scan(v interface{}) error {
 
 		field := value.FieldByName(cname)
 
-		var err error
-
-		switch field.Kind() {
-		case reflect.Uint8:
-			err = parseUint(field, 8, recd)
-		case reflect.Uint16:
-			err = parseUint(field, 16, recd)
-		case reflect.Uint32:
-			err = parseUint(field, 32, recd)
-		case reflect.Uint64:
-			err = parseUint(field, 64, recd)
-		case reflect.Int8:
-			err = parseInt(field, 8, recd)
-		case reflect.Int16:
-			err = parseInt(field, 16, recd)
-		case reflect.Int32:
-			err = parseInt(field, 32, recd)
-		case reflect.Int64:
-			err = parseInt(field, 64, recd)
-		case reflect.String:
-			field.SetString(recd)
-		case reflect.Float32:
-			err = parseFloat(field, 32, recd)
-		case reflect.Float64:
-			err = parseFloat(field, 64, recd)
-		case reflect.Bool:
-			field.SetBool(recd == "true")
-		case reflect.Slice:
-			strs := strings.Split(recd, ",")
-
-			sli := reflect.MakeSlice(field.Type(), len(strs), len(strs))
-
-			for i, v := range strs {
-				switch field.Type().Elem().Kind() {
-				case reflect.Uint32:
-					err = parseUint(sli.Index(i), 32, v)
-				case reflect.String:
-					sli.Index(i).SetString(v)
-				default:
-					panic(field.Type().Elem().Kind().String() + " is nyi")
-				}
-
-				if err != nil {
-					break
-				}
-			}
-
-			if err == nil {
-				field.Set(sli)
-			}
-		default:
-			err = fmt.Errorf("unhandled field kind %s", field.Kind().String())
-		}
+		err := parseField(field, recd)
 
 		if err != nil {
 			return err
@@ -169,4 +117,78 @@ func parseFloat(rec reflect.Value, bitSize int, value string) error {
 
 	rec.SetFloat(f)
 	return nil
+}
+
+func parseStruct(strct reflect.Value, value string) error {
+	split := strings.Split(value, ";")
+
+	for _, spl := range split {
+		keys := strings.Split(spl, ":")
+		if len(keys) != 2 {
+			return fmt.Errorf("invalid number of elements")
+		}
+
+		_, ok := strct.Type().FieldByName(keys[0])
+		if !ok {
+			return fmt.Errorf("no field by name %d", value)
+		}
+
+		if err := parseField(strct.FieldByName(keys[0]), keys[1]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func parseField(field reflect.Value, recd string) error {
+	var err error
+	switch field.Kind() {
+	case reflect.Uint8:
+		err = parseUint(field, 8, recd)
+	case reflect.Uint16:
+		err = parseUint(field, 16, recd)
+	case reflect.Uint32:
+		err = parseUint(field, 32, recd)
+	case reflect.Uint64:
+		err = parseUint(field, 64, recd)
+	case reflect.Int8:
+		err = parseInt(field, 8, recd)
+	case reflect.Int16:
+		err = parseInt(field, 16, recd)
+	case reflect.Int32:
+		err = parseInt(field, 32, recd)
+	case reflect.Int64:
+		err = parseInt(field, 64, recd)
+	case reflect.String:
+		field.SetString(recd)
+	case reflect.Float32:
+		err = parseFloat(field, 32, recd)
+	case reflect.Float64:
+		err = parseFloat(field, 64, recd)
+	case reflect.Bool:
+		field.SetBool(recd == "true")
+	case reflect.Slice:
+		strs := strings.Split(recd, ",")
+
+		sli := reflect.MakeSlice(field.Type(), len(strs), len(strs))
+
+		for i, v := range strs {
+			err = parseField(sli.Index(i), v)
+
+			if err != nil {
+				break
+			}
+		}
+
+		if err == nil {
+			field.Set(sli)
+		}
+	case reflect.Struct:
+		err = parseStruct(field, recd)
+	default:
+		err = fmt.Errorf("unhandled field kind %s", field.Kind().String())
+	}
+
+	return err
 }
