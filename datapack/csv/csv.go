@@ -120,12 +120,16 @@ func parseFloat(rec reflect.Value, bitSize int, value string) error {
 }
 
 func parseStruct(strct reflect.Value, value string) error {
+	if value == "" {
+		return nil
+	}
+
 	split := strings.Split(value, ";")
 
 	for _, spl := range split {
 		keys := strings.Split(spl, ":")
 		if len(keys) != 2 {
-			return fmt.Errorf("invalid number of elements")
+			return fmt.Errorf("invalid number of elements in %s", split)
 		}
 
 		_, ok := strct.Type().FieldByName(keys[0])

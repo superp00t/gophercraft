@@ -3,6 +3,7 @@ package worldserver
 import (
 	"sync"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/superp00t/gophercraft/gcore/config"
 	"github.com/superp00t/gophercraft/packet/update"
 
@@ -10,6 +11,8 @@ import (
 	"github.com/superp00t/gophercraft/guid"
 	"github.com/superp00t/gophercraft/packet"
 )
+
+type SessionSet []*Session
 
 // Phase describes a dimension which contains multiple maps.
 type Phase struct {
@@ -38,21 +41,21 @@ type WorldObject interface {
 	Object
 	// movement data
 	Living() bool
-	Position() update.Quaternion
+	Position() update.Position
 	Speeds() update.Speeds
 }
 
 // TODO: delete phases when players are not there.
-func (ws *WorldServer) Phase(i uint32) *Phase {
+func (ws *WorldServer) Phase(id string) *Phase {
 	ws.PhaseL.Lock()
-	ph := ws.Phases[i]
+	ph := ws.Phases[id]
 	if ph == nil {
 		ph = &Phase{
 			Maps:   make(map[uint32]*Map),
 			Server: ws,
 		}
 
-		ws.Phases[i] = ph
+		ws.Phases[id] = ph
 	}
 	ws.PhaseL.Unlock()
 	return ph
@@ -103,13 +106,20 @@ func (ws *WorldServer) BuildObjectUpdate(mask update.ValueMask, data *update.Dat
 	return uPacket, nil
 }
 
+func (m *Map) GetObject(g guid.GUID) WorldObject {
+	m.Lock()
+	wo := m.Objects[g]
+	m.Unlock()
+	return wo
+}
+
 func (m *Map) AddObject(obj WorldObject) error {
 	m.Lock()
 	m.Objects[obj.GUID()] = obj
 	m.Unlock()
 
 	// Send spawn packet to nearby players.
-	for _, v := range m.NearbySessions(obj) {
+	for _, v := range m.NearSet(obj) {
 		v.SendObjectCreate(obj)
 	}
 
@@ -122,17 +132,47 @@ func (m *Map) RemoveObject(id guid.GUID) {
 	delete(m.Objects, id)
 	m.Unlock()
 
-	for _, v := range m.NearbySessions(obj) {
+	for _, v := range m.NearSet(obj) {
 		v.SendObjectDelete(id)
 	}
 }
 
-// NearbySessions enumerates a list of players close to (less than or equal to world.maxVisibilityRange) a game object on a map.
-func (m *Map) NearbySessions(nearTo WorldObject) []*Session {
-	return m.NearbyLimit(nearTo, m.Config().Float32("world.maxVisibilityRange"))
+type WorldObjectSet []WorldObject
+
+func (m *Map) VisibilityDistance() float32 {
+	return m.Config().Float32("world.maxVisibilityRange")
 }
 
-func (m *Map) NearbyLimit(nearTo WorldObject, limit float32) []*Session {
+func (m *Map) NearObjects(nearTo WorldObject) WorldObjectSet {
+	return m.NearObjectsLimit(nearTo, m.VisibilityDistance())
+}
+
+func (m *Map) NearObjectsLimit(nearTo WorldObject, limit float32) WorldObjectSet {
+	m.Lock()
+	var wo []WorldObject
+	for _, obj := range m.Objects {
+		if nearTo.GUID() != obj.GUID() {
+			if nearTo.Position().Dist2D(obj.Position().Point3) <= limit {
+				wo = append(wo, obj)
+			}
+		}
+	}
+	m.Unlock()
+	return wo
+}
+
+func (wos WorldObjectSet) Iter(iterFunc func(WorldObject)) {
+	for _, wo := range wos {
+		iterFunc(wo)
+	}
+}
+
+// NeaSet enumerates a list of players close to (less than or equal to world.maxVisibilityRange) a game object on a map.
+func (m *Map) NearSet(nearTo WorldObject) SessionSet {
+	return m.NearSetLimit(nearTo, m.VisibilityDistance())
+}
+
+func (m *Map) NearSetLimit(nearTo WorldObject, limit float32) SessionSet {
 	m.Lock()
 	var s []*Session
 	for _, plyr := range m.Objects {
@@ -156,6 +196,51 @@ func (s *Session) SendUpdateData(mask update.ValueMask, udata *update.Data) {
 	}
 
 	s.SendAsync(packet)
+}
+
+func (s *Session) SendMovementUpdate(wo WorldObject) {
+	mData := &update.MovementBlock{}
+
+	if wo.Living() {
+		mData.UpdateFlags |= update.UpdateFlagLiving
+		mData.UpdateFlags |= update.UpdateFlagHasPosition
+		mData.Speeds = wo.Speeds()
+		s.Warnf("%s", spew.Sdump(mData.Speeds))
+
+		if wo.TypeID() == guid.TypePlayer {
+			mData.UpdateFlags |= update.UpdateFlagAll
+			mData.All = 0x1
+		}
+
+		if wo.GUID() == s.GUID() {
+			mData.UpdateFlags |= update.UpdateFlagSelf
+		}
+
+		mData.Info = &update.MovementInfo{
+			Flags:    0,
+			Time:     packet.GetMSTime(),
+			Position: wo.Position(),
+		}
+	} else {
+		mData.UpdateFlags |= update.UpdateFlagHasPosition
+		mData.Position = wo.Position()
+	}
+
+	s.SendUpdateData(0, &update.Data{
+		Blocks: []update.Block{
+			{wo.GUID(), mData},
+		},
+	})
+}
+
+func (m *Map) UpdateMovement(wo WorldObject) {
+	if sess, ok := wo.(*Session); ok {
+		sess.SendMovementUpdate(wo)
+	}
+
+	for _, v := range m.NearSet(wo) {
+		v.SendMovementUpdate(wo)
+	}
 }
 
 // buildCreate creates a an SMSG_UPDATE_OBJECT structure filled out with necessary data for loading an Object into the game.
@@ -236,23 +321,27 @@ func (s *Session) SendObjectCreate(wo Object) {
 }
 
 func (s *Session) SendObjectDelete(g guid.GUID) {
-	packet := &update.Data{
-		Blocks: []update.Block{
-			update.Block{g, &update.DeleteObjectsBlock{
-				update.DeleteFarObjects,
-				[]guid.GUID{g},
-			}},
-		},
-	}
-
-	s.SendUpdateData(update.ValuesNone, packet)
+	pkt := packet.NewWorldPacket(packet.SMSG_DESTROY_OBJECT)
+	g.EncodeUnpacked(s.Version(), pkt)
+	s.SendAsync(pkt)
 }
 
 func (s *Session) SendAreaAll(p *packet.WorldPacket) {
 	s.SendAsync(p)
 
-	for _, v := range s.WS.Phase(s.CurrentPhase).Map(s.CurrentMap).NearbySessions(s) {
+	// broadcast
+	s.Map().NearSet(s).Send(p)
+}
+
+func (s SessionSet) Send(p *packet.WorldPacket) {
+	for _, v := range s {
 		v.SendAsync(p)
+	}
+}
+
+func (s SessionSet) Iter(iterFunc func(*Session)) {
+	for _, sess := range s {
+		iterFunc(sess)
 	}
 }
 
@@ -278,7 +367,6 @@ func (m *Map) ModifyObject(id guid.GUID, changes map[update.Global]interface{}) 
 		yo.Warn("modify request for unknown object", id)
 		return
 	}
-
 	valuesStore := o.Values()
 
 	// store changes
@@ -296,11 +384,37 @@ func (m *Map) ModifyObject(id guid.GUID, changes map[update.Global]interface{}) 
 	}
 
 	// transmit appropriate changes.
-	for _, v := range m.NearbySessions(o) {
+	for _, v := range m.NearSet(o) {
 		v.SendUpdateData(m.Phase.Server.queryRelationshipMask(o.GUID(), v.GUID()), uo)
 	}
 
 	valuesStore.ClearChangesAndUnlock()
+}
+
+func (m *Map) PropagateChanges(id guid.GUID) {
+	m.Lock()
+	o := m.Objects[id]
+	m.Unlock()
+
+	valuesStore := o.Values()
+
+	uo := &update.Data{
+		Blocks: []update.Block{
+			update.Block{id, valuesStore},
+		},
+	}
+
+	// if the Object is a player session
+	if session, ok := o.(*Session); ok {
+		session.SendUpdateData(update.ValuesPrivate|update.ValuesParty, uo)
+	}
+
+	// transmit appropriate changes.
+	for _, v := range m.NearSet(o) {
+		v.SendUpdateData(m.Phase.Server.queryRelationshipMask(o.GUID(), v.GUID()), uo)
+	}
+
+	valuesStore.ClearChanges()
 }
 
 func (m *Map) PlaySound(id uint32) {

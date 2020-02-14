@@ -1,9 +1,11 @@
 package worldserver
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"strings"
+	"sync"
 
 	"github.com/superp00t/gophercraft/packet/update"
 	"github.com/superp00t/gophercraft/worldserver/wdb"
@@ -36,15 +38,23 @@ type Session struct {
 	C           net.Conn
 	Crypter     *packet.Crypter
 	Char        *wdb.Character
+	lInventory  sync.Mutex
+	Inventory   map[guid.GUID]*Item
+	summons     *summons
 
 	// In-world data
-	CurrentPhase uint32
+	CurrentPhase string
 	CurrentMap   uint32
+	ZoneID       uint32
+	// currently tracked objects
+	lTrackedGUIDs sync.Mutex
+	TrackedGUIDs  []guid.GUID
 
 	*update.ValuesBlock
 
 	PlayerSpeeds   update.Speeds
-	PlayerPosition update.Quaternion
+	SpeedModifier  float32
+	PlayerPosition update.Position
 
 	messageBroker chan *packet.WorldPacket
 	brokerClosed  bool
@@ -68,12 +78,17 @@ func (s *Session) Values() *update.ValuesBlock {
 	return s.ValuesBlock
 }
 
-func (s *Session) Position() update.Quaternion {
+func (s *Session) Position() update.Position {
 	return s.PlayerPosition
 }
 
 func (s *Session) Speeds() update.Speeds {
-	return s.PlayerSpeeds
+	speeds := s.PlayerSpeeds
+	for k := range speeds {
+		speeds[k] = speeds[k] * s.SpeedModifier
+	}
+
+	return speeds
 }
 
 func (s *Session) ReadCrypt() (packet.WorldType, []byte, error) {
@@ -215,7 +230,7 @@ func (s *Session) Handle() {
 
 		if h.RequiredState <= s.State {
 			switch fn := h.Fn.(type) {
-			case func(*Session, []byte):	
+			case func(*Session, []byte):
 				fn(s, f.Data)
 			case func(*Session, packet.WorldType, []byte):
 				fn(s, f.Type, f.Data)
@@ -243,6 +258,17 @@ func (s *Session) SendPet(b []byte) {
 	pkt.WriteUint64(0)
 	s.SendAsync(pkt)
 	yo.Ok("Sent pet response")
+}
+
+func (s *Session) Alertf(format string, args ...interface{}) {
+	s.SendAlertText(fmt.Sprintf(format, args...))
+}
+
+func (s *Session) SendAlertText(data string) {
+	pkt := packet.NewWorldPacket(packet.SMSG_AREA_TRIGGER_MESSAGE)
+	pkt.WriteUint32(uint32(len(data) + 1))
+	pkt.WriteCString(data)
+	s.SendAsync(pkt)
 }
 
 func (s *Session) Map() *Map {

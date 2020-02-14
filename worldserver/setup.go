@@ -13,6 +13,17 @@ import (
 	"github.com/superp00t/gophercraft/worldserver/wdb"
 )
 
+var (
+	DefaultSpeeds = update.Speeds{
+		update.Walk:         2.5,
+		update.Run:          7,
+		update.RunBackward:  4.5,
+		update.Swim:         4.722222,
+		update.SwimBackward: 2.5,
+		update.Turn:         3.141594,
+	}
+)
+
 func (s *Session) SetupOnLogin() {
 	s.State = InWorld
 
@@ -121,8 +132,19 @@ func (s *Session) GetPlayerRace() packet.Race {
 	return packet.Race(s.GetByteValue(update.UnitRace))
 }
 
-func (s *Session) GetPlayerLevel() uint8 {
-	return uint8(s.GetUint32Value(update.UnitLevel))
+func (s *Session) GetLevel() int {
+	return int(s.GetUint32Value(update.UnitLevel))
+}
+
+func (s *Session) IsTrackedGUID(g guid.GUID) bool {
+	s.lTrackedGUIDs.Lock()
+	defer s.lTrackedGUIDs.Unlock()
+	for _, v := range s.TrackedGUIDs {
+		if v == g {
+			return true
+		}
+	}
+	return false
 }
 
 // SpawnPlayer initializes the player into the object manager and sends the packets needed to log the client into the world.
@@ -132,14 +154,8 @@ func (s *Session) SpawnPlayer() {
 	s.WS.PlayersL.Unlock()
 
 	// fill out attribute fields
-	s.PlayerSpeeds = update.Speeds{
-		update.Walk:         2.5,
-		update.Run:          7,
-		update.RunBackward:  4.5,
-		update.Swim:         4.722222,
-		update.SwimBackward: 2.5,
-		update.Turn:         3.141594,
-	}
+	s.PlayerSpeeds = DefaultSpeeds
+	s.SpeedModifier = 1
 
 	s.ValuesBlock = update.NewValuesBlock()
 	s.SetGUIDValue(update.ObjectGUID, s.GUID())
@@ -147,7 +163,7 @@ func (s *Session) SpawnPlayer() {
 	s.SetFloat32Value(update.ObjectScaleX, 1.0)
 
 	s.SetUint32Value(update.UnitHealth, 80)
-	s.SetUint32ArrayValue(
+	s.SetUint32Array(
 		update.UnitPowers,
 		4143,
 		nil,
@@ -156,7 +172,7 @@ func (s *Session) SpawnPlayer() {
 		nil,
 	)
 	s.SetUint32Value(update.UnitMaxHealth, 80)
-	s.SetUint32ArrayValue(
+	s.SetUint32Array(
 		update.UnitMaxPowers,
 		4143,
 		1000,
@@ -193,7 +209,7 @@ func (s *Session) SpawnPlayer() {
 	s.SetByteValue(update.UnitLoyaltyLevel, 0xEE)
 
 	s.SetFloat32Value(update.UnitModCastSpeed, 30)
-	s.SetUint32ArrayValue(
+	s.SetUint32Array(
 		update.UnitStats,
 		0,
 		0,
@@ -202,7 +218,7 @@ func (s *Session) SpawnPlayer() {
 		0,
 	)
 
-	s.SetUint32ArrayValue(
+	s.SetUint32Array(
 		update.UnitResistances,
 		0,
 		0,
@@ -242,7 +258,7 @@ func (s *Session) SpawnPlayer() {
 	s.SetUint32Value(update.PlayerXP, 0)
 	s.SetUint32Value(update.PlayerNextLevelXP, 2500)
 
-	s.SetUint32ArrayValue(update.PlayerCharacterPoints, 51, 2)
+	s.SetUint32Array(update.PlayerCharacterPoints, 51, 2)
 
 	s.SetFloat32Value(update.PlayerBlockPercentage, 4.0)
 	s.SetFloat32Value(update.PlayerDodgePercentage, 4.0)
@@ -252,7 +268,11 @@ func (s *Session) SpawnPlayer() {
 	s.SetUint32Value(update.PlayerRestStateExperience, 200)
 	s.SetInt32Value(update.PlayerCoinage, 50000)
 
-	s.PlayerPosition = update.Quaternion{
+	s.InitInventoryManager()
+
+	yo.Spew(s.ValuesBlock.Values)
+
+	s.PlayerPosition = update.Position{
 		Point3: update.Point3{
 			X: s.Char.X,
 			Y: s.Char.Y,
@@ -261,7 +281,9 @@ func (s *Session) SpawnPlayer() {
 		O: s.Char.O,
 	}
 
+	s.CurrentPhase = "main"
 	s.CurrentMap = s.Char.Map
+	s.ZoneID = s.Char.Zone
 
 	// send player create packet of themself
 	s.SendObjectCreate(s)
@@ -271,10 +293,11 @@ func (s *Session) SpawnPlayer() {
 	// add our player to map, and notify nearby players of their presence
 	cMap.AddObject(s)
 
-	// notify our player of these nearby players.
-	for _, currentPlayer := range cMap.NearbySessions(s) {
-		s.SendObjectCreate(currentPlayer)
-	}
+	// notify our player of nearby objects.
+	cMap.NearObjects(s).Iter(func(currentObject WorldObject) {
+		s.TrackedGUIDs = append(s.TrackedGUIDs, currentObject.GUID())
+		s.SendObjectCreate(currentObject)
+	})
 }
 
 func (s *Session) BindpointUpdate() {
@@ -289,11 +312,14 @@ func (s *Session) BindpointUpdate() {
 	s.SendAsync(p)
 }
 
-func (s *Session) HandlePlayernameQuery(e *etc.Buffer) {
-	g, err := guid.DecodeUnpacked(s.Version(), e)
-	if err != nil {
-		panic(err)
-	}
+func (s *Session) HandleNameQuery(e *etc.Buffer) {
+	in := e.ReadUint64()
+
+	yo.Warnf("Name query 0x%016X\n", in)
+
+	g := guid.Classic(in)
+
+	yo.Warn(g)
 
 	var chars []wdb.Character
 
@@ -319,6 +345,10 @@ func (s *Session) encodePackedGUID(wr io.Writer, g guid.GUID) {
 	g.EncodePacked(s.Version(), wr)
 }
 
+func (s *Session) UpdatePosition(pos update.Position) {
+	s.PlayerPosition = pos
+}
+
 func (s *Session) HandleMoves(t packet.WorldType, b []byte) {
 	e, err := update.DecodeMovementInfo(s.Version(), etc.FromBytes(b))
 	if err != nil {
@@ -326,9 +356,10 @@ func (s *Session) HandleMoves(t packet.WorldType, b []byte) {
 		return
 	}
 
-	s.PlayerPosition = e.Position
+	// Important TODO: validate position
+	s.UpdatePosition(e.Position)
 
-	for _, v := range s.Map().NearbySessions(s) {
+	for _, v := range s.Map().NearSet(s) {
 		// yo.Ok("Relaying moves", t, s.Char.Name, "->", v.Char.Name)
 		out := packet.NewWorldPacket(t)
 		s.encodePackedGUID(out, s.GUID())

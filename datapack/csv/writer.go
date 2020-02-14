@@ -12,9 +12,10 @@ import (
 )
 
 type Writer struct {
-	closer io.WriteCloser
-	writer *csv.Writer
-	init   bool
+	closer      io.WriteCloser
+	columnNames []string
+	writer      *csv.Writer
+	init        bool
 }
 
 func NewWriter(wrc io.WriteCloser) *Writer {
@@ -85,11 +86,6 @@ func encodeCell(cell reflect.Value) string {
 	case reflect.Ptr:
 		return encodeCell(cell.Elem())
 	case reflect.Slice:
-		// str, err := json.Marshal(cell.Interface())
-		// if err != nil {
-		// 	panic(err)
-		// }
-		// return string(str)
 		strSlice := make([]string, cell.Len())
 		for i := range strSlice {
 			strSlice[i] = encodeCell(cell.Index(i))
@@ -102,11 +98,12 @@ func encodeCell(cell reflect.Value) string {
 	}
 }
 
-func encodeRecord(valueType reflect.Type, value reflect.Value) []string {
-	field := make([]string, valueType.NumField())
+func encodeRecord(valueType reflect.Type, enabledFields []string, value reflect.Value) []string {
+	field := make([]string, len(enabledFields))
 
-	for c := 0; c < valueType.NumField(); c++ {
-		field[c] = encodeCell(value.Field(c))
+	for idx, name := range enabledFields {
+		fld := value.FieldByName(name)
+		field[idx] = encodeCell(fld)
 	}
 
 	return field
@@ -122,20 +119,24 @@ func (wr *Writer) AddRecord(v interface{}) error {
 	valueType := value.Type()
 
 	if !wr.init {
-		columnNames := []string{}
+		wr.columnNames = []string{}
 
 		for c := 0; c < valueType.NumField(); c++ {
-			columnNames = append(columnNames, valueType.Field(c).Name)
+			field := valueType.Field(c)
+			csv := field.Tag.Get("csv")
+			if csv != "-" {
+				wr.columnNames = append(wr.columnNames, field.Name)
+			}
 		}
 
-		if err := wr.writer.Write(columnNames); err != nil {
+		if err := wr.writer.Write(wr.columnNames); err != nil {
 			return err
 		}
 
 		wr.init = true
 	}
 
-	return wr.writer.Write(encodeRecord(valueType, value))
+	return wr.writer.Write(encodeRecord(valueType, wr.columnNames, value))
 }
 
 func (wr *Writer) Close() error {

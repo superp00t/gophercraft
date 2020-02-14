@@ -18,6 +18,7 @@ import (
 
 type FieldFlags uint32
 
+// Supplied to control which values are encoded
 type ValueMask uint32
 
 const (
@@ -195,6 +196,10 @@ func DecodeValuesClassic(objectGUID guid.GUID, version uint32, in *etc.Buffer) (
 	className, err := getClassName(objectGUID)
 	if err != nil {
 		return nil, err
+	}
+
+	if className == "Item" {
+		className = "Container" // kind of a hack, containers have Item as their GUID, attempt to read this data anyway.
 	}
 
 	class, err := descriptor.GetClass(className)
@@ -516,6 +521,11 @@ func (vb *ValuesBlock) WriteTo(objectGUID guid.GUID, e *Encoder) error {
 		return err
 	}
 
+	// hacky, done because containers have Item as their guid
+	if vb.Values[ContainerNumSlots] != nil || vb.Values[ContainerSlots] != nil {
+		className = "Container"
+	}
+
 	class, err := descriptor.GetClass(className)
 	if err != nil {
 		return err
@@ -619,15 +629,14 @@ valueScan:
 				case GUIDArray:
 					g := value.([]*guid.GUID)
 
-					if len(g) != int(field.SliceSize) {
-						return fmt.Errorf("update: invalid GUID pointer array passed in %s (should be %d, is %d)", glob, field.SliceSize, len(g))
-					}
+					// if len(g) != int(field.SliceSize) {
+					// 	return fmt.Errorf("update: invalid GUID pointer array passed in %s (should be %d, is %d)", glob, field.SliceSize, len(g))
+					// }
 
 					offsetBase := uint32(field.AbsBlockOffset())
 
-					for x := 0; x < int(field.SliceSize); x++ {
-						if g[x] != nil {
-							el := g[x]
+					for x, el := range g {
+						if el != nil {
 							v.encodeGUID(offsetBase+(uint32(x)*2), *el)
 						}
 					}
@@ -653,28 +662,42 @@ valueScan:
 						}
 
 						for i, vfield := range field.array.Fields {
-							if vfield.FieldType != Pad {
-								if row != nil {
-									switch vfield.FieldType {
-									case GUID:
-										v.encodeGUID(offset, row[i].(guid.GUID))
-										offset += 2
-									case Uint32:
-										v.encodeUint32(offset, row[i].(uint32))
-										offset++
-									case Float32:
-										v.encodeFloat32(offset, row[i].(float32))
-										offset++
-									case Uint32Array:
-										arrayVal := row[i].([]uint32)
-										for arrayValIndex := int64(0); arrayValIndex < vfield.Len; arrayValIndex++ {
-											v.encodeUint32(offset, arrayVal[int(arrayValIndex)])
-											offset++
-										}
-									default:
-										panic(vfield.FieldType.String())
-									}
+							switch vfield.FieldType {
+							case GUID:
+								if row == nil || row[i] == nil {
+									offset += 2
+									continue
 								}
+								v.encodeGUID(offset, row[i].(guid.GUID))
+								offset += 2
+							case Uint32:
+								if row == nil || row[i] == nil {
+									offset++
+									continue
+								}
+								v.encodeUint32(offset, row[i].(uint32))
+								offset++
+							case Float32:
+								if row == nil || row[i] == nil {
+									offset++
+									continue
+								}
+								v.encodeFloat32(offset, row[i].(float32))
+								offset++
+							case Uint32Array:
+								if row == nil || row[i] == nil {
+									offset += uint32(vfield.Len)
+									continue
+								}
+								arrayVal := row[i].([]uint32)
+								for arrayValIndex := int64(0); arrayValIndex < vfield.Len; arrayValIndex++ {
+									v.encodeUint32(offset, arrayVal[int(arrayValIndex)])
+									offset++
+								}
+							case Pad:
+								offset++
+							default:
+								panic(vfield.FieldType.String())
 							}
 						}
 					}

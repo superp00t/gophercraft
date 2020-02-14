@@ -20,6 +20,7 @@ type Character struct {
 	HairColor   uint8      `json:"hairColor"`
 	FacialHair  uint8      `json:"facialHair"`
 	Coinage     econ.Money `json:"coinage"`
+	Zone        uint32     `json:"zone"`
 	Map         uint32     `json:"map"`
 	X           float32    `json:"x"`
 	Y           float32    `json:"y"`
@@ -28,13 +29,21 @@ type Character struct {
 }
 
 type Item struct {
-	ID          uint64 `xorm:"'id' pk autoincr"`
-	Owner       uint64 `xorm:"'owner'"`
-	Equipped    bool   `xorm:"'equipped'"`
-	ItemType    uint32
-	DisplayID   uint32 `xorm:"'display_id'"`
-	ItemID      uint32 `xorm:"'item_id'"`
-	Enchantment uint32
+	ID           uint64 `xorm:"'id' pk autoincr"`
+	Creator      uint64 `xorm:"'creator'"` // player UID
+	ItemType     uint32 `xorm:"'item_type'"`
+	ItemID       string `xorm:"'item_id'"`
+	DisplayID    uint32 `xorm:"'display_id'"`
+	StackCount   uint32 `xorm:"'stack_count'"`
+	Enchantments []uint32
+	Charges      []int32 `xorm:"'charges'"`
+}
+
+type Inventory struct {
+	ItemID uint64 `xorm:"'item_id' pk"`
+	Player uint64 `xorm:"'player' index"`
+	Bag    uint8  `xorm:"'bag'"`
+	Slot   uint8  `xorm:"'slot'"`
 }
 
 type PortLocation struct {
@@ -46,16 +55,12 @@ type PortLocation struct {
 	Map  uint32  `xorm:"'map'" csv:"mapID"`
 }
 
-type ItemEntries struct {
-	ID      string `xorm:"'id' pk"`
-	EntryID uint32 `xorm:"'entry_id'"`
-}
-
 type ItemTemplate struct {
-	ID                        string       `xorm:"'id' pk"`
+	Entry                     uint32       `xorm:"'entry' bigint pk" csv:"-"`
+	ID                        string       `xorm:"'id' index"`
+	Name                      string       `xorm:"'name' index"`
 	Class                     uint32       `xorm:"'class'"`
 	Subclass                  uint32       `xorm:"'subclass'"`
-	Name                      string       `xorm:"'name'"`
 	DisplayID                 uint32       `xorm:"'display_id'"`
 	Quality                   uint8        `xorm:"'quality'"`
 	Flags                     string       `xorm:"'flags'"`
@@ -72,8 +77,8 @@ type ItemTemplate struct {
 	RequiredSpell             uint32       `xorm:"'required_spell'"`
 	RequiredHonorRank         uint32       `xorm:"'required_honor_rank'"`
 	RequiredCityRank          uint32       `xorm:"'required_city_rank'"`
-	RequiredReputationFaction uint32       `xorm:"'required_eputation_faction'"`
-	RequiredReputationRank    uint32       `xorm:"'required_eputation_rank'"`
+	RequiredReputationFaction uint32       `xorm:"'required_reputation_faction'"`
+	RequiredReputationRank    uint32       `xorm:"'required_reputation_rank'"`
 	MaxCount                  uint32       `xorm:"'max_count'"`
 	Stackable                 uint32       `xorm:"'stackable'"`
 	ContainerSlots            uint8        `xorm:"'container_slots'"`
@@ -146,4 +151,21 @@ type ItemSpell struct {
 type ItemSocket struct {
 	Color   int32
 	Content int32
+}
+
+type GameObjectTemplate struct {
+	Entry          uint32 `csv:"-" xorm:"'entry' bigint pk"`
+	ID             string `xorm:"'id' index"`
+	Type           uint32
+	DisplayID      uint32 `xorm:"'display_id'"`
+	Name           string
+	IconName       string
+	CastBarCaption string
+	Faction        uint32
+	Flags          string
+	HasCustomAnim  bool
+	Size           float32
+	Data           []uint32
+	MinGold        econ.Money
+	MaxGold        econ.Money
 }

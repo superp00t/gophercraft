@@ -114,6 +114,6 @@ func ItemFlagFromString(str string) (ItemFlag, error) {
 	case "ItemFlagIgnoreDefaultArenaRestrictions":
 		return ItemFlag(2097152), nil
 	default:
-		return 0, fmt.Errorf("could not find code for string")
+		return 0, fmt.Errorf("could not find code for string %s", str)
 	}
 }

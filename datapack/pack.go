@@ -14,12 +14,10 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"sort"
 
 	"github.com/go-yaml/yaml"
 	"github.com/superp00t/etc"
-	"github.com/superp00t/gophercraft/datapack/csv"
 )
 
 type WriteFile io.WriteCloser
@@ -31,10 +29,6 @@ type Driver interface {
 	WriteFile(at string) (WriteFile, error)
 	List() []string
 	Close() error
-}
-
-type Loader struct {
-	Volumes []*Pack
 }
 
 type Opts uint64
@@ -67,10 +61,13 @@ func RegisterDriver(key string, value func() Driver) {
 }
 
 type PackConfig struct {
-	Name    string   `yaml:"name"`
-	Author  string   `yaml:"author"`
-	Version string   `yaml:"version"`
-	Depends []string `yaml:"depends"`
+	Name          string   `yaml:"name"`
+	Description   string   `yaml:"description"`
+	Author        string   `yaml:"author"`
+	Version       string   `yaml:"version"`
+	Depends       []string `yaml:"depends"`
+	ServerScripts []string `yaml:"server_scripts,omitempty"`
+	ClientScripts []string `yaml:"client_scripts,omitempty"`
 }
 
 type Pack struct {
@@ -184,70 +181,6 @@ func (p *Pack) Exists(path string) bool {
 	return false
 }
 
-func (ld *Loader) ReadAll(path string, slicePtr interface{}) {
-	valuePtr := reflect.ValueOf(slicePtr)
-	if valuePtr.Kind() != reflect.Ptr {
-		panic("expected pointer to slice")
-	}
-
-	value := valuePtr.Elem()
-
-	valueType := value.Type()
-
-	if valueType.Kind() != reflect.Slice {
-		panic("expected slice")
-	}
-
-	elemType := valueType.Elem()
-
-	if elemType.Kind() != reflect.Struct {
-		panic("expected slice of structs")
-	}
-
-	for _, pack := range ld.Volumes {
-		if pack.Exists(path) {
-			fi, err := pack.ReadFile(path)
-			if err != nil {
-				panic(err)
-			}
-
-			defer fi.Close()
-
-			rd, err := csv.NewScanner(fi)
-			if err != nil {
-				panic(err)
-			}
-
-			for {
-				newMade := reflect.New(elemType)
-
-				err := rd.Scan(newMade.Interface())
-				if err == io.EOF {
-					break
-				}
-
-				if err != nil {
-					panic(err)
-				}
-
-				value.Set(reflect.Append(value, newMade.Elem()))
-			}
-		} else {
-			fmt.Println(pack.Name, "lacks", path)
-		}
-	}
-}
-
-func (ld *Loader) Close() {
-	for _, v := range ld.Volumes {
-		if err := v.Close(); err != nil {
-			panic(err)
-		}
-	}
-
-	ld.Volumes = nil
-}
-
 func Author(cfg PackConfig) (*Pack, error) {
 	tempToken := etc.GenerateRandomUUID().String()
 	tempDir := etc.TmpDirectory().Concat(tempToken)
@@ -281,7 +214,6 @@ func (p *Pack) ZipToFile(filename string) error {
 
 	zipWriter := zip.NewWriter(newZipFile)
 	defer zipWriter.Close()
-
 	// Add files to zip
 	for _, file := range p.List() {
 		rdr, err := p.ReadFile(file)

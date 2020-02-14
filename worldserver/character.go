@@ -38,6 +38,7 @@ var eMap = map[uint8]uint8{
 	dbc.IT_Tabard:   packet.Display_Tabard,
 	dbc.IT_Quiver:   packet.Display_Bag1,
 	dbc.IT_Bag:      packet.Display_Bag1,
+	dbc.IT_Thrown:   packet.Display_Ranged,
 }
 
 // func displayable(slotType Scrubuint32) bool {
@@ -53,38 +54,48 @@ func (s *WorldServer) ScrubCharacter(chr guid.GUID) {
 }
 
 func (s *Session) getEquipment(chr uint64) []packet.Item {
-	pi := make([]packet.Item, packet.EquipLen(s.Version()))
-	var fnd []wdb.Item
-	err := s.WS.DB.Where("owner = ?", chr).Where("equipped = 1").Find(&fnd)
+	itemList := make([]packet.Item, packet.EquipLen(s.Version()))
+	var inventory []wdb.Inventory
+	err := s.DB().Where("player = ?", chr).Where("bag = 255").Where("slot < 19").Find(&inventory)
 	if err != nil {
 		yo.Fatal(err)
 	}
 
 	idex := 0
 
-	yo.Spew(fnd)
-
-	for _, v := range fnd {
-		equ, ok := eMap[uint8(v.ItemType)]
-		if !ok {
-			fmt.Println("no display for", v.ItemType)
-			continue
+	for _, invRef := range inventory {
+		var item wdb.Item
+		found, err := s.DB().Where("id = ?", invRef.ItemID).Get(&item)
+		if !found {
+			panic(err)
 		}
 
-		if equ == 0 {
-			continue
+		pi := packet.Item{
+			Model: item.DisplayID,
+			Type:  uint8(item.ItemType),
 		}
 
-		pi[equ-1] = packet.Item{
-			Model:       v.DisplayID,
-			Type:        uint8(v.ItemType),
-			Enchantment: v.Enchantment,
+		// No transmog
+		if item.DisplayID == 0 {
+			var itt wdb.ItemTemplate
+			found, err := s.DB().Where("id = ?", item.ItemID).Get(&itt)
+			if !found {
+				panic(err)
+			}
+			pi.Model = itt.DisplayID
 		}
+
+		if len(item.Enchantments) > 0 {
+			pi.Enchantment = item.Enchantments[0]
+		}
+
+		fmt.Println(invRef.Slot)
+		itemList[int(invRef.Slot)] = pi
 
 		idex++
 	}
 
-	return pi
+	return itemList
 }
 
 func (s *Session) CharacterList(b []byte) {
@@ -178,8 +189,9 @@ func (s *Session) CreateCharacter(b []byte) {
 	pch.HairStyle = e.ReadByte()
 	pch.HairColor = e.ReadByte()
 	pch.FacialHair = e.ReadByte()
+	pch.Zone = 12
 	pch.Map = 0
-	pch.X = -9448.55 // we can replace this with database data.
+	pch.X = -9448.55 // TODO: we can replace this with database data, or with a location specified by config.
 	pch.Y = 68.236
 	pch.Z = 56.3225
 	pch.O = 2.1115
@@ -231,23 +243,65 @@ func (s *Session) CreateCharacter(b []byte) {
 					did = 0
 				}
 
-				eq = append(eq, wdb.Item{
-					Owner:       pch.ID,
-					ItemType:    sid,
-					DisplayID:   did,
-					ItemID:      v,
-					Enchantment: 0,
-					Equipped:    true,
-				})
+				if sid != 0 {
+					itm := wdb.Item{
+						ItemType:     sid,
+						DisplayID:    did,
+						ItemID:       fmt.Sprintf("it:%d", v),
+						Enchantments: nil,
+					}
+
+					s.DB().Insert(&itm)
+
+					eq = append(eq, itm)
+				}
 			}
 		}
 	} else {
 		yo.Warn("No starting equipment files. Please install or generate a datapack.")
 	}
 
-	_, err = s.WS.DB.Insert(eq)
+	// _, err = s.WS.DB.Cols("item_type", "display_id", "item_id", "enchantments").Insert(&eq)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	var inventory []wdb.Inventory
+	var activatedSlots = map[uint8]bool{}
+
+	for _, v := range eq {
+		if v.ItemType == 0 {
+			panic(v.ItemID)
+		}
+
+		var slot uint8
+
+		if v.ItemType == dbc.IT_Weapon {
+			slot = packet.Display_MainHand - 1
+
+			if activatedSlots[slot] == true {
+				slot = packet.Display_OffHand - 1
+			}
+		} else {
+			slot = uint8(eMap[uint8(v.ItemType)]) - 1
+			if slot == 255 {
+				panic(fmt.Errorf("unknown item type %d", v.ItemType))
+			}
+		}
+
+		activatedSlots[slot] = true
+
+		inventory = append(inventory, wdb.Inventory{
+			ItemID: v.ID,
+			Player: pch.ID,
+			Bag:    255, // Backpack
+			Slot:   slot,
+		})
+	}
+
+	_, err = s.WS.DB.Insert(&inventory)
 	if err != nil {
-		yo.Fatal(err)
+		panic(err)
 	}
 
 	s.SendCharacterOp(packet.CHAR_CREATE_SUCCESS)

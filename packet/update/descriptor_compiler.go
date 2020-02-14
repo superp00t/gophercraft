@@ -1,6 +1,8 @@
 package update
 
-import "fmt"
+import (
+	"fmt"
+)
 
 //go:generate gcraft_stringer -type=FieldType
 type FieldType uint32

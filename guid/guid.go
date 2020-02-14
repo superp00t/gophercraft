@@ -41,6 +41,8 @@ func (g GUID) String() string {
 		return fmt.Sprintf("Player-%d-%08X", g.RealmID(), g.Counter())
 	case Null:
 		return "Nil"
+	case Item:
+		return fmt.Sprintf("Item-%d-%08X", g.RealmID(), g.Counter())
 	default:
 		return fmt.Sprintf("%s-%016X-%016X", g.HighType(), g.Hi, g.Lo)
 	}

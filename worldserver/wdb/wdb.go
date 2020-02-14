@@ -1,9 +1,9 @@
 package wdb
 
 import (
-	"github.com/go-xorm/xorm"
 	"github.com/superp00t/gophercraft/format/dbc"
 	_ "github.com/superp00t/gophercraft/gcore/dbsupport"
+	"xorm.io/xorm"
 )
 
 type Core struct {
@@ -22,11 +22,15 @@ func NewCore(driver, source string) (*Core, error) {
 		new(PortLocation),
 		new(Character),
 		new(Item),
+		new(ItemTemplate),
+		new(Inventory),
+		new(GameObjectTemplate),
 		new(dbc.Ent_CharStartOutfit),
 		new(dbc.Ent_EmotesText),
 		new(dbc.Ent_Emotes),
 		new(dbc.Ent_ChrRaces),
 		new(dbc.Ent_ChrClasses),
+		new(dbc.Ent_AreaTrigger),
 	)
 
 	if err != nil {

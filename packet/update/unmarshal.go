@@ -118,6 +118,17 @@ func unmarshalClassic(version uint32, input []byte) (*Data, error) {
 
 			block.Data = cBlock
 			data.Blocks = append(data.Blocks, block)
+		case Movement:
+			var err error
+			block.GUID, err = guid.DecodePacked(version, i)
+			if err != nil {
+				return nil, err
+			}
+
+			block.Data, err = DecodeMovementBlock(version, i)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

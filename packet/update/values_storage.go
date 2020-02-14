@@ -3,6 +3,7 @@ package update
 import (
 	"fmt"
 
+	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/guid"
 )
 
@@ -21,14 +22,55 @@ func (vb *ValuesBlock) ModifyAndLock(attributes map[Global]interface{}) {
 	}
 }
 
+func (vb *ValuesBlock) ClearChanges() {
+	for k := range vb.Changes {
+		delete(vb.Changes, k)
+	}
+}
+
 func (vb *ValuesBlock) ClearChangesAndUnlock() {
-	vb.Changes = make(map[Global]bool)
+	vb.ClearChanges()
 	vb.Unlock()
 }
 
 func (vb *ValuesBlock) Set(glob Global, value interface{}) {
 	vb.Lock()
 	vb.Values[glob] = value
+	vb.Changes[glob] = true
+	vb.Unlock()
+}
+
+func InitArrayData(version uint32, glob Global) *ArrayData {
+	var cols []string
+	for _, v := range Descriptors[version].Classes {
+		for _, cf := range v.Fields {
+			if cf.Global == glob {
+				for _, v := range cf.array.Fields {
+					if v.FieldType != Pad {
+						cols = append(cols, v.Key)
+					}
+				}
+				goto end
+			}
+		}
+	}
+
+end:
+
+	return &ArrayData{
+		cols,
+		nil,
+	}
+}
+
+func (vb *ValuesBlock) SetArrayValue(glob Global, index int, columnName string, value interface{}) {
+	vb.Lock()
+	arrayField := vb.Values[glob].(*ArrayData)
+	if arrayField == nil {
+		panic("SetArrayValue on nil")
+	}
+
+	arrayField.SetValue(columnName, index, value)
 	vb.Changes[glob] = true
 	vb.Unlock()
 }
@@ -52,10 +94,10 @@ func (vb *ValuesBlock) SetGUIDValue(glob Global, value guid.GUID) {
 }
 
 func (vb *ValuesBlock) SetFloat32Value(glob Global, value float32) {
-	vb.Values[glob] = value
+	vb.Set(glob, value)
 }
 
-func (vb *ValuesBlock) SetUint32ArrayValue(glob Global, values ...interface{}) {
+func (vb *ValuesBlock) SetUint32Array(glob Global, values ...interface{}) {
 	ptr := make([]*uint32, len(values))
 
 	for idx, v := range values {
@@ -76,11 +118,11 @@ func (vb *ValuesBlock) SetUint32ArrayValue(glob Global, values ...interface{}) {
 }
 
 func (vb *ValuesBlock) SetByteValue(glob Global, value uint8) {
-	vb.Values[glob] = value
+	vb.Set(glob, value)
 }
 
 func (vb *ValuesBlock) SetInt32Value(glob Global, value int32) {
-	vb.Values[glob] = value
+	vb.Set(glob, value)
 }
 
 func (vb *ValuesBlock) Get(glob Global) (interface{}, error) {
@@ -117,4 +159,55 @@ func (vb *ValuesBlock) GetGUIDValue(glob Global) guid.GUID {
 	}
 
 	return dat.(guid.GUID)
+}
+
+func (vb *ValuesBlock) SetGUIDArrayValue(glob Global, index int, value guid.GUID) {
+	yo.Warn("Setting...", glob, index, value)
+	vb.Lock()
+	sli := vb.Values[glob].([]*guid.GUID)
+	sli[index] = &value
+	vb.Changes[glob] = true
+	vb.Unlock()
+}
+
+func (vb *ValuesBlock) SetFloat32ArrayValue(glob Global, index int, value float32) {
+	vb.Lock()
+	sli := vb.Values[glob].([]*float32)
+	sli[index] = &value
+	vb.Changes[glob] = true
+	vb.Unlock()
+}
+
+func (vb *ValuesBlock) SetInt32ArrayValue(glob Global, index int, value int32) {
+	vb.Lock()
+	sli := vb.Values[glob].([]*int32)
+	sli[index] = &value
+	vb.Changes[glob] = true
+	vb.Unlock()
+}
+
+func (vb *ValuesBlock) SetUint32ArrayValue(glob Global, index int, value uint32) {
+	vb.Lock()
+	sli := vb.Values[glob].([]*uint32)
+	sli[index] = &value
+	vb.Changes[glob] = true
+	vb.Unlock()
+}
+
+func (vb *ValuesBlock) GetGUIDArrayValue(glob Global, index int) guid.GUID {
+	dat, err := vb.Get(glob)
+	if err != nil {
+		panic(err)
+	}
+
+	if dat == nil {
+		panic(glob.String() + " is nil")
+	}
+
+	sli := dat.([]*guid.GUID)
+	if sli[index] == nil {
+		return guid.Nil
+	}
+
+	return *sli[index]
 }

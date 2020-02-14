@@ -1,5 +1,9 @@
 package update
 
+import (
+	"fmt"
+)
+
 // PlayerQuestLog: ArrayValue{
 //	{"Creator", }
 // }
@@ -33,7 +37,13 @@ func (ad *ArrayData) SetValue(column string, row int, value interface{}) {
 		if column == v {
 			if len(ad.Rows) <= row {
 				diff := make([][]interface{}, (row-len(ad.Rows))+1)
+				fmt.Println("filling in ", len(diff))
 				ad.Rows = append(ad.Rows, diff...)
+			}
+
+			if len(ad.Rows[row]) <= len(ad.Cols) {
+				diff := make([]interface{}, len(ad.Cols)-len(ad.Rows[row]))
+				ad.Rows[row] = append(ad.Rows[row], diff...)
 			}
 
 			ad.Rows[row][idx] = value

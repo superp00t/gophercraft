@@ -28,246 +28,247 @@ func _() {
 	_ = x[ItemEnchantment-16]
 	_ = x[ItemPropertySeed-17]
 	_ = x[ItemRandomPropertiesID-18]
-	_ = x[ItemDurability-19]
-	_ = x[ItemMaxDurability-20]
-	_ = x[ItemCreatePlayedTime-21]
-	_ = x[ItemPadding-22]
-	_ = x[ItemEnd-23]
-	_ = x[ContainerNumSlots-24]
-	_ = x[ContainerAlignPad-25]
-	_ = x[ContainerSlots-26]
-	_ = x[ContainerEnd-27]
-	_ = x[UnitStart-28]
-	_ = x[UnitCharm-29]
-	_ = x[UnitSummon-30]
-	_ = x[UnitCritter-31]
-	_ = x[UnitCharmedBy-32]
-	_ = x[UnitSummonedBy-33]
-	_ = x[UnitCreatedBy-34]
-	_ = x[UnitTarget-35]
-	_ = x[UnitPersuaded-36]
-	_ = x[UnitChannelObject-37]
-	_ = x[UnitChannelSpell-38]
-	_ = x[UnitRace-39]
-	_ = x[UnitClass-40]
-	_ = x[UnitGender-41]
-	_ = x[UnitPower-42]
-	_ = x[UnitHealth-43]
-	_ = x[UnitPowers-44]
-	_ = x[UnitMaxHealth-45]
-	_ = x[UnitMaxPowers-46]
-	_ = x[UnitPowerRegenFlatModifier-47]
-	_ = x[UnitPowerRegenInterruptedFlatModifier-48]
-	_ = x[UnitLevel-49]
-	_ = x[UnitFactionTemplate-50]
-	_ = x[UnitVirtualItemSlotIDs-51]
-	_ = x[UnitVirtualItemInfos-52]
-	_ = x[UnitFlags-53]
-	_ = x[UnitFlags2-54]
-	_ = x[UnitAuras-55]
-	_ = x[UnitAuraFlags-56]
-	_ = x[UnitAuraLevels-57]
-	_ = x[UnitAuraApplications-58]
-	_ = x[UnitAuraState-59]
-	_ = x[UnitBaseAttackTime-60]
-	_ = x[UnitOffhandAttackTime-61]
-	_ = x[UnitRangedAttackTime-62]
-	_ = x[UnitBoundingRadius-63]
-	_ = x[UnitCombatReach-64]
-	_ = x[UnitDisplayID-65]
-	_ = x[UnitNativeDisplayID-66]
-	_ = x[UnitMountDisplayID-67]
-	_ = x[UnitMinDamage-68]
-	_ = x[UnitMaxDamage-69]
-	_ = x[UnitMinOffhandDamage-70]
-	_ = x[UnitMaxOffhandDamage-71]
-	_ = x[UnitStandState-72]
-	_ = x[UnitLoyaltyLevel-73]
-	_ = x[UnitShapeshiftForm-74]
-	_ = x[UnitStandMiscFlags-75]
-	_ = x[UnitPetNumber-76]
-	_ = x[UnitPetNameTimestamp-77]
-	_ = x[UnitPetExperience-78]
-	_ = x[UnitPetNextLevelExp-79]
-	_ = x[UnitDynamicFlags-80]
-	_ = x[UnitModCastSpeed-81]
-	_ = x[UnitCreatedBySpell-82]
-	_ = x[UnitNPCFlags-83]
-	_ = x[UnitNPCEmoteState-84]
-	_ = x[UnitTrainingPoints-85]
-	_ = x[UnitStats-86]
-	_ = x[UnitPosStats-87]
-	_ = x[UnitNegStats-88]
-	_ = x[UnitResistances-89]
-	_ = x[UnitResistanceBuffModsPositive-90]
-	_ = x[UnitResistanceBuffModsNegative-91]
-	_ = x[UnitBaseMana-92]
-	_ = x[UnitBaseHealth-93]
-	_ = x[UnitSheathState-94]
-	_ = x[UnitAuraByteFlags-95]
-	_ = x[UnitPetRename-96]
-	_ = x[UnitPetShapeshiftForm-97]
-	_ = x[UnitAttackPower-98]
-	_ = x[UnitAttackPowerMods-99]
-	_ = x[UnitAttackPowerMultiplier-100]
-	_ = x[UnitRangedAttackPower-101]
-	_ = x[UnitRangedAttackPowerMods-102]
-	_ = x[UnitRangedAttackPowerMultiplier-103]
-	_ = x[UnitMinRangedDamage-104]
-	_ = x[UnitMaxRangedDamage-105]
-	_ = x[UnitPowerCostModifier-106]
-	_ = x[UnitPowerCostMultiplier-107]
-	_ = x[UnitMaxHealthModifier-108]
-	_ = x[UnitHoverHeight-109]
-	_ = x[PlayerDuelArbiter-110]
-	_ = x[PlayerFlags-111]
-	_ = x[PlayerGuildID-112]
-	_ = x[PlayerGuildRank-113]
-	_ = x[PlayerSkin-114]
-	_ = x[PlayerFace-115]
-	_ = x[PlayerHairStyle-116]
-	_ = x[PlayerHairColor-117]
-	_ = x[PlayerFacialHair-118]
-	_ = x[PlayerRestBits-119]
-	_ = x[PlayerBankBagSlotCount-120]
-	_ = x[PlayerRestState-121]
-	_ = x[PlayerGender-122]
-	_ = x[PlayerGenderUnk-123]
-	_ = x[PlayerDrunkness-124]
-	_ = x[PlayerPVPRank-125]
-	_ = x[PlayerDuelTeam-126]
-	_ = x[PlayerGuildTimestamp-127]
-	_ = x[PlayerQuestLog-128]
-	_ = x[PlayerVisibleItems-129]
-	_ = x[PlayerChosenTitle-130]
-	_ = x[PlayerFakeInebriation-131]
-	_ = x[PlayerInventorySlots-132]
-	_ = x[PlayerPackSlots-133]
-	_ = x[PlayerBankSlots-134]
-	_ = x[PlayerBankBagSlots-135]
-	_ = x[PlayerVendorBuybackSlots-136]
-	_ = x[PlayerKeyringSlots-137]
-	_ = x[PlayerCurrencyTokenSlots-138]
-	_ = x[PlayerFarSight-139]
-	_ = x[PlayerFieldComboTarget-140]
-	_ = x[PlayerKnownTitles-141]
-	_ = x[PlayerKnownCurrencies-142]
-	_ = x[PlayerXP-143]
-	_ = x[PlayerNextLevelXP-144]
-	_ = x[PlayerSkillInfos-145]
-	_ = x[PlayerCharacterPoints-146]
-	_ = x[PlayerTrackCreatures-147]
-	_ = x[PlayerTrackResources-148]
-	_ = x[PlayerBlockPercentage-149]
-	_ = x[PlayerDodgePercentage-150]
-	_ = x[PlayerParryPercentage-151]
-	_ = x[PlayerExpertise-152]
-	_ = x[PlayerOffhandExpertise-153]
-	_ = x[PlayerCritPercentage-154]
-	_ = x[PlayerRangedCritPercentage-155]
-	_ = x[PlayerOffhandCritPercentage-156]
-	_ = x[PlayerSpellCritPercentage-157]
-	_ = x[PlayerShieldBlock-158]
-	_ = x[PlayerShieldBlockCritPercentage-159]
-	_ = x[PlayerExploredZones-160]
-	_ = x[PlayerRestStateExperience-161]
-	_ = x[PlayerCoinage-162]
-	_ = x[PlayerModDamageDonePositive-163]
-	_ = x[PlayerModDamageDoneNegative-164]
-	_ = x[PlayerModDamageDonePercentage-165]
-	_ = x[PlayerModHealingDonePositive-166]
-	_ = x[PlayerModHealingPercentage-167]
-	_ = x[PlayerModHealingDonePercentage-168]
-	_ = x[PlayerModTargetResistance-169]
-	_ = x[PlayerModTargetPhysicalResistance-170]
-	_ = x[PlayerFieldBytes-171]
-	_ = x[PlayerFieldBytesFlags-172]
-	_ = x[PlayerFieldBytesUnk1-173]
-	_ = x[PlayerActionBarToggle-174]
-	_ = x[PlayerFieldBytesUnk2-175]
-	_ = x[PlayerAmmoID-176]
-	_ = x[PlayerSelfResSpell-177]
-	_ = x[PlayerPVPMedals-178]
-	_ = x[PlayerBuybackPrices-179]
-	_ = x[PlayerBuybackTimestamps-180]
-	_ = x[PlayerKills-181]
-	_ = x[PlayerYesterdayKills-182]
-	_ = x[PlayerLastWeekKills-183]
-	_ = x[PlayerThisWeekKills-184]
-	_ = x[PlayerThisWeekContribution-185]
-	_ = x[PlayerTodayContribution-186]
-	_ = x[PlayerYesterdayContribution-187]
-	_ = x[PlayerLastWeekContribution-188]
-	_ = x[PlayerLastWeekRank-189]
-	_ = x[PlayerLifetimeHonorableKills-190]
-	_ = x[PlayerLifetimeDishonorableKills-191]
-	_ = x[PlayerHonorRankPoints-192]
-	_ = x[PlayerDetectionFlags-193]
-	_ = x[PlayerWatchedFactionIndex-194]
-	_ = x[PlayerCombatRatings-195]
-	_ = x[PlayerArenaTeamInfos-196]
-	_ = x[PlayerHonorCurrency-197]
-	_ = x[PlayerArenaCurrency-198]
-	_ = x[PlayerMaxLevel-199]
-	_ = x[PlayerDailyQuests-200]
-	_ = x[PlayerRuneRegens-201]
-	_ = x[PlayerNoReagentCosts-202]
-	_ = x[PlayerGlyphSlots-203]
-	_ = x[PlayerGlyphs-204]
-	_ = x[PlayerGlyphsEnabled-205]
-	_ = x[PlayerPetSpellPower-206]
-	_ = x[PlayerEnd-207]
-	_ = x[GObjectCreatedBy-208]
-	_ = x[GObjectDisplayID-209]
-	_ = x[GObjectFlags-210]
-	_ = x[GObjectRotation-211]
-	_ = x[GObjectState-212]
-	_ = x[GObjectPosX-213]
-	_ = x[GObjectPosY-214]
-	_ = x[GObjectPosZ-215]
-	_ = x[GObjectFacing-216]
-	_ = x[GObjectDynamicFlags-217]
-	_ = x[GObjectFaction-218]
-	_ = x[GObjectTypeID-219]
-	_ = x[GObjectLevel-220]
-	_ = x[GObjectArtKit-221]
-	_ = x[GObjectAnimProgress-222]
-	_ = x[GObjectPadding-223]
-	_ = x[DynamicObjectCaster-224]
-	_ = x[DynamicObjectType-225]
-	_ = x[DynamicObjectPosX-226]
-	_ = x[DynamicObjectPosY-227]
-	_ = x[DynamicObjectPosZ-228]
-	_ = x[DynamicObjectFacing-229]
-	_ = x[DynamicObjectSpellID-230]
-	_ = x[DynamicObjectRadius-231]
-	_ = x[DynamicObjectCastTime-232]
-	_ = x[DynamicObjectEnd-233]
-	_ = x[CorpseOwner-234]
-	_ = x[CorpseFacing-235]
-	_ = x[CorpsePosX-236]
-	_ = x[CorpsePosY-237]
-	_ = x[CorpsePosZ-238]
-	_ = x[CorpseParty-239]
-	_ = x[CorpseDisplayID-240]
-	_ = x[CorpseItem-241]
-	_ = x[CorpsePlayerUnk-242]
-	_ = x[CorpseRace-243]
-	_ = x[CorpseGender-244]
-	_ = x[CorpseSkin-245]
-	_ = x[CorpseFace-246]
-	_ = x[CorpseHairStyle-247]
-	_ = x[CorpseHairColor-248]
-	_ = x[CorpseFacialHair-249]
-	_ = x[CorpseGuild-250]
-	_ = x[CorpseFlags-251]
-	_ = x[CorpseDynamicFlags-252]
-	_ = x[CorpsePad-253]
+	_ = x[ItemTextID-19]
+	_ = x[ItemDurability-20]
+	_ = x[ItemMaxDurability-21]
+	_ = x[ItemCreatePlayedTime-22]
+	_ = x[ItemPadding-23]
+	_ = x[ItemEnd-24]
+	_ = x[ContainerNumSlots-25]
+	_ = x[ContainerAlignPad-26]
+	_ = x[ContainerSlots-27]
+	_ = x[ContainerEnd-28]
+	_ = x[UnitStart-29]
+	_ = x[UnitCharm-30]
+	_ = x[UnitSummon-31]
+	_ = x[UnitCritter-32]
+	_ = x[UnitCharmedBy-33]
+	_ = x[UnitSummonedBy-34]
+	_ = x[UnitCreatedBy-35]
+	_ = x[UnitTarget-36]
+	_ = x[UnitPersuaded-37]
+	_ = x[UnitChannelObject-38]
+	_ = x[UnitChannelSpell-39]
+	_ = x[UnitRace-40]
+	_ = x[UnitClass-41]
+	_ = x[UnitGender-42]
+	_ = x[UnitPower-43]
+	_ = x[UnitHealth-44]
+	_ = x[UnitPowers-45]
+	_ = x[UnitMaxHealth-46]
+	_ = x[UnitMaxPowers-47]
+	_ = x[UnitPowerRegenFlatModifier-48]
+	_ = x[UnitPowerRegenInterruptedFlatModifier-49]
+	_ = x[UnitLevel-50]
+	_ = x[UnitFactionTemplate-51]
+	_ = x[UnitVirtualItemSlotIDs-52]
+	_ = x[UnitVirtualItemInfos-53]
+	_ = x[UnitFlags-54]
+	_ = x[UnitFlags2-55]
+	_ = x[UnitAuras-56]
+	_ = x[UnitAuraFlags-57]
+	_ = x[UnitAuraLevels-58]
+	_ = x[UnitAuraApplications-59]
+	_ = x[UnitAuraState-60]
+	_ = x[UnitBaseAttackTime-61]
+	_ = x[UnitOffhandAttackTime-62]
+	_ = x[UnitRangedAttackTime-63]
+	_ = x[UnitBoundingRadius-64]
+	_ = x[UnitCombatReach-65]
+	_ = x[UnitDisplayID-66]
+	_ = x[UnitNativeDisplayID-67]
+	_ = x[UnitMountDisplayID-68]
+	_ = x[UnitMinDamage-69]
+	_ = x[UnitMaxDamage-70]
+	_ = x[UnitMinOffhandDamage-71]
+	_ = x[UnitMaxOffhandDamage-72]
+	_ = x[UnitStandState-73]
+	_ = x[UnitLoyaltyLevel-74]
+	_ = x[UnitShapeshiftForm-75]
+	_ = x[UnitStandMiscFlags-76]
+	_ = x[UnitPetNumber-77]
+	_ = x[UnitPetNameTimestamp-78]
+	_ = x[UnitPetExperience-79]
+	_ = x[UnitPetNextLevelExp-80]
+	_ = x[UnitDynamicFlags-81]
+	_ = x[UnitModCastSpeed-82]
+	_ = x[UnitCreatedBySpell-83]
+	_ = x[UnitNPCFlags-84]
+	_ = x[UnitNPCEmoteState-85]
+	_ = x[UnitTrainingPoints-86]
+	_ = x[UnitStats-87]
+	_ = x[UnitPosStats-88]
+	_ = x[UnitNegStats-89]
+	_ = x[UnitResistances-90]
+	_ = x[UnitResistanceBuffModsPositive-91]
+	_ = x[UnitResistanceBuffModsNegative-92]
+	_ = x[UnitBaseMana-93]
+	_ = x[UnitBaseHealth-94]
+	_ = x[UnitSheathState-95]
+	_ = x[UnitAuraByteFlags-96]
+	_ = x[UnitPetRename-97]
+	_ = x[UnitPetShapeshiftForm-98]
+	_ = x[UnitAttackPower-99]
+	_ = x[UnitAttackPowerMods-100]
+	_ = x[UnitAttackPowerMultiplier-101]
+	_ = x[UnitRangedAttackPower-102]
+	_ = x[UnitRangedAttackPowerMods-103]
+	_ = x[UnitRangedAttackPowerMultiplier-104]
+	_ = x[UnitMinRangedDamage-105]
+	_ = x[UnitMaxRangedDamage-106]
+	_ = x[UnitPowerCostModifier-107]
+	_ = x[UnitPowerCostMultiplier-108]
+	_ = x[UnitMaxHealthModifier-109]
+	_ = x[UnitHoverHeight-110]
+	_ = x[PlayerDuelArbiter-111]
+	_ = x[PlayerFlags-112]
+	_ = x[PlayerGuildID-113]
+	_ = x[PlayerGuildRank-114]
+	_ = x[PlayerSkin-115]
+	_ = x[PlayerFace-116]
+	_ = x[PlayerHairStyle-117]
+	_ = x[PlayerHairColor-118]
+	_ = x[PlayerFacialHair-119]
+	_ = x[PlayerRestBits-120]
+	_ = x[PlayerBankBagSlotCount-121]
+	_ = x[PlayerRestState-122]
+	_ = x[PlayerGender-123]
+	_ = x[PlayerGenderUnk-124]
+	_ = x[PlayerDrunkness-125]
+	_ = x[PlayerPVPRank-126]
+	_ = x[PlayerDuelTeam-127]
+	_ = x[PlayerGuildTimestamp-128]
+	_ = x[PlayerQuestLog-129]
+	_ = x[PlayerVisibleItems-130]
+	_ = x[PlayerChosenTitle-131]
+	_ = x[PlayerFakeInebriation-132]
+	_ = x[PlayerInventorySlots-133]
+	_ = x[PlayerPackSlots-134]
+	_ = x[PlayerBankSlots-135]
+	_ = x[PlayerBankBagSlots-136]
+	_ = x[PlayerVendorBuybackSlots-137]
+	_ = x[PlayerKeyringSlots-138]
+	_ = x[PlayerCurrencyTokenSlots-139]
+	_ = x[PlayerFarSight-140]
+	_ = x[PlayerFieldComboTarget-141]
+	_ = x[PlayerKnownTitles-142]
+	_ = x[PlayerKnownCurrencies-143]
+	_ = x[PlayerXP-144]
+	_ = x[PlayerNextLevelXP-145]
+	_ = x[PlayerSkillInfos-146]
+	_ = x[PlayerCharacterPoints-147]
+	_ = x[PlayerTrackCreatures-148]
+	_ = x[PlayerTrackResources-149]
+	_ = x[PlayerBlockPercentage-150]
+	_ = x[PlayerDodgePercentage-151]
+	_ = x[PlayerParryPercentage-152]
+	_ = x[PlayerExpertise-153]
+	_ = x[PlayerOffhandExpertise-154]
+	_ = x[PlayerCritPercentage-155]
+	_ = x[PlayerRangedCritPercentage-156]
+	_ = x[PlayerOffhandCritPercentage-157]
+	_ = x[PlayerSpellCritPercentage-158]
+	_ = x[PlayerShieldBlock-159]
+	_ = x[PlayerShieldBlockCritPercentage-160]
+	_ = x[PlayerExploredZones-161]
+	_ = x[PlayerRestStateExperience-162]
+	_ = x[PlayerCoinage-163]
+	_ = x[PlayerModDamageDonePositive-164]
+	_ = x[PlayerModDamageDoneNegative-165]
+	_ = x[PlayerModDamageDonePercentage-166]
+	_ = x[PlayerModHealingDonePositive-167]
+	_ = x[PlayerModHealingPercentage-168]
+	_ = x[PlayerModHealingDonePercentage-169]
+	_ = x[PlayerModTargetResistance-170]
+	_ = x[PlayerModTargetPhysicalResistance-171]
+	_ = x[PlayerFieldBytes-172]
+	_ = x[PlayerFieldBytesFlags-173]
+	_ = x[PlayerFieldBytesUnk1-174]
+	_ = x[PlayerActionBarToggle-175]
+	_ = x[PlayerFieldBytesUnk2-176]
+	_ = x[PlayerAmmoID-177]
+	_ = x[PlayerSelfResSpell-178]
+	_ = x[PlayerPVPMedals-179]
+	_ = x[PlayerBuybackPrices-180]
+	_ = x[PlayerBuybackTimestamps-181]
+	_ = x[PlayerKills-182]
+	_ = x[PlayerYesterdayKills-183]
+	_ = x[PlayerLastWeekKills-184]
+	_ = x[PlayerThisWeekKills-185]
+	_ = x[PlayerThisWeekContribution-186]
+	_ = x[PlayerTodayContribution-187]
+	_ = x[PlayerYesterdayContribution-188]
+	_ = x[PlayerLastWeekContribution-189]
+	_ = x[PlayerLastWeekRank-190]
+	_ = x[PlayerLifetimeHonorableKills-191]
+	_ = x[PlayerLifetimeDishonorableKills-192]
+	_ = x[PlayerHonorRankPoints-193]
+	_ = x[PlayerDetectionFlags-194]
+	_ = x[PlayerWatchedFactionIndex-195]
+	_ = x[PlayerCombatRatings-196]
+	_ = x[PlayerArenaTeamInfos-197]
+	_ = x[PlayerHonorCurrency-198]
+	_ = x[PlayerArenaCurrency-199]
+	_ = x[PlayerMaxLevel-200]
+	_ = x[PlayerDailyQuests-201]
+	_ = x[PlayerRuneRegens-202]
+	_ = x[PlayerNoReagentCosts-203]
+	_ = x[PlayerGlyphSlots-204]
+	_ = x[PlayerGlyphs-205]
+	_ = x[PlayerGlyphsEnabled-206]
+	_ = x[PlayerPetSpellPower-207]
+	_ = x[PlayerEnd-208]
+	_ = x[GObjectCreatedBy-209]
+	_ = x[GObjectDisplayID-210]
+	_ = x[GObjectFlags-211]
+	_ = x[GObjectRotation-212]
+	_ = x[GObjectState-213]
+	_ = x[GObjectPosX-214]
+	_ = x[GObjectPosY-215]
+	_ = x[GObjectPosZ-216]
+	_ = x[GObjectFacing-217]
+	_ = x[GObjectDynamicFlags-218]
+	_ = x[GObjectFaction-219]
+	_ = x[GObjectTypeID-220]
+	_ = x[GObjectLevel-221]
+	_ = x[GObjectArtKit-222]
+	_ = x[GObjectAnimProgress-223]
+	_ = x[GObjectPadding-224]
+	_ = x[DynamicObjectCaster-225]
+	_ = x[DynamicObjectType-226]
+	_ = x[DynamicObjectPosX-227]
+	_ = x[DynamicObjectPosY-228]
+	_ = x[DynamicObjectPosZ-229]
+	_ = x[DynamicObjectFacing-230]
+	_ = x[DynamicObjectSpellID-231]
+	_ = x[DynamicObjectRadius-232]
+	_ = x[DynamicObjectCastTime-233]
+	_ = x[DynamicObjectEnd-234]
+	_ = x[CorpseOwner-235]
+	_ = x[CorpseFacing-236]
+	_ = x[CorpsePosX-237]
+	_ = x[CorpsePosY-238]
+	_ = x[CorpsePosZ-239]
+	_ = x[CorpseParty-240]
+	_ = x[CorpseDisplayID-241]
+	_ = x[CorpseItem-242]
+	_ = x[CorpsePlayerUnk-243]
+	_ = x[CorpseRace-244]
+	_ = x[CorpseGender-245]
+	_ = x[CorpseSkin-246]
+	_ = x[CorpseFace-247]
+	_ = x[CorpseHairStyle-248]
+	_ = x[CorpseHairColor-249]
+	_ = x[CorpseFacialHair-250]
+	_ = x[CorpseGuild-251]
+	_ = x[CorpseFlags-252]
+	_ = x[CorpseDynamicFlags-253]
+	_ = x[CorpsePad-254]
 }
 
-const _Global_name = "ObjectStartObjectGUIDObjectTypeObjectEntryObjectScaleXObjectPaddingObjectEndItemStartItemOwnerItemContainedItemCreatorItemGiftCreatorItemStackCountItemDurationItemSpellChargesItemFlagsItemEnchantmentItemPropertySeedItemRandomPropertiesIDItemDurabilityItemMaxDurabilityItemCreatePlayedTimeItemPaddingItemEndContainerNumSlotsContainerAlignPadContainerSlotsContainerEndUnitStartUnitCharmUnitSummonUnitCritterUnitCharmedByUnitSummonedByUnitCreatedByUnitTargetUnitPersuadedUnitChannelObjectUnitChannelSpellUnitRaceUnitClassUnitGenderUnitPowerUnitHealthUnitPowersUnitMaxHealthUnitMaxPowersUnitPowerRegenFlatModifierUnitPowerRegenInterruptedFlatModifierUnitLevelUnitFactionTemplateUnitVirtualItemSlotIDsUnitVirtualItemInfosUnitFlagsUnitFlags2UnitAurasUnitAuraFlagsUnitAuraLevelsUnitAuraApplicationsUnitAuraStateUnitBaseAttackTimeUnitOffhandAttackTimeUnitRangedAttackTimeUnitBoundingRadiusUnitCombatReachUnitDisplayIDUnitNativeDisplayIDUnitMountDisplayIDUnitMinDamageUnitMaxDamageUnitMinOffhandDamageUnitMaxOffhandDamageUnitStandStateUnitLoyaltyLevelUnitShapeshiftFormUnitStandMiscFlagsUnitPetNumberUnitPetNameTimestampUnitPetExperienceUnitPetNextLevelExpUnitDynamicFlagsUnitModCastSpeedUnitCreatedBySpellUnitNPCFlagsUnitNPCEmoteStateUnitTrainingPointsUnitStatsUnitPosStatsUnitNegStatsUnitResistancesUnitResistanceBuffModsPositiveUnitResistanceBuffModsNegativeUnitBaseManaUnitBaseHealthUnitSheathStateUnitAuraByteFlagsUnitPetRenameUnitPetShapeshiftFormUnitAttackPowerUnitAttackPowerModsUnitAttackPowerMultiplierUnitRangedAttackPowerUnitRangedAttackPowerModsUnitRangedAttackPowerMultiplierUnitMinRangedDamageUnitMaxRangedDamageUnitPowerCostModifierUnitPowerCostMultiplierUnitMaxHealthModifierUnitHoverHeightPlayerDuelArbiterPlayerFlagsPlayerGuildIDPlayerGuildRankPlayerSkinPlayerFacePlayerHairStylePlayerHairColorPlayerFacialHairPlayerRestBitsPlayerBankBagSlotCountPlayerRestStatePlayerGenderPlayerGenderUnkPlayerDrunknessPlayerPVPRankPlayerDuelTeamPlayerGuildTimestampPlayerQuestLogPlayerVisibleItemsPlayerChosenTitlePlayerFakeInebriationPlayerInventorySlotsPlayerPackSlotsPlayerBankSlotsPlayerBankBagSlotsPlayerVendorBuybackSlotsPlayerKeyringSlotsPlayerCurrencyTokenSlotsPlayerFarSightPlayerFieldComboTargetPlayerKnownTitlesPlayerKnownCurrenciesPlayerXPPlayerNextLevelXPPlayerSkillInfosPlayerCharacterPointsPlayerTrackCreaturesPlayerTrackResourcesPlayerBlockPercentagePlayerDodgePercentagePlayerParryPercentagePlayerExpertisePlayerOffhandExpertisePlayerCritPercentagePlayerRangedCritPercentagePlayerOffhandCritPercentagePlayerSpellCritPercentagePlayerShieldBlockPlayerShieldBlockCritPercentagePlayerExploredZonesPlayerRestStateExperiencePlayerCoinagePlayerModDamageDonePositivePlayerModDamageDoneNegativePlayerModDamageDonePercentagePlayerModHealingDonePositivePlayerModHealingPercentagePlayerModHealingDonePercentagePlayerModTargetResistancePlayerModTargetPhysicalResistancePlayerFieldBytesPlayerFieldBytesFlagsPlayerFieldBytesUnk1PlayerActionBarTogglePlayerFieldBytesUnk2PlayerAmmoIDPlayerSelfResSpellPlayerPVPMedalsPlayerBuybackPricesPlayerBuybackTimestampsPlayerKillsPlayerYesterdayKillsPlayerLastWeekKillsPlayerThisWeekKillsPlayerThisWeekContributionPlayerTodayContributionPlayerYesterdayContributionPlayerLastWeekContributionPlayerLastWeekRankPlayerLifetimeHonorableKillsPlayerLifetimeDishonorableKillsPlayerHonorRankPointsPlayerDetectionFlagsPlayerWatchedFactionIndexPlayerCombatRatingsPlayerArenaTeamInfosPlayerHonorCurrencyPlayerArenaCurrencyPlayerMaxLevelPlayerDailyQuestsPlayerRuneRegensPlayerNoReagentCostsPlayerGlyphSlotsPlayerGlyphsPlayerGlyphsEnabledPlayerPetSpellPowerPlayerEndGObjectCreatedByGObjectDisplayIDGObjectFlagsGObjectRotationGObjectStateGObjectPosXGObjectPosYGObjectPosZGObjectFacingGObjectDynamicFlagsGObjectFactionGObjectTypeIDGObjectLevelGObjectArtKitGObjectAnimProgressGObjectPaddingDynamicObjectCasterDynamicObjectTypeDynamicObjectPosXDynamicObjectPosYDynamicObjectPosZDynamicObjectFacingDynamicObjectSpellIDDynamicObjectRadiusDynamicObjectCastTimeDynamicObjectEndCorpseOwnerCorpseFacingCorpsePosXCorpsePosYCorpsePosZCorpsePartyCorpseDisplayIDCorpseItemCorpsePlayerUnkCorpseRaceCorpseGenderCorpseSkinCorpseFaceCorpseHairStyleCorpseHairColorCorpseFacialHairCorpseGuildCorpseFlagsCorpseDynamicFlagsCorpsePad"
+const _Global_name = "ObjectStartObjectGUIDObjectTypeObjectEntryObjectScaleXObjectPaddingObjectEndItemStartItemOwnerItemContainedItemCreatorItemGiftCreatorItemStackCountItemDurationItemSpellChargesItemFlagsItemEnchantmentItemPropertySeedItemRandomPropertiesIDItemTextIDItemDurabilityItemMaxDurabilityItemCreatePlayedTimeItemPaddingItemEndContainerNumSlotsContainerAlignPadContainerSlotsContainerEndUnitStartUnitCharmUnitSummonUnitCritterUnitCharmedByUnitSummonedByUnitCreatedByUnitTargetUnitPersuadedUnitChannelObjectUnitChannelSpellUnitRaceUnitClassUnitGenderUnitPowerUnitHealthUnitPowersUnitMaxHealthUnitMaxPowersUnitPowerRegenFlatModifierUnitPowerRegenInterruptedFlatModifierUnitLevelUnitFactionTemplateUnitVirtualItemSlotIDsUnitVirtualItemInfosUnitFlagsUnitFlags2UnitAurasUnitAuraFlagsUnitAuraLevelsUnitAuraApplicationsUnitAuraStateUnitBaseAttackTimeUnitOffhandAttackTimeUnitRangedAttackTimeUnitBoundingRadiusUnitCombatReachUnitDisplayIDUnitNativeDisplayIDUnitMountDisplayIDUnitMinDamageUnitMaxDamageUnitMinOffhandDamageUnitMaxOffhandDamageUnitStandStateUnitLoyaltyLevelUnitShapeshiftFormUnitStandMiscFlagsUnitPetNumberUnitPetNameTimestampUnitPetExperienceUnitPetNextLevelExpUnitDynamicFlagsUnitModCastSpeedUnitCreatedBySpellUnitNPCFlagsUnitNPCEmoteStateUnitTrainingPointsUnitStatsUnitPosStatsUnitNegStatsUnitResistancesUnitResistanceBuffModsPositiveUnitResistanceBuffModsNegativeUnitBaseManaUnitBaseHealthUnitSheathStateUnitAuraByteFlagsUnitPetRenameUnitPetShapeshiftFormUnitAttackPowerUnitAttackPowerModsUnitAttackPowerMultiplierUnitRangedAttackPowerUnitRangedAttackPowerModsUnitRangedAttackPowerMultiplierUnitMinRangedDamageUnitMaxRangedDamageUnitPowerCostModifierUnitPowerCostMultiplierUnitMaxHealthModifierUnitHoverHeightPlayerDuelArbiterPlayerFlagsPlayerGuildIDPlayerGuildRankPlayerSkinPlayerFacePlayerHairStylePlayerHairColorPlayerFacialHairPlayerRestBitsPlayerBankBagSlotCountPlayerRestStatePlayerGenderPlayerGenderUnkPlayerDrunknessPlayerPVPRankPlayerDuelTeamPlayerGuildTimestampPlayerQuestLogPlayerVisibleItemsPlayerChosenTitlePlayerFakeInebriationPlayerInventorySlotsPlayerPackSlotsPlayerBankSlotsPlayerBankBagSlotsPlayerVendorBuybackSlotsPlayerKeyringSlotsPlayerCurrencyTokenSlotsPlayerFarSightPlayerFieldComboTargetPlayerKnownTitlesPlayerKnownCurrenciesPlayerXPPlayerNextLevelXPPlayerSkillInfosPlayerCharacterPointsPlayerTrackCreaturesPlayerTrackResourcesPlayerBlockPercentagePlayerDodgePercentagePlayerParryPercentagePlayerExpertisePlayerOffhandExpertisePlayerCritPercentagePlayerRangedCritPercentagePlayerOffhandCritPercentagePlayerSpellCritPercentagePlayerShieldBlockPlayerShieldBlockCritPercentagePlayerExploredZonesPlayerRestStateExperiencePlayerCoinagePlayerModDamageDonePositivePlayerModDamageDoneNegativePlayerModDamageDonePercentagePlayerModHealingDonePositivePlayerModHealingPercentagePlayerModHealingDonePercentagePlayerModTargetResistancePlayerModTargetPhysicalResistancePlayerFieldBytesPlayerFieldBytesFlagsPlayerFieldBytesUnk1PlayerActionBarTogglePlayerFieldBytesUnk2PlayerAmmoIDPlayerSelfResSpellPlayerPVPMedalsPlayerBuybackPricesPlayerBuybackTimestampsPlayerKillsPlayerYesterdayKillsPlayerLastWeekKillsPlayerThisWeekKillsPlayerThisWeekContributionPlayerTodayContributionPlayerYesterdayContributionPlayerLastWeekContributionPlayerLastWeekRankPlayerLifetimeHonorableKillsPlayerLifetimeDishonorableKillsPlayerHonorRankPointsPlayerDetectionFlagsPlayerWatchedFactionIndexPlayerCombatRatingsPlayerArenaTeamInfosPlayerHonorCurrencyPlayerArenaCurrencyPlayerMaxLevelPlayerDailyQuestsPlayerRuneRegensPlayerNoReagentCostsPlayerGlyphSlotsPlayerGlyphsPlayerGlyphsEnabledPlayerPetSpellPowerPlayerEndGObjectCreatedByGObjectDisplayIDGObjectFlagsGObjectRotationGObjectStateGObjectPosXGObjectPosYGObjectPosZGObjectFacingGObjectDynamicFlagsGObjectFactionGObjectTypeIDGObjectLevelGObjectArtKitGObjectAnimProgressGObjectPaddingDynamicObjectCasterDynamicObjectTypeDynamicObjectPosXDynamicObjectPosYDynamicObjectPosZDynamicObjectFacingDynamicObjectSpellIDDynamicObjectRadiusDynamicObjectCastTimeDynamicObjectEndCorpseOwnerCorpseFacingCorpsePosXCorpsePosYCorpsePosZCorpsePartyCorpseDisplayIDCorpseItemCorpsePlayerUnkCorpseRaceCorpseGenderCorpseSkinCorpseFaceCorpseHairStyleCorpseHairColorCorpseFacialHairCorpseGuildCorpseFlagsCorpseDynamicFlagsCorpsePad"
 
-var _Global_index = [...]uint16{0, 11, 21, 31, 42, 54, 67, 76, 85, 94, 107, 118, 133, 147, 159, 175, 184, 199, 215, 237, 251, 268, 288, 299, 306, 323, 340, 354, 366, 375, 384, 394, 405, 418, 432, 445, 455, 468, 485, 501, 509, 518, 528, 537, 547, 557, 570, 583, 609, 646, 655, 674, 696, 716, 725, 735, 744, 757, 771, 791, 804, 822, 843, 863, 881, 896, 909, 928, 946, 959, 972, 992, 1012, 1026, 1042, 1060, 1078, 1091, 1111, 1128, 1147, 1163, 1179, 1197, 1209, 1226, 1244, 1253, 1265, 1277, 1292, 1322, 1352, 1364, 1378, 1393, 1410, 1423, 1444, 1459, 1478, 1503, 1524, 1549, 1580, 1599, 1618, 1639, 1662, 1683, 1698, 1715, 1726, 1739, 1754, 1764, 1774, 1789, 1804, 1820, 1834, 1856, 1871, 1883, 1898, 1913, 1926, 1940, 1960, 1974, 1992, 2009, 2030, 2050, 2065, 2080, 2098, 2122, 2140, 2164, 2178, 2200, 2217, 2238, 2246, 2263, 2279, 2300, 2320, 2340, 2361, 2382, 2403, 2418, 2440, 2460, 2486, 2513, 2538, 2555, 2586, 2605, 2630, 2643, 2670, 2697, 2726, 2754, 2780, 2810, 2835, 2868, 2884, 2905, 2925, 2946, 2966, 2978, 2996, 3011, 3030, 3053, 3064, 3084, 3103, 3122, 3148, 3171, 3198, 3224, 3242, 3270, 3301, 3322, 3342, 3367, 3386, 3406, 3425, 3444, 3458, 3475, 3491, 3511, 3527, 3539, 3558, 3577, 3586, 3602, 3618, 3630, 3645, 3657, 3668, 3679, 3690, 3703, 3722, 3736, 3749, 3761, 3774, 3793, 3807, 3826, 3843, 3860, 3877, 3894, 3913, 3933, 3952, 3973, 3989, 4000, 4012, 4022, 4032, 4042, 4053, 4068, 4078, 4093, 4103, 4115, 4125, 4135, 4150, 4165, 4181, 4192, 4203, 4221, 4230}
+var _Global_index = [...]uint16{0, 11, 21, 31, 42, 54, 67, 76, 85, 94, 107, 118, 133, 147, 159, 175, 184, 199, 215, 237, 247, 261, 278, 298, 309, 316, 333, 350, 364, 376, 385, 394, 404, 415, 428, 442, 455, 465, 478, 495, 511, 519, 528, 538, 547, 557, 567, 580, 593, 619, 656, 665, 684, 706, 726, 735, 745, 754, 767, 781, 801, 814, 832, 853, 873, 891, 906, 919, 938, 956, 969, 982, 1002, 1022, 1036, 1052, 1070, 1088, 1101, 1121, 1138, 1157, 1173, 1189, 1207, 1219, 1236, 1254, 1263, 1275, 1287, 1302, 1332, 1362, 1374, 1388, 1403, 1420, 1433, 1454, 1469, 1488, 1513, 1534, 1559, 1590, 1609, 1628, 1649, 1672, 1693, 1708, 1725, 1736, 1749, 1764, 1774, 1784, 1799, 1814, 1830, 1844, 1866, 1881, 1893, 1908, 1923, 1936, 1950, 1970, 1984, 2002, 2019, 2040, 2060, 2075, 2090, 2108, 2132, 2150, 2174, 2188, 2210, 2227, 2248, 2256, 2273, 2289, 2310, 2330, 2350, 2371, 2392, 2413, 2428, 2450, 2470, 2496, 2523, 2548, 2565, 2596, 2615, 2640, 2653, 2680, 2707, 2736, 2764, 2790, 2820, 2845, 2878, 2894, 2915, 2935, 2956, 2976, 2988, 3006, 3021, 3040, 3063, 3074, 3094, 3113, 3132, 3158, 3181, 3208, 3234, 3252, 3280, 3311, 3332, 3352, 3377, 3396, 3416, 3435, 3454, 3468, 3485, 3501, 3521, 3537, 3549, 3568, 3587, 3596, 3612, 3628, 3640, 3655, 3667, 3678, 3689, 3700, 3713, 3732, 3746, 3759, 3771, 3784, 3803, 3817, 3836, 3853, 3870, 3887, 3904, 3923, 3943, 3962, 3983, 3999, 4010, 4022, 4032, 4042, 4052, 4063, 4078, 4088, 4103, 4113, 4125, 4135, 4145, 4160, 4175, 4191, 4202, 4213, 4231, 4240}
 
 func (i Global) String() string {
 	if i >= Global(len(_Global_index)-1) {
@@ -316,477 +317,479 @@ func GlobalFromString(str string) (Global, error) {
 		return Global(17), nil
 	case "ItemRandomPropertiesID":
 		return Global(18), nil
-	case "ItemDurability":
+	case "ItemTextID":
 		return Global(19), nil
-	case "ItemMaxDurability":
+	case "ItemDurability":
 		return Global(20), nil
-	case "ItemCreatePlayedTime":
+	case "ItemMaxDurability":
 		return Global(21), nil
-	case "ItemPadding":
+	case "ItemCreatePlayedTime":
 		return Global(22), nil
-	case "ItemEnd":
+	case "ItemPadding":
 		return Global(23), nil
-	case "ContainerNumSlots":
+	case "ItemEnd":
 		return Global(24), nil
-	case "ContainerAlignPad":
+	case "ContainerNumSlots":
 		return Global(25), nil
-	case "ContainerSlots":
+	case "ContainerAlignPad":
 		return Global(26), nil
-	case "ContainerEnd":
+	case "ContainerSlots":
 		return Global(27), nil
-	case "UnitStart":
+	case "ContainerEnd":
 		return Global(28), nil
-	case "UnitCharm":
+	case "UnitStart":
 		return Global(29), nil
-	case "UnitSummon":
+	case "UnitCharm":
 		return Global(30), nil
-	case "UnitCritter":
+	case "UnitSummon":
 		return Global(31), nil
-	case "UnitCharmedBy":
+	case "UnitCritter":
 		return Global(32), nil
-	case "UnitSummonedBy":
+	case "UnitCharmedBy":
 		return Global(33), nil
-	case "UnitCreatedBy":
+	case "UnitSummonedBy":
 		return Global(34), nil
-	case "UnitTarget":
+	case "UnitCreatedBy":
 		return Global(35), nil
-	case "UnitPersuaded":
+	case "UnitTarget":
 		return Global(36), nil
-	case "UnitChannelObject":
+	case "UnitPersuaded":
 		return Global(37), nil
-	case "UnitChannelSpell":
+	case "UnitChannelObject":
 		return Global(38), nil
-	case "UnitRace":
+	case "UnitChannelSpell":
 		return Global(39), nil
-	case "UnitClass":
+	case "UnitRace":
 		return Global(40), nil
-	case "UnitGender":
+	case "UnitClass":
 		return Global(41), nil
-	case "UnitPower":
+	case "UnitGender":
 		return Global(42), nil
-	case "UnitHealth":
+	case "UnitPower":
 		return Global(43), nil
-	case "UnitPowers":
+	case "UnitHealth":
 		return Global(44), nil
-	case "UnitMaxHealth":
+	case "UnitPowers":
 		return Global(45), nil
-	case "UnitMaxPowers":
+	case "UnitMaxHealth":
 		return Global(46), nil
-	case "UnitPowerRegenFlatModifier":
+	case "UnitMaxPowers":
 		return Global(47), nil
-	case "UnitPowerRegenInterruptedFlatModifier":
+	case "UnitPowerRegenFlatModifier":
 		return Global(48), nil
-	case "UnitLevel":
+	case "UnitPowerRegenInterruptedFlatModifier":
 		return Global(49), nil
-	case "UnitFactionTemplate":
+	case "UnitLevel":
 		return Global(50), nil
-	case "UnitVirtualItemSlotIDs":
+	case "UnitFactionTemplate":
 		return Global(51), nil
-	case "UnitVirtualItemInfos":
+	case "UnitVirtualItemSlotIDs":
 		return Global(52), nil
-	case "UnitFlags":
+	case "UnitVirtualItemInfos":
 		return Global(53), nil
-	case "UnitFlags2":
+	case "UnitFlags":
 		return Global(54), nil
-	case "UnitAuras":
+	case "UnitFlags2":
 		return Global(55), nil
-	case "UnitAuraFlags":
+	case "UnitAuras":
 		return Global(56), nil
-	case "UnitAuraLevels":
+	case "UnitAuraFlags":
 		return Global(57), nil
-	case "UnitAuraApplications":
+	case "UnitAuraLevels":
 		return Global(58), nil
-	case "UnitAuraState":
+	case "UnitAuraApplications":
 		return Global(59), nil
-	case "UnitBaseAttackTime":
+	case "UnitAuraState":
 		return Global(60), nil
-	case "UnitOffhandAttackTime":
+	case "UnitBaseAttackTime":
 		return Global(61), nil
-	case "UnitRangedAttackTime":
+	case "UnitOffhandAttackTime":
 		return Global(62), nil
-	case "UnitBoundingRadius":
+	case "UnitRangedAttackTime":
 		return Global(63), nil
-	case "UnitCombatReach":
+	case "UnitBoundingRadius":
 		return Global(64), nil
-	case "UnitDisplayID":
+	case "UnitCombatReach":
 		return Global(65), nil
-	case "UnitNativeDisplayID":
+	case "UnitDisplayID":
 		return Global(66), nil
-	case "UnitMountDisplayID":
+	case "UnitNativeDisplayID":
 		return Global(67), nil
-	case "UnitMinDamage":
+	case "UnitMountDisplayID":
 		return Global(68), nil
-	case "UnitMaxDamage":
+	case "UnitMinDamage":
 		return Global(69), nil
-	case "UnitMinOffhandDamage":
+	case "UnitMaxDamage":
 		return Global(70), nil
-	case "UnitMaxOffhandDamage":
+	case "UnitMinOffhandDamage":
 		return Global(71), nil
-	case "UnitStandState":
+	case "UnitMaxOffhandDamage":
 		return Global(72), nil
-	case "UnitLoyaltyLevel":
+	case "UnitStandState":
 		return Global(73), nil
-	case "UnitShapeshiftForm":
+	case "UnitLoyaltyLevel":
 		return Global(74), nil
-	case "UnitStandMiscFlags":
+	case "UnitShapeshiftForm":
 		return Global(75), nil
-	case "UnitPetNumber":
+	case "UnitStandMiscFlags":
 		return Global(76), nil
-	case "UnitPetNameTimestamp":
+	case "UnitPetNumber":
 		return Global(77), nil
-	case "UnitPetExperience":
+	case "UnitPetNameTimestamp":
 		return Global(78), nil
-	case "UnitPetNextLevelExp":
+	case "UnitPetExperience":
 		return Global(79), nil
-	case "UnitDynamicFlags":
+	case "UnitPetNextLevelExp":
 		return Global(80), nil
-	case "UnitModCastSpeed":
+	case "UnitDynamicFlags":
 		return Global(81), nil
-	case "UnitCreatedBySpell":
+	case "UnitModCastSpeed":
 		return Global(82), nil
-	case "UnitNPCFlags":
+	case "UnitCreatedBySpell":
 		return Global(83), nil
-	case "UnitNPCEmoteState":
+	case "UnitNPCFlags":
 		return Global(84), nil
-	case "UnitTrainingPoints":
+	case "UnitNPCEmoteState":
 		return Global(85), nil
-	case "UnitStats":
+	case "UnitTrainingPoints":
 		return Global(86), nil
-	case "UnitPosStats":
+	case "UnitStats":
 		return Global(87), nil
-	case "UnitNegStats":
+	case "UnitPosStats":
 		return Global(88), nil
-	case "UnitResistances":
+	case "UnitNegStats":
 		return Global(89), nil
-	case "UnitResistanceBuffModsPositive":
+	case "UnitResistances":
 		return Global(90), nil
-	case "UnitResistanceBuffModsNegative":
+	case "UnitResistanceBuffModsPositive":
 		return Global(91), nil
-	case "UnitBaseMana":
+	case "UnitResistanceBuffModsNegative":
 		return Global(92), nil
-	case "UnitBaseHealth":
+	case "UnitBaseMana":
 		return Global(93), nil
-	case "UnitSheathState":
+	case "UnitBaseHealth":
 		return Global(94), nil
-	case "UnitAuraByteFlags":
+	case "UnitSheathState":
 		return Global(95), nil
-	case "UnitPetRename":
+	case "UnitAuraByteFlags":
 		return Global(96), nil
-	case "UnitPetShapeshiftForm":
+	case "UnitPetRename":
 		return Global(97), nil
-	case "UnitAttackPower":
+	case "UnitPetShapeshiftForm":
 		return Global(98), nil
-	case "UnitAttackPowerMods":
+	case "UnitAttackPower":
 		return Global(99), nil
-	case "UnitAttackPowerMultiplier":
+	case "UnitAttackPowerMods":
 		return Global(100), nil
-	case "UnitRangedAttackPower":
+	case "UnitAttackPowerMultiplier":
 		return Global(101), nil
-	case "UnitRangedAttackPowerMods":
+	case "UnitRangedAttackPower":
 		return Global(102), nil
-	case "UnitRangedAttackPowerMultiplier":
+	case "UnitRangedAttackPowerMods":
 		return Global(103), nil
-	case "UnitMinRangedDamage":
+	case "UnitRangedAttackPowerMultiplier":
 		return Global(104), nil
-	case "UnitMaxRangedDamage":
+	case "UnitMinRangedDamage":
 		return Global(105), nil
-	case "UnitPowerCostModifier":
+	case "UnitMaxRangedDamage":
 		return Global(106), nil
-	case "UnitPowerCostMultiplier":
+	case "UnitPowerCostModifier":
 		return Global(107), nil
-	case "UnitMaxHealthModifier":
+	case "UnitPowerCostMultiplier":
 		return Global(108), nil
-	case "UnitHoverHeight":
+	case "UnitMaxHealthModifier":
 		return Global(109), nil
-	case "PlayerDuelArbiter":
+	case "UnitHoverHeight":
 		return Global(110), nil
-	case "PlayerFlags":
+	case "PlayerDuelArbiter":
 		return Global(111), nil
-	case "PlayerGuildID":
+	case "PlayerFlags":
 		return Global(112), nil
-	case "PlayerGuildRank":
+	case "PlayerGuildID":
 		return Global(113), nil
-	case "PlayerSkin":
+	case "PlayerGuildRank":
 		return Global(114), nil
-	case "PlayerFace":
+	case "PlayerSkin":
 		return Global(115), nil
-	case "PlayerHairStyle":
+	case "PlayerFace":
 		return Global(116), nil
-	case "PlayerHairColor":
+	case "PlayerHairStyle":
 		return Global(117), nil
-	case "PlayerFacialHair":
+	case "PlayerHairColor":
 		return Global(118), nil
-	case "PlayerRestBits":
+	case "PlayerFacialHair":
 		return Global(119), nil
-	case "PlayerBankBagSlotCount":
+	case "PlayerRestBits":
 		return Global(120), nil
-	case "PlayerRestState":
+	case "PlayerBankBagSlotCount":
 		return Global(121), nil
-	case "PlayerGender":
+	case "PlayerRestState":
 		return Global(122), nil
-	case "PlayerGenderUnk":
+	case "PlayerGender":
 		return Global(123), nil
-	case "PlayerDrunkness":
+	case "PlayerGenderUnk":
 		return Global(124), nil
-	case "PlayerPVPRank":
+	case "PlayerDrunkness":
 		return Global(125), nil
-	case "PlayerDuelTeam":
+	case "PlayerPVPRank":
 		return Global(126), nil
-	case "PlayerGuildTimestamp":
+	case "PlayerDuelTeam":
 		return Global(127), nil
-	case "PlayerQuestLog":
+	case "PlayerGuildTimestamp":
 		return Global(128), nil
-	case "PlayerVisibleItems":
+	case "PlayerQuestLog":
 		return Global(129), nil
-	case "PlayerChosenTitle":
+	case "PlayerVisibleItems":
 		return Global(130), nil
-	case "PlayerFakeInebriation":
+	case "PlayerChosenTitle":
 		return Global(131), nil
-	case "PlayerInventorySlots":
+	case "PlayerFakeInebriation":
 		return Global(132), nil
-	case "PlayerPackSlots":
+	case "PlayerInventorySlots":
 		return Global(133), nil
-	case "PlayerBankSlots":
+	case "PlayerPackSlots":
 		return Global(134), nil
-	case "PlayerBankBagSlots":
+	case "PlayerBankSlots":
 		return Global(135), nil
-	case "PlayerVendorBuybackSlots":
+	case "PlayerBankBagSlots":
 		return Global(136), nil
-	case "PlayerKeyringSlots":
+	case "PlayerVendorBuybackSlots":
 		return Global(137), nil
-	case "PlayerCurrencyTokenSlots":
+	case "PlayerKeyringSlots":
 		return Global(138), nil
-	case "PlayerFarSight":
+	case "PlayerCurrencyTokenSlots":
 		return Global(139), nil
-	case "PlayerFieldComboTarget":
+	case "PlayerFarSight":
 		return Global(140), nil
-	case "PlayerKnownTitles":
+	case "PlayerFieldComboTarget":
 		return Global(141), nil
-	case "PlayerKnownCurrencies":
+	case "PlayerKnownTitles":
 		return Global(142), nil
-	case "PlayerXP":
+	case "PlayerKnownCurrencies":
 		return Global(143), nil
-	case "PlayerNextLevelXP":
+	case "PlayerXP":
 		return Global(144), nil
-	case "PlayerSkillInfos":
+	case "PlayerNextLevelXP":
 		return Global(145), nil
-	case "PlayerCharacterPoints":
+	case "PlayerSkillInfos":
 		return Global(146), nil
-	case "PlayerTrackCreatures":
+	case "PlayerCharacterPoints":
 		return Global(147), nil
-	case "PlayerTrackResources":
+	case "PlayerTrackCreatures":
 		return Global(148), nil
-	case "PlayerBlockPercentage":
+	case "PlayerTrackResources":
 		return Global(149), nil
-	case "PlayerDodgePercentage":
+	case "PlayerBlockPercentage":
 		return Global(150), nil
-	case "PlayerParryPercentage":
+	case "PlayerDodgePercentage":
 		return Global(151), nil
-	case "PlayerExpertise":
+	case "PlayerParryPercentage":
 		return Global(152), nil
-	case "PlayerOffhandExpertise":
+	case "PlayerExpertise":
 		return Global(153), nil
-	case "PlayerCritPercentage":
+	case "PlayerOffhandExpertise":
 		return Global(154), nil
-	case "PlayerRangedCritPercentage":
+	case "PlayerCritPercentage":
 		return Global(155), nil
-	case "PlayerOffhandCritPercentage":
+	case "PlayerRangedCritPercentage":
 		return Global(156), nil
-	case "PlayerSpellCritPercentage":
+	case "PlayerOffhandCritPercentage":
 		return Global(157), nil
-	case "PlayerShieldBlock":
+	case "PlayerSpellCritPercentage":
 		return Global(158), nil
-	case "PlayerShieldBlockCritPercentage":
+	case "PlayerShieldBlock":
 		return Global(159), nil
-	case "PlayerExploredZones":
+	case "PlayerShieldBlockCritPercentage":
 		return Global(160), nil
-	case "PlayerRestStateExperience":
+	case "PlayerExploredZones":
 		return Global(161), nil
-	case "PlayerCoinage":
+	case "PlayerRestStateExperience":
 		return Global(162), nil
-	case "PlayerModDamageDonePositive":
+	case "PlayerCoinage":
 		return Global(163), nil
-	case "PlayerModDamageDoneNegative":
+	case "PlayerModDamageDonePositive":
 		return Global(164), nil
-	case "PlayerModDamageDonePercentage":
+	case "PlayerModDamageDoneNegative":
 		return Global(165), nil
-	case "PlayerModHealingDonePositive":
+	case "PlayerModDamageDonePercentage":
 		return Global(166), nil
-	case "PlayerModHealingPercentage":
+	case "PlayerModHealingDonePositive":
 		return Global(167), nil
-	case "PlayerModHealingDonePercentage":
+	case "PlayerModHealingPercentage":
 		return Global(168), nil
-	case "PlayerModTargetResistance":
+	case "PlayerModHealingDonePercentage":
 		return Global(169), nil
-	case "PlayerModTargetPhysicalResistance":
+	case "PlayerModTargetResistance":
 		return Global(170), nil
-	case "PlayerFieldBytes":
+	case "PlayerModTargetPhysicalResistance":
 		return Global(171), nil
-	case "PlayerFieldBytesFlags":
+	case "PlayerFieldBytes":
 		return Global(172), nil
-	case "PlayerFieldBytesUnk1":
+	case "PlayerFieldBytesFlags":
 		return Global(173), nil
-	case "PlayerActionBarToggle":
+	case "PlayerFieldBytesUnk1":
 		return Global(174), nil
-	case "PlayerFieldBytesUnk2":
+	case "PlayerActionBarToggle":
 		return Global(175), nil
-	case "PlayerAmmoID":
+	case "PlayerFieldBytesUnk2":
 		return Global(176), nil
-	case "PlayerSelfResSpell":
+	case "PlayerAmmoID":
 		return Global(177), nil
-	case "PlayerPVPMedals":
+	case "PlayerSelfResSpell":
 		return Global(178), nil
-	case "PlayerBuybackPrices":
+	case "PlayerPVPMedals":
 		return Global(179), nil
-	case "PlayerBuybackTimestamps":
+	case "PlayerBuybackPrices":
 		return Global(180), nil
-	case "PlayerKills":
+	case "PlayerBuybackTimestamps":
 		return Global(181), nil
-	case "PlayerYesterdayKills":
+	case "PlayerKills":
 		return Global(182), nil
-	case "PlayerLastWeekKills":
+	case "PlayerYesterdayKills":
 		return Global(183), nil
-	case "PlayerThisWeekKills":
+	case "PlayerLastWeekKills":
 		return Global(184), nil
-	case "PlayerThisWeekContribution":
+	case "PlayerThisWeekKills":
 		return Global(185), nil
-	case "PlayerTodayContribution":
+	case "PlayerThisWeekContribution":
 		return Global(186), nil
-	case "PlayerYesterdayContribution":
+	case "PlayerTodayContribution":
 		return Global(187), nil
-	case "PlayerLastWeekContribution":
+	case "PlayerYesterdayContribution":
 		return Global(188), nil
-	case "PlayerLastWeekRank":
+	case "PlayerLastWeekContribution":
 		return Global(189), nil
-	case "PlayerLifetimeHonorableKills":
+	case "PlayerLastWeekRank":
 		return Global(190), nil
-	case "PlayerLifetimeDishonorableKills":
+	case "PlayerLifetimeHonorableKills":
 		return Global(191), nil
-	case "PlayerHonorRankPoints":
+	case "PlayerLifetimeDishonorableKills":
 		return Global(192), nil
-	case "PlayerDetectionFlags":
+	case "PlayerHonorRankPoints":
 		return Global(193), nil
-	case "PlayerWatchedFactionIndex":
+	case "PlayerDetectionFlags":
 		return Global(194), nil
-	case "PlayerCombatRatings":
+	case "PlayerWatchedFactionIndex":
 		return Global(195), nil
-	case "PlayerArenaTeamInfos":
+	case "PlayerCombatRatings":
 		return Global(196), nil
-	case "PlayerHonorCurrency":
+	case "PlayerArenaTeamInfos":
 		return Global(197), nil
-	case "PlayerArenaCurrency":
+	case "PlayerHonorCurrency":
 		return Global(198), nil
-	case "PlayerMaxLevel":
+	case "PlayerArenaCurrency":
 		return Global(199), nil
-	case "PlayerDailyQuests":
+	case "PlayerMaxLevel":
 		return Global(200), nil
-	case "PlayerRuneRegens":
+	case "PlayerDailyQuests":
 		return Global(201), nil
-	case "PlayerNoReagentCosts":
+	case "PlayerRuneRegens":
 		return Global(202), nil
-	case "PlayerGlyphSlots":
+	case "PlayerNoReagentCosts":
 		return Global(203), nil
-	case "PlayerGlyphs":
+	case "PlayerGlyphSlots":
 		return Global(204), nil
-	case "PlayerGlyphsEnabled":
+	case "PlayerGlyphs":
 		return Global(205), nil
-	case "PlayerPetSpellPower":
+	case "PlayerGlyphsEnabled":
 		return Global(206), nil
-	case "PlayerEnd":
+	case "PlayerPetSpellPower":
 		return Global(207), nil
-	case "GObjectCreatedBy":
+	case "PlayerEnd":
 		return Global(208), nil
-	case "GObjectDisplayID":
+	case "GObjectCreatedBy":
 		return Global(209), nil
-	case "GObjectFlags":
+	case "GObjectDisplayID":
 		return Global(210), nil
-	case "GObjectRotation":
+	case "GObjectFlags":
 		return Global(211), nil
-	case "GObjectState":
+	case "GObjectRotation":
 		return Global(212), nil
-	case "GObjectPosX":
+	case "GObjectState":
 		return Global(213), nil
-	case "GObjectPosY":
+	case "GObjectPosX":
 		return Global(214), nil
-	case "GObjectPosZ":
+	case "GObjectPosY":
 		return Global(215), nil
-	case "GObjectFacing":
+	case "GObjectPosZ":
 		return Global(216), nil
-	case "GObjectDynamicFlags":
+	case "GObjectFacing":
 		return Global(217), nil
-	case "GObjectFaction":
+	case "GObjectDynamicFlags":
 		return Global(218), nil
-	case "GObjectTypeID":
+	case "GObjectFaction":
 		return Global(219), nil
-	case "GObjectLevel":
+	case "GObjectTypeID":
 		return Global(220), nil
-	case "GObjectArtKit":
+	case "GObjectLevel":
 		return Global(221), nil
-	case "GObjectAnimProgress":
+	case "GObjectArtKit":
 		return Global(222), nil
-	case "GObjectPadding":
+	case "GObjectAnimProgress":
 		return Global(223), nil
-	case "DynamicObjectCaster":
+	case "GObjectPadding":
 		return Global(224), nil
-	case "DynamicObjectType":
+	case "DynamicObjectCaster":
 		return Global(225), nil
-	case "DynamicObjectPosX":
+	case "DynamicObjectType":
 		return Global(226), nil
-	case "DynamicObjectPosY":
+	case "DynamicObjectPosX":
 		return Global(227), nil
-	case "DynamicObjectPosZ":
+	case "DynamicObjectPosY":
 		return Global(228), nil
-	case "DynamicObjectFacing":
+	case "DynamicObjectPosZ":
 		return Global(229), nil
-	case "DynamicObjectSpellID":
+	case "DynamicObjectFacing":
 		return Global(230), nil
-	case "DynamicObjectRadius":
+	case "DynamicObjectSpellID":
 		return Global(231), nil
-	case "DynamicObjectCastTime":
+	case "DynamicObjectRadius":
 		return Global(232), nil
-	case "DynamicObjectEnd":
+	case "DynamicObjectCastTime":
 		return Global(233), nil
-	case "CorpseOwner":
+	case "DynamicObjectEnd":
 		return Global(234), nil
-	case "CorpseFacing":
+	case "CorpseOwner":
 		return Global(235), nil
-	case "CorpsePosX":
+	case "CorpseFacing":
 		return Global(236), nil
-	case "CorpsePosY":
+	case "CorpsePosX":
 		return Global(237), nil
-	case "CorpsePosZ":
+	case "CorpsePosY":
 		return Global(238), nil
-	case "CorpseParty":
+	case "CorpsePosZ":
 		return Global(239), nil
-	case "CorpseDisplayID":
+	case "CorpseParty":
 		return Global(240), nil
-	case "CorpseItem":
+	case "CorpseDisplayID":
 		return Global(241), nil
-	case "CorpsePlayerUnk":
+	case "CorpseItem":
 		return Global(242), nil
-	case "CorpseRace":
+	case "CorpsePlayerUnk":
 		return Global(243), nil
-	case "CorpseGender":
+	case "CorpseRace":
 		return Global(244), nil
-	case "CorpseSkin":
+	case "CorpseGender":
 		return Global(245), nil
-	case "CorpseFace":
+	case "CorpseSkin":
 		return Global(246), nil
-	case "CorpseHairStyle":
+	case "CorpseFace":
 		return Global(247), nil
-	case "CorpseHairColor":
+	case "CorpseHairStyle":
 		return Global(248), nil
-	case "CorpseFacialHair":
+	case "CorpseHairColor":
 		return Global(249), nil
-	case "CorpseGuild":
+	case "CorpseFacialHair":
 		return Global(250), nil
-	case "CorpseFlags":
+	case "CorpseGuild":
 		return Global(251), nil
-	case "CorpseDynamicFlags":
+	case "CorpseFlags":
 		return Global(252), nil
-	case "CorpsePad":
+	case "CorpseDynamicFlags":
 		return Global(253), nil
+	case "CorpsePad":
+		return Global(254), nil
 	default:
-		return 0, fmt.Errorf("could not find code for string")
+		return 0, fmt.Errorf("could not find code for string %s", str)
 	}
 }

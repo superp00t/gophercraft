@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	CoreVersion = "0.1"
+	CoreVersion = "0.2"
 
 	ErrInvalidPath = fmt.Errorf("vsn: invalid game path")
 )

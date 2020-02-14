@@ -29,6 +29,7 @@ const (
 	ItemEnchantment
 	ItemPropertySeed
 	ItemRandomPropertiesID
+	ItemTextID
 	ItemDurability
 	ItemMaxDurability
 	ItemCreatePlayedTime

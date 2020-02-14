@@ -45,9 +45,10 @@ func (s *Session) HandleWho(b []byte) {
 		whoMatches[_i] = packet.WhoMatch{
 			PlayerName: user,
 			GuildName:  "",
-			Level:      uint32(playerPtr.GetPlayerLevel()),
+			Level:      uint32(playerPtr.GetLevel()),
 			Class:      uint32(playerPtr.GetPlayerClass()),
 			Race:       uint32(playerPtr.GetPlayerRace()),
+			ZoneID:     playerPtr.ZoneID,
 		}
 	}
 

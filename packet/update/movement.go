@@ -233,18 +233,18 @@ var (
 	}
 )
 
-type Quaternion struct {
+type Position struct {
 	Point3
 	O float32
 }
 
-func EncodeQuaternion(out *etc.Buffer, q Quaternion) {
+func EncodePosition(out *etc.Buffer, q Position) {
 	EncodePoint3(out, q.Point3)
 	out.WriteFloat32(q.O)
 }
 
-func DecodeQuaternion(in *etc.Buffer) Quaternion {
-	q := Quaternion{}
+func DecodePosition(in *etc.Buffer) Position {
+	q := Position{}
 	q.Point3 = DecodePoint3(in)
 	q.O = in.ReadFloat32()
 	return q
@@ -257,7 +257,7 @@ type MovementBlock struct {
 	Info        *MovementInfo
 	Speeds      Speeds
 	Spline      *MoveSpline
-	Position    Quaternion
+	Position    Position
 	All         uint32
 	HighGUID    uint32
 	Victim      guid.GUID
@@ -347,11 +347,11 @@ func EncodeMovementInfo(version uint32, out *etc.Buffer, mi *MovementInfo) error
 	}
 
 	out.WriteUint32(mi.Time)
-	EncodeQuaternion(out, mi.Position)
+	EncodePosition(out, mi.Position)
 
 	if mi.Flags&MoveFlagOnTransport != 0 {
 		mi.TransportGUID.EncodePacked(version, out)
-		EncodeQuaternion(out, mi.TransportPosition)
+		EncodePosition(out, mi.TransportPosition)
 	}
 
 	if mi.Flags&MoveFlagSwimming != 0 {
@@ -382,14 +382,14 @@ func DecodeMovementInfo(version uint32, in *etc.Buffer) (*MovementInfo, error) {
 		return nil, err
 	}
 	info.Time = in.ReadUint32()
-	info.Position = DecodeQuaternion(in)
+	info.Position = DecodePosition(in)
 
 	if info.Flags&MoveFlagOnTransport != 0 {
 		info.TransportGUID, err = guid.DecodePacked(version, in)
 		if err != nil {
 			return nil, err
 		}
-		info.TransportPosition = DecodeQuaternion(in)
+		info.TransportPosition = DecodePosition(in)
 	}
 
 	if info.Flags&MoveFlagSwimming != 0 {
@@ -415,10 +415,10 @@ func DecodeMovementInfo(version uint32, in *etc.Buffer) (*MovementInfo, error) {
 type MovementInfo struct {
 	Flags    MoveFlags
 	Time     uint32
-	Position Quaternion
+	Position Position
 
 	TransportGUID     guid.GUID
-	TransportPosition Quaternion
+	TransportPosition Position
 	TransportTime     uint32
 
 	SwimPitch    float32
@@ -429,6 +429,10 @@ type MovementInfo struct {
 	FallXYSpeed  float32
 
 	SplineElevation float32
+}
+
+func (mBlock *MovementBlock) Type() BlockType {
+	return Movement
 }
 
 // only supports 5875 so far
@@ -461,7 +465,7 @@ func DecodeMovementBlock(version uint32, in *etc.Buffer) (*MovementBlock, error)
 			}
 		}
 	} else if mBlock.UpdateFlags&UpdateFlagHasPosition != 0 {
-		mBlock.Position = DecodeQuaternion(in)
+		mBlock.Position = DecodePosition(in)
 	}
 
 	if mBlock.UpdateFlags&UpdateFlagHighGUID != 0 {
@@ -510,7 +514,7 @@ func (mb *MovementBlock) WriteTo(g guid.GUID, e *Encoder) error {
 			}
 		}
 	} else if mb.UpdateFlags&UpdateFlagHasPosition != 0 {
-		EncodeQuaternion(e.Buffer, mb.Position)
+		EncodePosition(e.Buffer, mb.Position)
 	}
 
 	if mb.UpdateFlags&UpdateFlagHighGUID != 0 {

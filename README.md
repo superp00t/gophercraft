@@ -44,7 +44,7 @@ Some caveats: Gophercraft is currently in development and **extremely** unstable
 
 Gophercraft uses [xorm](https://xorm.io/) for storing data.
 
-MaNGOS-based cores require the installation of an entire SQL database to use their content, whereas Gophercraft Core uses [datapacks.](datapack).
+MaNGOS-based cores require the installation of an entire SQL database to use their content, whereas Gophercraft Core uses [datapacks.](datapack)
 
 Datapacks are ZIP archives (alternatively uncompressed folders), which containerize both tabular data (CSV) and scripting (Lua). Upon the launch of the worldserver, these datapacks are combined and dynamically loaded into your SQL database, where they can be quickly queried. This makes them ideal for making modifications to the game.
 

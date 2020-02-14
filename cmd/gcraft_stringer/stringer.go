@@ -304,7 +304,7 @@ func (g *Generator) generate(typeName string) {
 		for _, v := range values {
 			g.Printf("\t\tcase \"%s\":\n\treturn %s(%d), nil\n", v.originalName, typeName, v.value)
 		}
-		g.Printf("\t\tdefault:\n\treturn 0, fmt.Errorf(\"could not find code for string\")\n\t}\n}\n")
+		g.Printf("\t\tdefault:\n\treturn 0, fmt.Errorf(\"could not find code for string %%s\", str)\n\t}\n}\n")
 	}
 }
 

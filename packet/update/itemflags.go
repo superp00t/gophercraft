@@ -1,7 +1,9 @@
 package update
 
 import (
+	"encoding/binary"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -134,6 +136,10 @@ func (x ItemFlag) String() string {
 }
 
 func ParseItemFlag(str string) (ItemFlag, error) {
+	if str == "" {
+		return 0, nil
+	}
+
 	s := strings.Split(str, "|")
 
 	flag := ItemFlag(0)
@@ -165,4 +171,34 @@ func DecodeItemFlagInteger(version uint32, value uint64) (ItemFlag, error) {
 	}
 
 	return iflag, nil
+}
+
+func (iflg ItemFlag) Resolve(version uint32) (uint64, error) {
+	desc, ok := ItemFlagDescriptors[version]
+
+	if !ok {
+		return 0, fmt.Errorf("no descriptor found for version %d", version)
+	}
+	out := uint64(0)
+
+	for code, flags := range desc {
+		if iflg&code != 0 {
+			out |= flags
+		}
+	}
+
+	return out, nil
+}
+
+func (iflg ItemFlag) Encode(wr io.Writer, version uint32) error {
+	code, err := iflg.Resolve(version)
+	if err != nil {
+		panic(err)
+	}
+	var data [4]byte
+
+	binary.LittleEndian.PutUint32(data[:], uint32(code))
+	_, err = wr.Write(data[:])
+
+	return err
 }

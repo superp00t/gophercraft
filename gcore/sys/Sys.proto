@@ -6,10 +6,10 @@ option go_package = "sys";
 
 enum Status {
     SysOK = 0;
-	SysUnauthorized = 1;
-	SysOffline = 2;
-	SysDisabled = 3;
-	SysRatelimited = 4;
+    SysUnauthorized = 1;
+    SysOffline = 2;
+    SysDisabled = 3;
+    SysRatelimited = 4;
 }
 
 enum Tier {
@@ -31,6 +31,7 @@ message PingMsg {
     uint64 Time = 1;
 }
 
+// Sent from worldserver to gcore server upon a player connection.
 message VerifyWorldQuery {
     uint64 RealmID = 1;
     uint32 Build = 2;
@@ -40,6 +41,13 @@ message VerifyWorldQuery {
     bytes  Seed = 6;
     bytes  Salt = 7;
     string GameAccount = 8;
+}
+
+message VerifyWorldResponse {
+    Status Status = 1;
+    Tier   Tier = 2;
+    bytes  SessionKey = 3;
+    uint64 GameAccount = 4;
 }
 
 message AnnounceRealmMsg {
@@ -52,12 +60,6 @@ message AnnounceRealmMsg {
     uint32 ActivePlayers = 8;
 }
 
-message VerifyWorldResponse {
-    Status Status = 1;
-    Tier   Tier = 2;
-    bytes  SessionKey = 3;
-    uint64 GameAccount = 4;
-}
 
 message Info {
 }

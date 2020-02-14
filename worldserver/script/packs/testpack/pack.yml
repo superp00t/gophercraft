@@ -1,0 +1,7 @@
+name: testpack
+
+server_scripts:
+  - test.lua
+  - test2.lua
+  - stuff/test3.lua
+  - stuff/nested/test4.lua

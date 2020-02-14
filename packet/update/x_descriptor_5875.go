@@ -24,16 +24,15 @@ func init5875() {
 	item.Uint32Array(ItemEnchantment, 21, Public)
 	item.Uint32(ItemPropertySeed, Public)
 	item.Uint32(ItemRandomPropertiesID, Public)
+	item.Uint32(ItemTextID, Public)
 	item.Uint32(ItemDurability, Public)
 	item.Uint32(ItemMaxDurability, Public)
-	item.Uint32(ItemCreatePlayedTime, Public)
-	item.Pad()
 
 	// class Container : Item
 	container := item.Extend("Container")
 	container.Uint32(ContainerNumSlots, Public)
 	container.Uint32(ContainerAlignPad, Public)
-	container.GUIDArray(ContainerSlots, 72, Public)
+	container.GUIDArray(ContainerSlots, 36, Public)
 
 	// class Unit : Object
 	unit := obj.Extend("Unit")
@@ -155,8 +154,7 @@ func init5875() {
 	visItems.Pad()
 	visItems.End()
 
-	plyr.GUIDArray(PlayerInventorySlots, 23, Private)
-	plyr.GUIDArray(PlayerPackSlots, 16, Private)
+	plyr.GUIDArray(PlayerInventorySlots, 39, Private)
 	plyr.GUIDArray(PlayerBankSlots, 24, Private)
 	plyr.GUIDArray(PlayerBankBagSlots, 6, Private)
 	plyr.GUIDArray(PlayerVendorBuybackSlots, 12, Private)
@@ -218,7 +216,7 @@ func init5875() {
 	gobj.GUID(GObjectCreatedBy, Public)
 	gobj.Uint32(GObjectDisplayID, Public)
 	gobj.Uint32(GObjectFlags, Public)
-	gobj.Uint32(GObjectRotation, Public)
+	gobj.Float32Array(GObjectRotation, 4, Public)
 	gobj.Uint32(GObjectState, Public)
 	gobj.Float32(GObjectPosX, Public)
 	gobj.Float32(GObjectPosY, Public)

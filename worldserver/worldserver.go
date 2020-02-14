@@ -16,6 +16,7 @@ import (
 	"github.com/superp00t/gophercraft/gcore/config"
 	"github.com/superp00t/gophercraft/guid"
 	"github.com/superp00t/gophercraft/packet"
+	"github.com/superp00t/gophercraft/worldserver/script"
 	"github.com/superp00t/gophercraft/worldserver/wdb"
 )
 
@@ -23,20 +24,26 @@ type WorldServer struct {
 	Config            *config.World
 	DB                *wdb.Core
 	PhaseL            sync.Mutex
-	Phases            map[uint32]*Phase
+	Phases            map[string]*Phase
 	PlayersL          sync.Mutex
 	PlayerList        map[string]*Session
 	PackLoader        *datapack.Loader
+	ScriptEngine      *script.Engine
+	scriptFunc        chan func() error
+	eventMgr          sync.Map
 	handlers          *Handlers
 	AuthServiceClient sys.AuthServiceClient
 	tlsConfig         *tls.Config
+	gameObjectCounter uint64
 }
 
 func Start(opts *config.World) error {
 	ws := &WorldServer{}
 	ws.Config = opts
-	ws.Phases = make(map[uint32]*Phase)
+	ws.Phases = make(map[string]*Phase)
 	ws.PlayerList = make(map[string]*Session)
+	ws.scriptFunc = make(chan func() error)
+	ws.gameObjectCounter = 1
 	core, err := wdb.NewCore(opts.DBDriver, opts.DBURL)
 	if err != nil {
 		return err
