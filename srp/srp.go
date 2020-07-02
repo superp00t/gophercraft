@@ -1,13 +1,21 @@
+//Package srp implements a backward-compatible version of SRP-6.
+//Warning: this package is ONLY suitable for Gophercraft.
+//Do not use it in any other case: it provides little in the way of security.
+
 package srp
 
 import (
 	"bytes"
 	"crypto/sha1"
+	"fmt"
 	"strings"
 )
 
-// Warning: this package is ONLY suitable for Gophercraft.
-// Do not use it in any other case: it provides no actual security.
+var (
+	Generator  = BigNumFromInt(7)
+	Multiplier = BigNumFromInt(3)
+	Prime      = NewBigNumFromHex("894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7")
+)
 
 func Credentials(username, password string) []byte {
 	I := strings.ToUpper(username)
@@ -20,26 +28,61 @@ func hash(input ...[]byte) []byte {
 	return bt[:]
 }
 
+// Ngh = XOR(H(N), H(g))
+func HashPrimeAndGenerator(N, g *BigNum) []byte {
+	Nh := hash(N.ToArray())
+	gh := hash(g.ToArray())
+
+	Ngh := make([]byte, 20)
+	for i := 0; i < 20; i++ {
+		Ngh[i] = Nh[i] ^ gh[i]
+	}
+
+	return Ngh
+}
+
+// Compute auth := H('username' + ':' + 'pass')
+// g := 7
+// ....
+// x := H(salt, auth)
+// v := (g^x) % N
+//
+func CalculateVerifier(auth []byte, g, N, salt *BigNum) (x *BigNum, v *BigNum) {
+	fmt.Println("calculating g=", g.ToHex(), "N=", N.ToHex())
+	x = BigNumFromArray(hash(salt.ToArray(), auth))
+	v = g.ModExp(x, N)
+	fmt.Println("done calculating")
+	return x, v
+}
+
+func ServerGenerateEphemeralValues(g, N, v *BigNum) (b *BigNum, B *BigNum) {
+	b = BigNumFromRand(19)
+	gMod := g.ModExp(b, N)
+	B = ((v.Multiply(Multiplier.Copy())).Add(gMod)).Mod(N)
+	return
+}
+
 func SRPCalculate(username, password string, _B, n, salt []byte) (*BigNum, []byte, []byte, []byte) {
 	auth := HashCredentials(username, password)
 	return HashCalculate(username, auth, _B, n, salt)
 }
 
-func HashCalculate(username string, auth, _B, n, salt []byte) (*BigNum, []byte, []byte, []byte) {
-	g := BigNumFromInt(7)
-	k := BigNumFromInt(3)
+func HashCalculate(username string, auth, _B, _N, salt []byte) (*BigNum, []byte, []byte, []byte) {
+	g := Generator.Copy()
+	k := Multiplier.Copy()
 
-	N := BigNumFromArray(n)
+	N := BigNumFromArray(_N)
 	s := BigNumFromArray(salt)
+
+	fmt.Println("Calculating verifier")
+
+	x, v := CalculateVerifier(auth, g, N, s)
+	fmt.Println("Calculatiedverifier")
 
 	a := BigNumFromRand(19)
 	A := g.ModExp(a, N)
 
 	B := BigNumFromArray(_B)
-
-	x := BigNumFromArray(hash(s.ToArray(), auth))
-
-	v := g.ModExp(x, N)
 
 	uh := hash(A.ToArray(), B.ToArray())
 	u := BigNumFromArray(uh)
@@ -75,13 +118,7 @@ func HashCalculate(username string, auth, _B, n, salt []byte) (*BigNum, []byte, 
 
 	userh := hash([]byte(strings.ToUpper(username)))
 
-	Nh := hash(N.ToArray())
-	gh := hash(g.ToArray())
-
-	Ngh := make([]byte, 20)
-	for i := 0; i < 20; i++ {
-		Ngh[i] = Nh[i] ^ gh[i]
-	}
+	Ngh := HashPrimeAndGenerator(N, g)
 
 	M1 := hash(
 		Ngh,
@@ -99,18 +136,8 @@ func HashCredentials(username, password string) []byte {
 	return hash(Credentials(username, password))
 }
 
-// ServerCalcVS
-func ServerCalcVSX(hsh []byte, N *BigNum) (*BigNum, *BigNum, *BigNum) {
-	s := BigNumFromRand(32)
-
-	x := BigNumFromArray(hash(s.ToArray(), hsh))
-	v := BigNumFromInt(7).ModExp(x, N)
-
-	return v, s, x
-}
-
 func ServerLogonProof(username string, A, M1, b, B, s, N, v *BigNum) ([]byte, bool, []byte) {
-	g := BigNumFromInt(7)
+	g := Generator.Copy()
 
 	u := BigNumFromArray(hash(A.ToArray(), B.ToArray()))
 	if A.Mod(N).Equals(BigNumFromInt(0)) {
@@ -162,6 +189,6 @@ func ServerLogonProof(username string, A, M1, b, B, s, N, v *BigNum) ([]byte, bo
 		K.ToArray(),
 	)
 
-	M3 := hash(A.ToArray(), final, K.ToArray())
-	return vK, bytes.Equal(final, M1.ToArray()), M3
+	M2 := hash(A.ToArray(), final, K.ToArray())
+	return vK, bytes.Equal(final, M1.ToArray()), M2
 }

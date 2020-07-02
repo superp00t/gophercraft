@@ -12,15 +12,16 @@ func _() {
 	_ = x[Uint16-1]
 	_ = x[Uint32-2]
 	_ = x[Uint64-3]
-	_ = x[Float-4]
-	_ = x[String-5]
-	_ = x[Array-6]
-	_ = x[Slice-7]
+	_ = x[Int32-4]
+	_ = x[Float-5]
+	_ = x[String-6]
+	_ = x[Array-7]
+	_ = x[Slice-8]
 }
 
-const _FieldType_name = "Uint8Uint16Uint32Uint64FloatStringArraySlice"
+const _FieldType_name = "Uint8Uint16Uint32Uint64Int32FloatStringArraySlice"
 
-var _FieldType_index = [...]uint8{0, 5, 11, 17, 23, 28, 34, 39, 44}
+var _FieldType_index = [...]uint8{0, 5, 11, 17, 23, 28, 33, 39, 44, 49}
 
 func (i FieldType) String() string {
 	if i < 0 || i >= FieldType(len(_FieldType_index)-1) {

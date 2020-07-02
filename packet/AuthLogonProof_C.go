@@ -23,7 +23,15 @@ func (alpc *AuthLogonProof_C) Encode() []byte {
 	buf.WriteByte(uint8(alpc.Cmd))
 	buf.Write(alpc.A)
 	buf.Write(alpc.M1)
-	buf.Write(randomBuffer(20))
+	if len(alpc.CRC) == 0 {
+		buf.Write(RandomBuffer(20))
+	} else {
+		if len(alpc.CRC) != 20 {
+			panic("invalid CRC length")
+		}
+
+		buf.Write(alpc.CRC)
+	}
 	buf.WriteByte(alpc.NumberOfKeys)
 	buf.WriteByte(alpc.SecFlags)
 	return buf.Bytes()

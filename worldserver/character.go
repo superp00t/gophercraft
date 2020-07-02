@@ -6,6 +6,7 @@ import (
 	"github.com/superp00t/etc"
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/format/dbc"
+	"github.com/superp00t/gophercraft/vsn"
 	"github.com/superp00t/gophercraft/worldserver/wdb"
 
 	"github.com/superp00t/gophercraft/guid"
@@ -54,7 +55,7 @@ func (s *WorldServer) ScrubCharacter(chr guid.GUID) {
 }
 
 func (s *Session) getEquipment(chr uint64) []packet.Item {
-	itemList := make([]packet.Item, packet.EquipLen(s.Version()))
+	itemList := make([]packet.Item, packet.EquipLen(s.Build()))
 	var inventory []wdb.Inventory
 	err := s.DB().Where("player = ?", chr).Where("bag = 255").Where("slot < 19").Find(&inventory)
 	if err != nil {
@@ -77,12 +78,11 @@ func (s *Session) getEquipment(chr uint64) []packet.Item {
 
 		// No transmog
 		if item.DisplayID == 0 {
-			var itt wdb.ItemTemplate
-			found, err := s.DB().Where("id = ?", item.ItemID).Get(&itt)
-			if !found {
-				panic(err)
+			var itt *wdb.ItemTemplate
+			wdb.GetData(item.ItemID, &itt)
+			if itt != nil {
+				pi.Model = itt.DisplayID
 			}
-			pi.Model = itt.DisplayID
 		}
 
 		if len(item.Enchantments) > 0 {
@@ -110,8 +110,34 @@ func (s *Session) CharacterList(b []byte) {
 	}
 
 	for _, v := range chars {
+		characterGUID := guid.RealmSpecific(guid.Player, s.WS.RealmID(), v.ID)
+
+		var flags packet.CharacterFlags
+
+		sess, _ := s.WS.GetSessionByGUID(characterGUID)
+		if sess != nil {
+			flags |= packet.CharacterLockedForTransfer
+		}
+
+		if v.HideHelm {
+			flags |= packet.CharacterHideHelm
+		}
+
+		if v.HideCloak {
+			flags |= packet.CharacterHideCloak
+		}
+
+		if v.Ghost {
+			flags |= packet.CharacterGhost
+		}
+
+		level := v.Level
+		if level > 255 {
+			level = 0
+		}
+
 		pktChars = append(pktChars, packet.Character{
-			GUID:       guid.RealmSpecific(guid.Player, s.WS.RealmID(), v.ID),
+			GUID:       characterGUID,
 			Name:       v.Name,
 			Race:       packet.Race(v.Race),
 			Class:      packet.Class(v.Class),
@@ -121,10 +147,11 @@ func (s *Session) CharacterList(b []byte) {
 			HairStyle:  v.HairStyle,
 			HairColor:  v.HairColor,
 			FacialHair: v.FacialHair,
-			Level:      v.Level,
-			Zone:       12,    // Goldshire. Once the login test is complete,
-			Map:        v.Map, // and players can move around within Goldshire without error
-			X:          v.X,   // we can replace this with database data.
+			Level:      uint8(v.Level),
+			Flags:      flags,
+			Zone:       v.Zone, // Goldshire. Once the login test is complete,
+			Map:        v.Map,  // and players can move around within Goldshire without error
+			X:          v.X,    // we can replace this with database data.
 			Y:          v.Y,
 			Z:          v.Z,
 			Equipment:  s.getEquipment(v.ID),
@@ -135,13 +162,12 @@ func (s *Session) CharacterList(b []byte) {
 		Characters: pktChars,
 	}
 
-	fmt.Println("Sending a response")
-	s.SendAsync(list.Packet(s.Version()))
+	s.SendAsync(list.Packet(s.Build()))
 }
 
 func (s *Session) SendCharacterOp(opcode packet.CharacterOp) {
 	pkt := packet.NewWorldPacket(packet.SMSG_CHAR_CREATE)
-	if err := packet.EncodeCharacterOp(s.Version(), pkt.Buffer, opcode); err != nil {
+	if err := packet.EncodeCharacterOp(s.Build(), pkt.Buffer, opcode); err != nil {
 		panic(err)
 	}
 	s.SendAsync(pkt)
@@ -152,7 +178,7 @@ func (s *Session) DeleteCharacter(b []byte) {
 	s.WS.ScrubCharacter(gui)
 	pkt := packet.NewWorldPacket(packet.SMSG_CHAR_DELETE)
 	op := packet.CHAR_DELETE_SUCCESS
-	if err := packet.EncodeCharacterOp(s.Version(), pkt.Buffer, op); err != nil {
+	if err := packet.EncodeCharacterOp(s.Build(), pkt.Buffer, op); err != nil {
 		panic(err)
 	}
 	s.SendAsync(pkt)
@@ -196,19 +222,29 @@ func (s *Session) CreateCharacter(b []byte) {
 	pch.Z = 56.3225
 	pch.O = 2.1115
 
-	var race dbc.Ent_ChrRaces
+	var race *dbc.Ent_ChrRaces
 	// validate race and class.
-	found, _ := s.DB().Where("id = ?", pch.Race).Get(&race)
+	wdb.GetData(uint32(pch.Race), &race)
 
-	var class dbc.Ent_ChrClasses
-	found2, _ := s.DB().Where("id = ?", pch.Class).Get(&class)
+	var class *dbc.Ent_ChrClasses
+	wdb.GetData(uint32(pch.Class), &class)
 
-	if !found || !found2 {
-		s.SendCharacterOp(packet.CHAR_CREATE_ERROR)
+	if race == nil {
+		fmt.Println("race not found", pch.Race)
+		s.SendCharacterOp(packet.CHAR_CREATE_RESTRICTED_RACECLASS)
 		return
 	}
 
-	defaultLevel := s.WS.Config.Byte("xp.startLevel")
+	if class == nil {
+		fmt.Println("class not found", pch.Class)
+		if pch.Class == 4 {
+			yo.Puke(wdb.GetStore(dbc.Ent_ChrClasses{}))
+		}
+		s.SendCharacterOp(packet.CHAR_CREATE_RESTRICTED_RACECLASS)
+		return
+	}
+
+	defaultLevel := s.WS.Config.Uint32("XP.StartLevel")
 	pch.Level = defaultLevel
 	if defaultLevel == 1 {
 		// TODO: check for leveling requirement if configured
@@ -223,11 +259,16 @@ func (s *Session) CreateCharacter(b []byte) {
 	}
 
 	var eq []wdb.Item
-	var st []dbc.Ent_CharStartOutfit
-	err = s.WS.DB.Where("race = ?", pch.Race).Where("class = ?", pch.Class).Find(&st)
-	if err != nil {
-		yo.Fatal(err)
-	}
+	var st []*dbc.Ent_CharStartOutfit
+
+	wdb.GetStore(st).Range(func(k, v interface{}) bool {
+		cso := v.(*dbc.Ent_CharStartOutfit)
+		if uint8(cso.Class) == pch.Class && uint8(cso.Race) == pch.Race {
+			st = append(st, cso)
+		}
+
+		return true
+	})
 
 	if len(st) != 0 {
 		for i, v := range st[0].ItemIDs {
@@ -245,8 +286,8 @@ func (s *Session) CreateCharacter(b []byte) {
 
 				if sid != 0 {
 					itm := wdb.Item{
-						ItemType:     sid,
-						DisplayID:    did,
+						ItemType:     uint32(sid),
+						DisplayID:    uint32(did),
 						ItemID:       fmt.Sprintf("it:%d", v),
 						Enchantments: nil,
 					}
@@ -307,15 +348,14 @@ func (s *Session) CreateCharacter(b []byte) {
 	s.SendCharacterOp(packet.CHAR_CREATE_SUCCESS)
 }
 
-func (s *Session) Version() uint32 {
-	return s.WS.Config.Version
+func (s *Session) Build() vsn.Build {
+	return vsn.Build(s.WS.Config.Version)
 }
 
 func (s *WorldServer) GetNative(race packet.Race, gender uint8) uint32 {
-	var races dbc.Ent_ChrRaces
-	found, _ := s.DB.Where("id = ?", race).Get(&races)
-	if !found {
-		// become a gopher if no datapack is installed
+	var races *dbc.Ent_ChrRaces
+	wdb.GetData(uint32(race), &races)
+	if races == nil {
 		return 2838
 	}
 

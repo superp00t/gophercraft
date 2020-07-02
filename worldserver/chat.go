@@ -40,6 +40,12 @@ func (s *Session) Annf(data string, args ...interface{}) {
 	s.SystemChat("|cFF00FF00[SERVER] " + fmt.Sprintf(data, args...) + "|r")
 }
 
+func (s *Session) MOTD(str string, args ...interface{}) {
+	for _, v := range strings.Split(fmt.Sprintf(str, args...), "\n") {
+		s.SystemChat("|cFF50c41a" + v + "|r")
+	}
+}
+
 func (s *Session) Warnf(data string, args ...interface{}) {
 	s.SystemChat(fmt.Sprintf("|cFFFFFF00%s|r", fmt.Sprintf(data, args...)))
 }
@@ -61,7 +67,11 @@ func (s *Session) Tag() uint8 {
 }
 
 func (s *Session) IsGM() bool {
-	return s.Tier > sys.Tier_GameMaster
+	return s.Tier >= sys.Tier_GameMaster
+}
+
+func (s *Session) IsAdmin() bool {
+	return s.Tier >= sys.Tier_Admin
 }
 
 func (s *Session) HandleChat(b []byte) {

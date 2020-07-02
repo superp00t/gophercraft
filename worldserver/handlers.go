@@ -27,10 +27,23 @@ func (ws *WorldServer) initHandlers() {
 	h.On(p.CMSG_PLAYER_LOGIN, c, 0, (*Session).HandleJoin)
 	h.On(p.CMSG_LOGOUT_REQUEST, c, 1, (*Session).HandleLogoutRequest)
 
+	// Social
 	h.On(p.CMSG_NAME_QUERY, c, 1, (*Session).HandleNameQuery)
 	h.On(p.CMSG_MESSAGECHAT, c, 1, (*Session).HandleChat)
 	h.On(p.CMSG_WHO, c, 1, (*Session).HandleWho)
 	h.On(p.CMSG_SET_SELECTION, c, 1, (*Session).HandleTarget)
+	h.On(p.CMSG_CONTACT_LIST, c, 1, (*Session).HandleContactListRequest)
+	h.On(p.CMSG_ADD_FRIEND, c, 1, (*Session).HandleFriendAdd)
+	h.On(p.CMSG_DEL_FRIEND, c, 1, (*Session).HandleFriendDelete)
+	h.On(p.CMSG_ADD_IGNORE, c, 1, (*Session).HandleIgnoreAdd)
+	h.On(p.CMSG_DEL_IGNORE, c, 1, (*Session).HandleIgnoreDelete)
+
+	// Party/Group
+	h.On(p.CMSG_GROUP_INVITE, c, 1, (*Session).HandleGroupInvite)
+	h.On(p.CMSG_GROUP_ACCEPT, c, 1, (*Session).HandleGroupAccept)
+	h.On(p.CMSG_GROUP_DECLINE, c, 1, (*Session).HandleGroupDecline)
+	h.On(p.CMSG_GROUP_DISBAND, c, 1, (*Session).HandleGroupDisband)
+	h.On(p.CMSG_REQUEST_PARTY_MEMBER_STATS, c, 1, (*Session).HandleRequestPartyMemberStats)
 
 	// Movement
 	h.On(p.MSG_MOVE_HEARTBEAT, c, 1, (*Session).HandleMoves)
@@ -62,6 +75,7 @@ func (ws *WorldServer) initHandlers() {
 
 	// Animation
 	h.On(p.CMSG_STANDSTATECHANGE, c, 1, (*Session).HandleStandStateChange)
+	h.On(p.CMSG_SETSHEATHED, c, 1, (*Session).HandleSheathe)
 	h.On(p.CMSG_TEXT_EMOTE, c, 1, (*Session).HandleTextEmote)
 
 	// Gameobjects

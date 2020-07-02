@@ -1,5 +1,7 @@
 package packet
 
+import "github.com/superp00t/gophercraft/vsn"
+
 type InventoryResult uint8
 
 const (
@@ -113,7 +115,7 @@ const (
 
 type InventoryResultDescriptor map[InventoryResult]uint8
 
-var InventoryResultDescriptors = map[uint32]InventoryResultDescriptor{
+var InventoryResultDescriptors = map[vsn.Build]InventoryResultDescriptor{
 	5875: {
 		EQUIP_ERR_OK:                            0,
 		EQUIP_ERR_CANT_EQUIP_LEVEL_I:            1,

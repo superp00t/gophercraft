@@ -2,9 +2,11 @@ package update
 
 import (
 	"fmt"
+	"io"
 	"math"
 
-	"github.com/superp00t/etc"
+	"github.com/superp00t/gophercraft/guid"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 type SplineFlags uint32
@@ -40,7 +42,7 @@ const (
 )
 
 var (
-	SplineFlagDescriptors = map[uint32]SplineFlagDescriptor{
+	SplineFlagDescriptors = map[vsn.Build]SplineFlagDescriptor{
 		5875: {
 			SplineDone:        0x00000001,
 			SplineFalling:     0x00000002,
@@ -59,7 +61,7 @@ var (
 type MoveSpline struct {
 	Flags        SplineFlags
 	Facing       Point3
-	FacingTarget uint64
+	FacingTarget guid.GUID
 	FacingAngle  float32
 	TimePassed   int32
 	Duration     int32
@@ -84,27 +86,45 @@ func (p1 Point3) Dist2D(p2 Point3) float32 {
 	return float32(dist)
 }
 
-func EncodePoint3(out *etc.Buffer, p3 Point3) {
-	out.WriteFloat32(p3.X)
-	out.WriteFloat32(p3.Y)
-	out.WriteFloat32(p3.Z)
+func EncodePoint3(out io.Writer, p3 Point3) error {
+	if err := writeFloat32(out, p3.X); err != nil {
+		return err
+	}
+	if err := writeFloat32(out, p3.Y); err != nil {
+		return err
+	}
+	err := writeFloat32(out, p3.Z)
+	return err
 }
 
-func DecodePoint3(in *etc.Buffer) Point3 {
-	p3 := Point3{}
-	p3.X = in.ReadFloat32()
-	p3.Y = in.ReadFloat32()
-	p3.Z = in.ReadFloat32()
-	return p3
+func DecodePoint3(in io.Reader) (Point3, error) {
+	var err error
+	var p3 Point3
+	p3.X, err = readFloat32(in)
+	if err != nil {
+		return p3, err
+	}
+	p3.Y, err = readFloat32(in)
+	if err != nil {
+		return p3, err
+	}
+	p3.Z, err = readFloat32(in)
+	if err != nil {
+		return p3, err
+	}
+	return p3, nil
 }
 
-func decodeSplineFlags(version uint32, in *etc.Buffer) (SplineFlags, error) {
+func decodeSplineFlags(version vsn.Build, in io.Reader) (SplineFlags, error) {
 	descriptor, ok := SplineFlagDescriptors[version]
 	if !ok {
 		return 0, fmt.Errorf("update: unsupported spline version %d", version)
 	}
 
-	sf := in.ReadUint32()
+	sf, err := readUint32(in)
+	if err != nil {
+		return 0, err
+	}
 
 	out := SplineFlags(0)
 	// translate packet bits to virtual Gophercraft bits
@@ -117,7 +137,7 @@ func decodeSplineFlags(version uint32, in *etc.Buffer) (SplineFlags, error) {
 	return out, nil
 }
 
-func encodeSplineFlags(version uint32, out *etc.Buffer, sf SplineFlags) error {
+func encodeSplineFlags(version vsn.Build, out io.Writer, sf SplineFlags) error {
 	descriptor, ok := SplineFlagDescriptors[version]
 	if !ok {
 		return fmt.Errorf("update: unsupported spline version %d", version)
@@ -131,11 +151,10 @@ func encodeSplineFlags(version uint32, out *etc.Buffer, sf SplineFlags) error {
 		}
 	}
 
-	out.WriteUint32(u32)
-	return nil
+	return writeUint32(out, u32)
 }
 
-func DecodeMoveSpline(version uint32, in *etc.Buffer) (*MoveSpline, error) {
+func DecodeMoveSpline(version vsn.Build, in io.Reader) (*MoveSpline, error) {
 	ms := new(MoveSpline)
 	var err error
 	ms.Flags, err = decodeSplineFlags(version, in)
@@ -144,49 +163,76 @@ func DecodeMoveSpline(version uint32, in *etc.Buffer) (*MoveSpline, error) {
 	}
 
 	if ms.Flags&SplineFinalPoint != 0 {
-		ms.Facing = DecodePoint3(in)
+		ms.Facing, err = DecodePoint3(in)
+		if err != nil {
+			return nil, err
+		}
 	} else if ms.Flags&SplineFinalTarget != 0 {
-		ms.FacingTarget = in.ReadUint64()
+		ms.FacingTarget, err = guid.DecodeUnpacked(version, in)
+		if err != nil {
+			return nil, err
+		}
 	} else if ms.Flags&SplineFinalAngle != 0 {
-		ms.FacingAngle = in.ReadFloat32()
+		ms.FacingAngle, err = readFloat32(in)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	ms.TimePassed = in.ReadInt32()
-	ms.Duration = in.ReadInt32()
-	ms.ID = in.ReadUint32()
+	ms.TimePassed, err = readInt32(in)
+	if err != nil {
+		return nil, err
+	}
+	ms.Duration, err = readInt32(in)
+	if err != nil {
+		return nil, err
+	}
+	ms.ID, err = readUint32(in)
+	if err != nil {
+		return nil, err
+	}
 
-	nodeLength := in.ReadInt32()
-	if int64(nodeLength) > (4 * (in.Size() - in.Rpos())) {
-		return nil, fmt.Errorf("update: spline length exceeded size of input buffer. (%d)", nodeLength)
+	nodeLength, err := readInt32(in)
+	if err != nil {
+		return nil, err
+	}
+
+	if nodeLength > 0xFFFF {
+		return nil, fmt.Errorf("spline overread")
 	}
 
 	for i := int32(0); i < nodeLength; i++ {
-		ms.Spline = append(ms.Spline, DecodePoint3(in))
+		p3, err := DecodePoint3(in)
+		if err != nil {
+			return nil, err
+		}
+		ms.Spline = append(ms.Spline, p3)
 	}
 
-	ms.Endpoint = DecodePoint3(in)
-
-	return ms, nil
+	ms.Endpoint, err = DecodePoint3(in)
+	return ms, err
 }
 
-func EncodeMoveSpline(version uint32, out *etc.Buffer, ms *MoveSpline) error {
+func EncodeMoveSpline(version vsn.Build, out io.Writer, ms *MoveSpline) error {
 	if err := encodeSplineFlags(version, out, ms.Flags); err != nil {
 		return err
 	}
 
 	if ms.Flags&SplineFinalPoint != 0 {
-		EncodePoint3(out, ms.Facing)
+		if err := EncodePoint3(out, ms.Facing); err != nil {
+			return err
+		}
 	} else if ms.Flags&SplineFinalTarget != 0 {
-		out.WriteUint64(ms.FacingTarget)
+		ms.FacingTarget.EncodeUnpacked(version, out)
 	} else if ms.Flags&SplineFinalAngle != 0 {
-		out.WriteFloat32(ms.FacingAngle)
+		writeFloat32(out, ms.FacingAngle)
 	}
 
-	out.WriteInt32(ms.TimePassed)
-	out.WriteInt32(ms.Duration)
-	out.WriteUint32(ms.ID)
+	writeInt32(out, ms.TimePassed)
+	writeInt32(out, ms.Duration)
+	writeUint32(out, ms.ID)
 
-	out.WriteUint32(uint32(len(ms.Spline)))
+	writeUint32(out, uint32(len(ms.Spline)))
 
 	for _, p3 := range ms.Spline {
 		EncodePoint3(out, p3)

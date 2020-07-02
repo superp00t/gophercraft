@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	CoreVersion = "0.2"
+	CoreVersion = "0.3"
 
 	ErrInvalidPath = fmt.Errorf("vsn: invalid game path")
 )
@@ -55,23 +55,6 @@ func (sl Selector) Match(b Build) bool {
 	fb := float64(b)
 
 	return fb >= min && fb <= max
-}
-
-type Build uint32
-
-var (
-	names = map[Build]string{
-		5875:  "1.12.1 Vanilla (5875)",
-		12340: "3.3.5a Wrath of the Lich King (12340)",
-	}
-)
-
-func (b Build) String() string {
-	if str := names[b]; str != "" {
-		return str
-	}
-
-	return fmt.Sprintf("unknown version (%d)", b)
 }
 
 func DetectGame(folder string) (Build, error) {

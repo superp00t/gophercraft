@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/superp00t/gophercraft/gcore/config"
+	"github.com/superp00t/gophercraft/vsn"
 
 	"github.com/superp00t/etc"
 	"google.golang.org/grpc"
@@ -92,7 +93,7 @@ func main() {
 	yo.Stringf("c", "config", "the location of your config file", "")
 
 	yo.Main("Gophercraft Core Authentication Server", func(c []string) {
-		gcore.PrintLicense()
+		vsn.PrintBanner()
 
 		cfg := getConfig()
 
@@ -124,6 +125,27 @@ func main() {
 			yo.Println("Starting HTTP server at", cfg.HTTPInternal)
 			mux := core.WebAPI()
 			yo.Fatal(http.ListenAndServe(cfg.HTTPInternal, mux))
+		}()
+
+		go func() {
+			// It should probably be disabled by default like this.
+			if cfg.AlphaRealmlistListen != "" {
+				yo.Println("Starting Alpha realmlist at", cfg.AlphaRealmlistListen)
+
+				alpha, err := net.Listen("tcp", cfg.AlphaRealmlistListen)
+				if err != nil {
+					yo.Fatal(err)
+				}
+
+				for {
+					conn, err := alpha.Accept()
+					if err != nil {
+						yo.Fatal(err)
+					}
+
+					go backend.serveAlpha(conn)
+				}
+			}
 		}()
 
 		go func() {

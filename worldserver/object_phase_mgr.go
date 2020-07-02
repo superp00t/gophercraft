@@ -1,15 +1,17 @@
 package worldserver
 
 import (
+	"fmt"
 	"sync"
 
-	"github.com/davecgh/go-spew/spew"
+	"github.com/superp00t/etc"
+
 	"github.com/superp00t/gophercraft/gcore/config"
 	"github.com/superp00t/gophercraft/packet/update"
 
-	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/guid"
 	"github.com/superp00t/gophercraft/packet"
+	_ "github.com/superp00t/gophercraft/packet/update/descriptorsupport"
 )
 
 type SessionSet []*Session
@@ -40,9 +42,7 @@ type Object interface {
 type WorldObject interface {
 	Object
 	// movement data
-	Living() bool
-	Position() update.Position
-	Speeds() update.Speeds
+	Movement() *update.MovementBlock
 }
 
 // TODO: delete phases when players are not there.
@@ -75,35 +75,39 @@ func (ph *Phase) Map(i uint32) *Map {
 	return ph.Maps[i]
 }
 
-func (ws *WorldServer) BuildObjectUpdate(mask update.ValueMask, data *update.Data, forceCompress ...bool) (*packet.WorldPacket, error) {
-	// serialize attributes according to mask
-	encoded, err := update.Marshal(ws.Config.Version, mask, data)
-	if err != nil {
-		return nil, err
-	}
+const (
+	UseCompressionSmartly int = iota
+	ForceCompressionOff
+	ForceCompressionOn
+)
 
+func (s *Session) SendRawUpdateObjectData(encoded []byte, forceCompression int) {
 	// initialize uncompressed packet, sending this is sometimes more efficient than enabling zlib compression
-	uPacket := packet.NewWorldPacket(packet.SMSG_UPDATE_OBJECT)
-	uPacket.Write(encoded)
+	sPacket := packet.NewWorldPacket(packet.SMSG_UPDATE_OBJECT)
+
+	var compressionEnabled = false
 
 	// detect if compression has been forcefully disabled/enabled
-	compressionEnabled := false
-	if len(forceCompress) > 0 {
-		compressionEnabled = forceCompress[0]
-	} else {
+	switch forceCompression {
+	case UseCompressionSmartly:
 		// compression is enabled if the packet is over 512 bytes.
-		compressionEnabled = uPacket.Len() > 512
+		compressionEnabled = len(encoded) > 100
+	case ForceCompressionOff:
+		compressionEnabled = false
+	case ForceCompressionOn:
+		compressionEnabled = true
 	}
 
 	if compressionEnabled {
-		cPacket := packet.NewWorldPacket(packet.SMSG_COMPRESSED_UPDATE_OBJECT)
-		compressedData := packet.Compress(uPacket.Bytes())
-		cPacket.WriteUint32(uint32(uPacket.Len()))
-		cPacket.Write(compressedData)
-		return cPacket, nil
+		sPacket = packet.NewWorldPacket(packet.SMSG_COMPRESSED_UPDATE_OBJECT)
+		compressedData := packet.Compress(encoded)
+		sPacket.WriteUint32(uint32(len(encoded)))
+		sPacket.Write(compressedData)
+	} else {
+		sPacket.Write(encoded)
 	}
 
-	return uPacket, nil
+	s.SendAsync(sPacket)
 }
 
 func (m *Map) GetObject(g guid.GUID) WorldObject {
@@ -128,7 +132,13 @@ func (m *Map) AddObject(obj WorldObject) error {
 
 func (m *Map) RemoveObject(id guid.GUID) {
 	m.Lock()
+
 	obj := m.Objects[id]
+	if obj == nil {
+		m.Unlock()
+		return
+	}
+
 	delete(m.Objects, id)
 	m.Unlock()
 
@@ -140,7 +150,7 @@ func (m *Map) RemoveObject(id guid.GUID) {
 type WorldObjectSet []WorldObject
 
 func (m *Map) VisibilityDistance() float32 {
-	return m.Config().Float32("world.maxVisibilityRange")
+	return m.Config().Float32("Sync.VisibilityRange")
 }
 
 func (m *Map) NearObjects(nearTo WorldObject) WorldObjectSet {
@@ -152,7 +162,7 @@ func (m *Map) NearObjectsLimit(nearTo WorldObject, limit float32) WorldObjectSet
 	var wo []WorldObject
 	for _, obj := range m.Objects {
 		if nearTo.GUID() != obj.GUID() {
-			if nearTo.Position().Dist2D(obj.Position().Point3) <= limit {
+			if nearTo.Movement().Position.Dist2D(obj.Movement().Position.Point3) <= limit {
 				wo = append(wo, obj)
 			}
 		}
@@ -179,7 +189,7 @@ func (m *Map) NearSetLimit(nearTo WorldObject, limit float32) SessionSet {
 		switch session := plyr.(type) {
 		case *Session:
 			if session.GUID() != nearTo.GUID() {
-				if nearTo.Position().Dist2D(plyr.Position().Point3) <= limit {
+				if nearTo.Movement().Position.Dist2D(plyr.Movement().Position.Point3) <= limit {
 					s = append(s, session)
 				}
 			}
@@ -189,114 +199,23 @@ func (m *Map) NearSetLimit(nearTo WorldObject, limit float32) SessionSet {
 	return s
 }
 
-func (s *Session) SendUpdateData(mask update.ValueMask, udata *update.Data) {
-	packet, err := s.WS.BuildObjectUpdate(mask, udata)
+func (s *Session) SendObjectChanges(viewMask update.VisibilityFlags, object Object) {
+	packet := etc.NewBuffer()
+
+	enc, err := update.NewEncoder(s.Build(), packet, 1)
 	if err != nil {
 		panic(err)
 	}
 
-	s.SendAsync(packet)
-}
-
-func (s *Session) SendMovementUpdate(wo WorldObject) {
-	mData := &update.MovementBlock{}
-
-	if wo.Living() {
-		mData.UpdateFlags |= update.UpdateFlagLiving
-		mData.UpdateFlags |= update.UpdateFlagHasPosition
-		mData.Speeds = wo.Speeds()
-		s.Warnf("%s", spew.Sdump(mData.Speeds))
-
-		if wo.TypeID() == guid.TypePlayer {
-			mData.UpdateFlags |= update.UpdateFlagAll
-			mData.All = 0x1
-		}
-
-		if wo.GUID() == s.GUID() {
-			mData.UpdateFlags |= update.UpdateFlagSelf
-		}
-
-		mData.Info = &update.MovementInfo{
-			Flags:    0,
-			Time:     packet.GetMSTime(),
-			Position: wo.Position(),
-		}
-	} else {
-		mData.UpdateFlags |= update.UpdateFlagHasPosition
-		mData.Position = wo.Position()
+	if err = enc.AddBlock(object.GUID(), object.Values(), viewMask); err != nil {
+		panic(err)
 	}
 
-	s.SendUpdateData(0, &update.Data{
-		Blocks: []update.Block{
-			{wo.GUID(), mData},
-		},
-	})
-}
-
-func (m *Map) UpdateMovement(wo WorldObject) {
-	if sess, ok := wo.(*Session); ok {
-		sess.SendMovementUpdate(wo)
-	}
-
-	for _, v := range m.NearSet(wo) {
-		v.SendMovementUpdate(wo)
-	}
-}
-
-// buildCreate creates a an SMSG_UPDATE_OBJECT structure filled out with necessary data for loading an Object into the game.
-func buildCreate(obj Object, self bool) *update.Data {
-	opcode := update.CreateObject
-	switch obj.TypeID() {
-	case guid.TypePlayer, guid.TypeUnit:
-		opcode = update.SpawnObject
-	}
-
-	mData := &update.MovementBlock{
-		UpdateFlags: 0,
-	}
-
-	// WorldObjects have
-	if wo, ok := obj.(WorldObject); ok {
-		if wo.Living() {
-			mData.UpdateFlags |= update.UpdateFlagLiving
-			mData.UpdateFlags |= update.UpdateFlagHasPosition
-			mData.Speeds = wo.Speeds()
-
-			if wo.TypeID() == guid.TypePlayer {
-				mData.UpdateFlags |= update.UpdateFlagAll
-				mData.All = 0x1
-			}
-
-			if self {
-				mData.UpdateFlags |= update.UpdateFlagSelf
-			}
-
-			mData.Info = &update.MovementInfo{
-				Flags:    0,
-				Time:     packet.GetMSTime(),
-				Position: wo.Position(),
-			}
-		} else {
-			mData.UpdateFlags |= update.UpdateFlagHasPosition
-			mData.Position = wo.Position()
-		}
-	}
-
-	sp := &update.CreateBlock{
-		opcode,
-		obj.TypeID(),
-		mData,
-		obj.Values(),
-	}
-
-	packet := &update.Data{
-		Blocks: []update.Block{update.Block{obj.GUID(), sp}},
-	}
-
-	return packet
+	s.SendRawUpdateObjectData(packet.Bytes(), 0)
 }
 
 func (s *Session) SendObjectCreate(wo Object) {
+	fmt.Println("Creating", wo.GUID())
 	name, _ := s.WS.GetUnitNameByGUID(wo.GUID())
 
 	if s.objectDebug {
@@ -309,20 +228,47 @@ func (s *Session) SendObjectCreate(wo Object) {
 
 		wobj, ok := wo.(WorldObject)
 		if ok {
-			s.Warnf("Position: %+v", wobj.Position())
+			s.Warnf("Position: %+v", wobj.Movement().Position)
 		}
 	}
 
-	self := s.GUID() == wo.GUID()
-	uData := buildCreate(wo, self)
-	relMask := s.WS.queryRelationshipMask(wo.GUID(), s.GUID())
+	viewMask := s.WS.queryRelationshipMask(wo.GUID(), s.GUID())
+	packet := etc.NewBuffer()
 
-	s.SendUpdateData(update.ValuesCreate|relMask, uData)
+	enc, err := update.NewEncoder(s.Build(), packet, 1)
+	if err != nil {
+		panic(err)
+	}
+
+	movementBlock := &update.MovementBlock{}
+	if wobj, ok := wo.(WorldObject); ok {
+		movementBlock = wobj.Movement()
+		if wo.GUID() == s.GUID() {
+			movementBlock.UpdateFlags |= update.UpdateFlagSelf
+		}
+	}
+
+	blockType := update.CreateObject
+
+	if wo.TypeID() == guid.TypeUnit || wo.TypeID() == guid.TypePlayer {
+		blockType = update.SpawnObject
+	}
+
+	if err = enc.AddBlock(wo.GUID(), &update.CreateBlock{
+		BlockType:     blockType,
+		ObjectType:    wo.TypeID(),
+		MovementBlock: movementBlock,
+		ValuesBlock:   wo.Values(),
+	}, viewMask); err != nil {
+		panic(err)
+	}
+
+	s.SendRawUpdateObjectData(packet.Bytes(), 0)
 }
 
 func (s *Session) SendObjectDelete(g guid.GUID) {
 	pkt := packet.NewWorldPacket(packet.SMSG_DESTROY_OBJECT)
-	g.EncodeUnpacked(s.Version(), pkt)
+	g.EncodeUnpacked(s.Build(), pkt)
 	s.SendAsync(pkt)
 }
 
@@ -345,50 +291,14 @@ func (s SessionSet) Iter(iterFunc func(*Session)) {
 	}
 }
 
-func (ws *WorldServer) queryRelationshipMask(src, target guid.GUID) update.ValueMask {
+func (ws *WorldServer) queryRelationshipMask(src, target guid.GUID) update.VisibilityFlags {
 	if src == target {
-		return update.ValuesPrivate
+		return update.Owner
 	}
 
 	// todo: determine party relationship
 
-	return update.ValuesNone
-}
-
-// todo: handle byte field updates
-func (m *Map) ModifyObject(id guid.GUID, changes map[update.Global]interface{}) {
-	yo.Ok("Locking map...")
-	m.Lock()
-	yo.Ok("acquired map...")
-	o := m.Objects[id]
-	m.Unlock()
-
-	if o == nil {
-		yo.Warn("modify request for unknown object", id)
-		return
-	}
-	valuesStore := o.Values()
-
-	// store changes
-	valuesStore.ModifyAndLock(changes)
-
-	uo := &update.Data{
-		Blocks: []update.Block{
-			update.Block{id, valuesStore},
-		},
-	}
-
-	// if the Object is a player session
-	if session, ok := o.(*Session); ok {
-		session.SendUpdateData(update.ValuesPrivate|update.ValuesParty, uo)
-	}
-
-	// transmit appropriate changes.
-	for _, v := range m.NearSet(o) {
-		v.SendUpdateData(m.Phase.Server.queryRelationshipMask(o.GUID(), v.GUID()), uo)
-	}
-
-	valuesStore.ClearChangesAndUnlock()
+	return 0
 }
 
 func (m *Map) PropagateChanges(id guid.GUID) {
@@ -398,20 +308,14 @@ func (m *Map) PropagateChanges(id guid.GUID) {
 
 	valuesStore := o.Values()
 
-	uo := &update.Data{
-		Blocks: []update.Block{
-			update.Block{id, valuesStore},
-		},
-	}
-
 	// if the Object is a player session
 	if session, ok := o.(*Session); ok {
-		session.SendUpdateData(update.ValuesPrivate|update.ValuesParty, uo)
+		session.SendObjectChanges(m.Phase.Server.queryRelationshipMask(o.GUID(), o.GUID()), session)
 	}
 
 	// transmit appropriate changes.
 	for _, v := range m.NearSet(o) {
-		v.SendUpdateData(m.Phase.Server.queryRelationshipMask(o.GUID(), v.GUID()), uo)
+		v.SendObjectChanges(m.Phase.Server.queryRelationshipMask(o.GUID(), v.GUID()), o)
 	}
 
 	valuesStore.ClearChanges()
@@ -435,4 +339,15 @@ func (s *Session) SendPlaySound(id uint32) {
 
 func (m *Map) Config() *config.World {
 	return m.Phase.Server.Config
+}
+
+// Send updated fields directly to client. Use for setting private fields.
+func (s *Session) UpdateSelf() {
+	s.SendObjectChanges(update.Owner, s)
+	s.ClearChanges()
+}
+
+// Broadcast changes to nearby players
+func (s *Session) UpdatePlayer() {
+	s.Map().PropagateChanges(s.GUID())
 }

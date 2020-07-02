@@ -2,8 +2,9 @@ package guid
 
 import (
 	"fmt"
+	"io"
 
-	"github.com/superp00t/etc"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 //go:generate gcraft_stringer -type=TypeID
@@ -29,7 +30,7 @@ const (
 type TypeIDDescriptor map[TypeID]uint8
 
 var (
-	TypeIDDescriptors = map[uint32]TypeIDDescriptor{
+	TypeIDDescriptors = map[vsn.Build]TypeIDDescriptor{
 		5875: {
 			TypeObject:    0,
 			TypeItem:      1,
@@ -44,18 +45,23 @@ var (
 	}
 )
 
-func DecodeTypeID(version uint32, in *etc.Buffer) (TypeID, error) {
+func DecodeTypeID(version vsn.Build, in io.Reader) (TypeID, error) {
 	desc, ok := TypeIDDescriptors[version]
 	if !ok {
 		return 0, fmt.Errorf("guid: cannot decode type ID for version %d", version)
 	}
 
-	code := in.ReadByte()
+	var code [1]byte
+
+	_, err := in.Read(code[:])
+	if err != nil {
+		return 0, err
+	}
 	resolved := TypeID(0)
 	found := false
 
 	for k, v := range desc {
-		if v == code {
+		if v == code[0] {
 			found = true
 			resolved = k
 			break
@@ -69,7 +75,7 @@ func DecodeTypeID(version uint32, in *etc.Buffer) (TypeID, error) {
 	return resolved, nil
 }
 
-func EncodeTypeID(version uint32, id TypeID, out *etc.Buffer) error {
+func EncodeTypeID(version vsn.Build, id TypeID, out io.Writer) error {
 	desc, ok := TypeIDDescriptors[version]
 	if !ok {
 		return fmt.Errorf("guid: cannot encode type ID for version %d", version)
@@ -80,6 +86,6 @@ func EncodeTypeID(version uint32, id TypeID, out *etc.Buffer) error {
 		return fmt.Errorf("guid: cannot resolve code for typeID: %s", id)
 	}
 
-	out.WriteByte(code)
+	out.Write([]byte{code})
 	return nil
 }

@@ -2,7 +2,6 @@ package worldserver
 
 import (
 	"fmt"
-	"sort"
 	"time"
 
 	"github.com/superp00t/etc/yo"
@@ -25,36 +24,19 @@ func x_LookupTeleport(c *C) {
 
 	max := int64(75)
 
-	ln := 0
+	var locations []*wdb.PortLocation
 
-	err := like(c.Session.DB().NewSession(), "port_id", portLoc).Limit(int(max)).Desc("port_id").Iterate(new(wdb.PortLocation), func(i int, bean interface{}) error {
-		v := bean.(*wdb.PortLocation)
-		c.Session.SystemChat(fmt.Sprintf("|cFFFFFFFF[%s]|r", v.Name))
-		ln++
-		return nil
-	})
+	err := wdb.SearchTemplates(portLoc, max, &locations)
 	if err != nil {
-		panic(err)
+		c.Session.Warnf("%s", err)
+		return
 	}
 
-	c.Session.Warnf("%d/%d port locations returned.", ln, max)
-}
+	for _, loc := range locations {
+		c.Session.SystemChat(fmt.Sprintf("|cFFFFFFFF[%s]|r", loc.ID))
+	}
 
-type itemTemplateResult []wdb.ItemTemplate
-
-func (itr itemTemplateResult) Len() int {
-	return len(itr)
-}
-
-func (itr itemTemplateResult) Swap(i, j int) {
-	_j := itr[j]
-	_i := itr[i]
-	itr[i] = _j
-	itr[j] = _i
-}
-
-func (itr itemTemplateResult) Less(i, j int) bool {
-	return itr[i].Entry < itr[j].Entry
+	c.Session.Warnf("%d/%d port locations returned.", len(locations), max)
 }
 
 func x_LookupItem(c *C) {
@@ -70,16 +52,14 @@ func x_LookupItem(c *C) {
 
 	now := time.Now()
 
-	var itr itemTemplateResult
-
-	err := like(c.Session.DB().NewSession().Cols("name", "entry"), "name", itemName).Limit(int(max)).Find(&itr)
-	if err != nil {
-		panic(err)
+	var items []*wdb.ItemTemplate
+	if err := wdb.SearchTemplates(itemName, max, &items); err != nil {
+		c.Session.Warnf("%s", err)
+		return
 	}
 
-	sort.Sort(itr)
-	for _, v := range itr {
-		c.Session.SystemChat(fmt.Sprintf("%d - |cffffffff|Hitem:%d::::::::%d::::|h[%s]|h|r", v.Entry, v.Entry, c.Session.GetLevel(), v.Name))
+	for _, v := range items {
+		c.Session.SystemChat(fmt.Sprintf("%s (%d) - |cffffffff|Hitem:%d::::::::%d::::|h[%s]|h|r", v.ID, v.Entry, v.Entry, c.Session.GetLevel(), v.Name))
 		ln++
 	}
 
@@ -100,11 +80,12 @@ func x_LookupGameObject(c *C) {
 
 	now := time.Now()
 
-	var gobj []wdb.GameObjectTemplate
+	var gobj []*wdb.GameObjectTemplate
 
-	err := like(c.Session.DB().NewSession().Cols("name", "entry"), "name", gobjName).Limit(int(max)).Find(&gobj)
+	err := wdb.SearchTemplates(gobjName, max, &gobj)
 	if err != nil {
-		panic(err)
+		c.Session.Warnf("%s", err)
+		return
 	}
 
 	for _, v := range gobj {

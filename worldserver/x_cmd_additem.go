@@ -53,14 +53,16 @@ func x_AddItem(c *C) {
 			return
 		}
 
-		var tpl wdb.ItemTemplate
-		found, _ := c.Session.DB().Cols("id").Where("entry = ?", u).Get(&tpl)
-		if found {
+		var tpl *wdb.ItemTemplate
+		wdb.GetData(uint32(u), &tpl)
+		if tpl != nil {
 			err := c.Session.AddItem(tpl.ID, ct, true, true)
 			if err != nil {
 				c.Session.Warnf("%s", err)
 			}
 			return
+		} else {
+			c.Session.Warnf("no such item as %d", u)
 		}
 	} else {
 		u, err := strconv.ParseUint(id, 10, 32)

@@ -43,9 +43,9 @@ func UnmarshalAuthLogonProof_S(build uint32, input []byte) (*AuthLogonProof_S, e
 	alps.Cmd = AuthType(in.ReadByte())
 	alps.Error = ErrorType(in.ReadByte())
 	alps.M2 = in.ReadBytes(20)
+	alps.AccountFlags = in.ReadUint32()
 
 	if build == 12340 {
-		alps.AccountFlags = in.ReadUint32()
 		alps.SurveyID = in.ReadUint32()
 		alps.Unk3 = in.ReadUint16()
 	}

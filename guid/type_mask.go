@@ -1,6 +1,11 @@
 package guid
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/superp00t/gophercraft/vsn"
+)
 
 type TypeMask uint32
 
@@ -25,7 +30,7 @@ const (
 type TypeMaskDescriptor map[TypeMask]uint32
 
 var (
-	TypeMaskDescriptors = map[uint32]TypeMaskDescriptor{
+	TypeMaskDescriptors = map[vsn.Build]TypeMaskDescriptor{
 		5875: {
 			TypeMaskObject:        0x0001,
 			TypeMaskItem:          0x0002,
@@ -39,7 +44,24 @@ var (
 	}
 )
 
-func (t TypeMask) Resolve(version uint32) (uint32, error) {
+func ResolveTypeMask(version vsn.Build, unresolvedTypeMask uint32) (TypeMask, error) {
+	td, ok := TypeMaskDescriptors[version]
+	if !ok {
+		return 0, fmt.Errorf("guid: invalid version code %d", version)
+	}
+
+	var out TypeMask
+
+	for kMask, mask := range td {
+		if unresolvedTypeMask&mask != 0 {
+			out |= kMask
+		}
+	}
+
+	return out, nil
+}
+
+func (t TypeMask) Resolve(version vsn.Build) (uint32, error) {
 	td, ok := TypeMaskDescriptors[version]
 	if !ok {
 		return 0, fmt.Errorf("guid: invalid version code %d", version)
@@ -54,4 +76,54 @@ func (t TypeMask) Resolve(version uint32) (uint32, error) {
 	}
 
 	return out, nil
+}
+
+func (t TypeMask) String() string {
+	var s []string
+	if t&TypeMaskObject != 0 {
+		s = append(s, "Object")
+	}
+	if t&TypeMaskItem != 0 {
+		s = append(s, "Item")
+	}
+	if t&TypeMaskContainer != 0 {
+		s = append(s, "Container")
+	}
+	if t&TypeMaskAzeriteEmpoweredItem != 0 {
+		s = append(s, "AzeriteEmpoweredItem")
+	}
+	if t&TypeMaskAzeriteItem != 0 {
+		s = append(s, "AzeriteItem")
+	}
+	if t&TypeMaskUnit != 0 {
+		s = append(s, "Unit")
+	}
+	if t&TypeMaskPlayer != 0 {
+		s = append(s, "Player")
+	}
+	if t&TypeMaskActivePlayer != 0 {
+		s = append(s, "ActivePlayer")
+	}
+	if t&TypeMaskGameObject != 0 {
+		s = append(s, "GameObject")
+	}
+	if t&TypeMaskDynamicObject != 0 {
+		s = append(s, "DynamicObject")
+	}
+	if t&TypeMaskCorpse != 0 {
+		s = append(s, "Corpse")
+	}
+	if t&TypeMaskAreaTrigger != 0 {
+		s = append(s, "AreaTrigger")
+	}
+	if t&TypeMaskSceneObject != 0 {
+		s = append(s, "SceneObject")
+	}
+	if t&TypeMaskConversation != 0 {
+		s = append(s, "Conversation")
+	}
+	if t&TypeMaskSeer != 0 {
+		s = append(s, "Seer")
+	}
+	return strings.Join(s, "|")
 }

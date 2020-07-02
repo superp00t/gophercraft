@@ -110,6 +110,8 @@ func getInType(arg reflect.Type, luaOffset int, istate *lua.LState) interface{} 
 		nxtArg = float32(istate.ToNumber(luaOffset))
 	case reflect.Float64:
 		nxtArg = float64(istate.ToNumber(luaOffset))
+	case reflect.Bool:
+		nxtArg = bool(istate.ToBool(luaOffset))
 	default:
 		panic("unhandled type " + arg.String())
 	}
@@ -140,6 +142,8 @@ func (e *Engine) generateBinding(fn interface{}) lua.LGFunction {
 				istate.Push(lua.LNumber(v.Int()))
 			case reflect.Float32, reflect.Float64:
 				istate.Push(lua.LNumber(v.Float()))
+			case reflect.Bool:
+				istate.Push(lua.LBool(v.Bool()))
 			default:
 				panic(v.Type())
 			}

@@ -2,7 +2,6 @@ package worldserver
 
 import (
 	"github.com/superp00t/etc/yo"
-	"github.com/superp00t/gophercraft/packet/update"
 )
 
 func x_Morph(c *C) {
@@ -10,10 +9,6 @@ func x_Morph(c *C) {
 
 	yo.Ok("Morphing to ", displayID)
 
-	c.
-		Session.
-		Map().
-		ModifyObject(c.Session.GUID(), map[update.Global]interface{}{
-			update.UnitDisplayID: displayID,
-		})
+	c.Session.SetUint32("DisplayID", displayID)
+	c.Session.Map().PropagateChanges(c.Session.GUID())
 }

@@ -3,39 +3,53 @@ package config
 import (
 	"crypto/tls"
 	"fmt"
+	"strconv"
 
+	"github.com/superp00t/gophercraft/datapack/text"
 	"github.com/superp00t/gophercraft/gcore/sys"
+	"github.com/superp00t/gophercraft/vsn"
 
-	"github.com/go-yaml/yaml"
 	"github.com/superp00t/etc"
 )
 
-type Flags map[string]interface{}
+type WorldVars map[string]string
 
 var (
-	DefaultFlags = Flags{
-		"world.maxVisibilityRange": float32(1000.0),
-		"xp.rate":                  float32(1.0),
-		"xp.startLevel":            byte(1),
-	}
+	Presets = map[string]WorldVars{}
 )
 
+func init() {
+	Presets["allgm"] = WorldVars{
+		"XP.Rate":       "1.0",
+		"XP.StartLevel": "255",
+
+		"Weather.On": "true",
+
+		"Sync.VisibilityRange": "250.0",
+
+		"PVP.Deathmatch":         "false",
+		"PVP.AtWar":              "false",
+		"PVP.LanguageBarrier":    "false",
+		"PVP.CrossFactionGroups": "true",
+	}
+}
+
 type WorldFile struct {
-	Flags                 `yaml:"flags"`
-	Version               uint32 `yaml:"version"`
-	Listen                string `yaml:"world_listen"`
-	Type                  string `yaml:"type"`
-	RealmID               uint64 `yaml:"realm_id"`
-	RealmName             string `yaml:"realm_name"`
-	RealmDescription      string `yaml:"realm_description"`
-	DBDriver              string `yaml:"db_driver"`
-	DBURL                 string `yaml:"db_url"`
-	PublicAddress         string `yaml:"public_address"`
-	WardenEnabled         bool   `yaml:"warden_enable"`
-	ShowSQL               bool   `yaml:"show_sql"`
-	DatapackDir           string `yaml:"datapack_dir"`
-	AuthServer            string `yaml:"auth_server"`
-	AuthServerFingerprint string `yaml:"auth_server_fingerprint"`
+	Version               vsn.Build
+	Listen                string
+	Type                  string
+	RealmID               uint64
+	RealmName             string
+	RealmDescription      string
+	DBDriver              string
+	DBURL                 string
+	PublicAddress         string
+	WardenEnabled         bool
+	ShowSQL               bool
+	DatapackDir           string
+	AuthServer            string
+	AuthServerFingerprint string
+	WorldVars
 }
 
 type World struct {
@@ -49,12 +63,12 @@ func LoadWorld(at string) (*World, error) {
 
 	wc.Path = etc.ParseSystemPath(at)
 
-	c, err := wc.Path.Concat("config.yml").ReadAll()
+	c, err := wc.Path.Concat("World.txt").ReadAll()
 	if err != nil {
 		return nil, err
 	}
 
-	err = yaml.Unmarshal(c, &wc.WorldFile)
+	err = text.Unmarshal(c, &wc.WorldFile)
 	if err != nil {
 		return nil, err
 	}
@@ -68,48 +82,77 @@ func LoadWorld(at string) (*World, error) {
 		return nil, err
 	}
 
-	wc.Flags = MergeFlagsWithDefaults(wc.Flags)
-
 	if wc.DatapackDir == "" {
-		dpackDir := wc.Path.Concat("datapacks")
+		dpackDir := wc.Path.Concat("Datapacks")
 		wc.DatapackDir = dpackDir.Render()
+	}
+
+	if wc.WorldFile.WorldVars != nil {
+		// Merge presets with user vars
+		preset := wc.WorldFile.WorldVars["Config.Preset"]
+
+		if preset != "" {
+			wv := WorldVars{}
+
+			if Presets[preset] == nil {
+				return nil, fmt.Errorf("Config.Preset '%s' not found", preset)
+			}
+
+			for k, v := range Presets[preset] {
+				wv[k] = v
+			}
+
+			for k, v := range wc.WorldFile.WorldVars {
+				wv[k] = v
+			}
+
+			wc.WorldFile.WorldVars = wv
+		}
 	}
 
 	return wc, nil
 }
 
-const DefaultWorld = `# build ID
-version: %d
+const DefaultWorld = `{
+	// build ID
+	Version %d
 
-# the internal IP address to listen on
-world_listen: 0.0.0.0:8085
+	// the internal IP address to listen on
+	Listen 0.0.0.0:8085
 
-# The display name of your server. You can change this as you please.
-realm_name: Placeholder Name %d
+	// The display name of your server. You can change this as you please.
+	RealmName "Placeholder Name %d"
 
-# Description of your server. This will appear in the Gophercraft website.
-realm_description: Put the description for your server here!
+	// Description of your server. This will appear in the Gophercraft website.
+	RealmDescription "Put the description for your server here!"
 
-# The reference ID of your server. This should remain constant to avoid losing your data.
-realm_id: %d
+	// DO NOT EDIT after first run.
+	RealmID %d
 
-# database driver
-db_driver: mysql
+	// database driver
+	DBDriver mysql
 
-# database URL
-db_url: root:password@/gcraft_world_%d
+	// database URL
+	DBURL root:password@/gcraft_world_%d
 
-# external address (should be accessible from the client's computer)
-public_address: 0.0.0.0:8085
+	// external address (should be accessible from the client's computer)
+	PublicAddress 0.0.0.0:8085
 
-# Address of RPC server (replace 127.0.0.1 with host_external in gcraft_auth/config.yml)
-auth_server: 127.0.0.1:3724
+	// Address of RPC server (replace 127.0.0.1 with host_external in gcraft_auth/Config.txt)
+	AuthServer %s
 
-# RPC server fingerprint
-auth_server_fingerprint: %s
+	// RPC server fingerprint
+	AuthServerFingerprint %s
+
+	WorldVars
+	{
+		// Presets set default world vars for what kind of game you want to play.
+		Config.Preset allgm
+	}
+}
 `
 
-func (a *Auth) GenerateDefaultWorld(version uint32, id uint64, at string) error {
+func GenerateDefaultWorld(version uint32, id uint64, at string, authServer, serverFingerprint string) error {
 	path := etc.ParseSystemPath(at)
 
 	if path.IsExtant() {
@@ -120,28 +163,36 @@ func (a *Auth) GenerateDefaultWorld(version uint32, id uint64, at string) error 
 		return err
 	}
 
-	asf, err := sys.GetCertFileFingerprint(a.Path.Concat("cert.pem").Render())
-	if err != nil {
-		return err
-	}
+	wfile := fmt.Sprintf(DefaultWorld, version, id, id, id, authServer, serverFingerprint)
 
-	wfile := fmt.Sprintf(DefaultWorld, version, id, id, id, asf)
+	path.Concat("World.txt").WriteAll([]byte(wfile))
 
-	path.Concat("config.yml").WriteAll([]byte(wfile))
-
-	path.Concat("datapacks").MakeDir()
+	path.Concat("Datapacks").MakeDir()
 
 	if err := GenerateTLSKeyPair(path.Render()); err != nil {
 		return err
 	}
 
-	wsf, err := sys.GetCertFileFingerprint(path.Concat("cert.pem").Render())
+	return nil
+}
+
+func (a *Auth) GenerateDefaultWorld(version uint32, id uint64, at string) error {
+	asf, err := sys.GetCertFileFingerprint(a.Path.Concat("cert.pem").Render())
+	if err != nil {
+		return err
+	}
+
+	if err = GenerateDefaultWorld(version, id, at, "127.0.0.1:3724", asf); err != nil {
+		return nil
+	}
+
+	wsf, err := sys.GetCertFileFingerprint(etc.ParseSystemPath(at).Concat("cert.pem").Render())
 	if err != nil {
 		return err
 	}
 
 	realms := RealmsFile{}
-	realmsFile := a.Path.Concat("realms.yml")
+	realmsFile := a.Path.Concat("Realms.txt")
 
 	if realmsFile.IsExtant() {
 		rdata, err := realmsFile.ReadAll()
@@ -149,19 +200,19 @@ func (a *Auth) GenerateDefaultWorld(version uint32, id uint64, at string) error 
 			return err
 		}
 
-		err = yaml.Unmarshal(rdata, &realms)
+		err = text.Unmarshal(rdata, &realms)
 		if err != nil {
 			return err
 		}
 	} else {
-		realms.Realms = make(map[uint64]*Realm)
+		realms.Realms = make(map[uint64]Realm)
 	}
 
-	realms.Realms[id] = &Realm{
+	realms.Realms[id] = Realm{
 		FP: wsf,
 	}
 
-	rdata, err := yaml.Marshal(realms)
+	rdata, err := text.Marshal(realms)
 	if err != nil {
 		return err
 	}
@@ -169,37 +220,52 @@ func (a *Auth) GenerateDefaultWorld(version uint32, id uint64, at string) error 
 	return realmsFile.WriteAll(rdata)
 }
 
-func (cf Flags) Get(key string) interface{} {
-	data, ok := cf[key]
-	if !ok {
-		panic("no data for config " + key)
+func (c *World) String() string {
+	return "[" + c.RealmName + "] @" + c.PublicAddress
+}
+
+func (c *World) GetString(name string) string {
+	dat := c.WorldVars[name]
+	return dat
+}
+
+func (c *World) Bool(name string) bool {
+	on, err := strconv.ParseBool(c.GetString(name))
+	if err != nil {
+		panic(err)
+	}
+	return on
+}
+
+func (c *World) Int64(name string) int64 {
+	i, err := strconv.ParseInt(c.GetString(name), 0, 64)
+	if err != nil {
+		panic(err)
+	}
+	return i
+}
+
+func (c *World) Uint64(name string) uint64 {
+	u32, err := strconv.ParseUint(c.GetString(name), 0, 64)
+	if err != nil {
+		panic(err)
+	}
+	return u32
+}
+
+func (c *World) Uint32(name string) uint32 {
+	u32, err := strconv.ParseUint(c.GetString(name), 0, 32)
+	if err != nil {
+		panic(err)
+	}
+	return uint32(u32)
+}
+
+func (c *World) Float32(name string) float32 {
+	f32, err := strconv.ParseFloat(c.GetString(name), 32)
+	if err != nil {
+		panic(err)
 	}
 
-	return data
-}
-
-func (cf Flags) Float32(key string) float32 {
-	return cf.Get(key).(float32)
-}
-
-func (cf Flags) Byte(key string) byte {
-	return cf.Get(key).(byte)
-}
-
-func MergeFlagsWithDefaults(input Flags) Flags {
-	output := make(Flags)
-
-	for k, v := range DefaultFlags {
-		output[k] = v
-	}
-
-	for k, v := range input {
-		output[k] = v
-	}
-
-	return output
-}
-
-func (c World) String() string {
-	return "[" + c.RealmName + "] " + c.PublicAddress
+	return float32(f32)
 }

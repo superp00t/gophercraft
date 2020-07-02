@@ -49,7 +49,7 @@ func packetString(input string) []byte {
 	return data
 }
 
-func randomBuffer(l int) []byte {
+func RandomBuffer(l int) []byte {
 	buf := make([]byte, l)
 	rand.Read(buf)
 	return buf

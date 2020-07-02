@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/superp00t/gophercraft/datapack/csv"
+	"github.com/superp00t/gophercraft/datapack/text"
 )
 
 type Loader struct {
@@ -61,22 +61,21 @@ func (ld *Loader) ReadAll(path string, slicePtr interface{}) int {
 
 	for _, pack := range ld.Volumes {
 		if pack.Exists(path) {
-			fi, err := pack.ReadFile(path)
+			textFile, err := pack.ReadFile(path)
 			if err != nil {
 				panic(err)
 			}
 
-			defer fi.Close()
+			decoder := text.NewDecoder(textFile)
 
-			rd, err := csv.NewScanner(fi)
-			if err != nil {
-				panic(err)
-			}
+			fmt.Println("open", path)
+
+			defer textFile.Close()
 
 			for {
 				newMade := reflect.New(elemType)
 
-				err := rd.Scan(newMade.Interface())
+				err = decoder.Decode(newMade.Interface())
 				if err == io.EOF {
 					break
 				}

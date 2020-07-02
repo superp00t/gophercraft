@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/packet"
 	"github.com/superp00t/gophercraft/srp"
 )
@@ -48,16 +49,23 @@ func (cl *Client) connectClassic() error {
 		return fmt.Errorf("auth: server returned %s", auth.Error)
 	}
 
+	yo.Spew(auth)
+
+	if len(auth.N) != 32 {
+		return fmt.Errorf("auth: server sent invalid prime number length %d", len(auth.N))
+	}
+
 	_, K, A, M1 := srp.SRPCalculate(user, pass, auth.B, auth.N, auth.S)
 	cl.SessionKey = K
 	proof := &packet.AuthLogonProof_C{
 		Cmd:          packet.AUTH_LOGON_PROOF,
 		A:            A,
 		M1:           M1,
-		CRC:          make([]byte, 20),
 		NumberOfKeys: 0,
 		SecFlags:     0,
 	}
+
+	fmt.Println("calculated")
 
 	if _, err = cl.conn.Write(proof.Encode()); err != nil {
 		return err

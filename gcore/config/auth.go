@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"fmt"
 
-	"github.com/go-yaml/yaml"
 	"github.com/superp00t/etc"
+	"github.com/superp00t/gophercraft/datapack/text"
 )
 
 var (
@@ -13,22 +13,23 @@ var (
 )
 
 type AuthFile struct {
-	HTTPInternal   string `yaml:"http_internal"`
-	HostExternal   string `yaml:"host_external"`
-	AuthListen     string `yaml:"auth_listen"`
-	BnetListen     string `yaml:"bnet_listen"`
-	BnetRESTListen string `yaml:"bnet_rest_listen"`
-	DBDriver       string `yaml:"db_driver"`
-	DBURL          string `yaml:"db_url"`
+	HTTPInternal         string
+	HostExternal         string
+	AuthListen           string
+	BnetListen           string
+	BnetRESTListen       string
+	AlphaRealmlistListen string
+	DBDriver             string
+	DBURL                string
 }
 
 type RealmsFile struct {
-	Realms map[uint64]*Realm `yaml:"realms"`
+	Realms map[uint64]Realm
 }
 
 type Realm struct {
-	FP     string `yaml:"fp"`
-	Armory string `yaml:"armory,omitempty"`
+	FP     string
+	Armory string
 }
 
 type Auth struct {
@@ -39,7 +40,7 @@ type Auth struct {
 
 func (a *Auth) RealmsFile() (*RealmsFile, error) {
 	realms := &RealmsFile{}
-	realmsFile := a.Path.Concat("realms.yml")
+	realmsFile := a.Path.Concat("Realms.txt")
 
 	if realmsFile.IsExtant() {
 		rdata, err := realmsFile.ReadAll()
@@ -47,12 +48,12 @@ func (a *Auth) RealmsFile() (*RealmsFile, error) {
 			return nil, err
 		}
 
-		err = yaml.Unmarshal(rdata, realms)
+		err = text.Unmarshal(rdata, realms)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		realms.Realms = make(map[uint64]*Realm)
+		realms.Realms = make(map[uint64]Realm)
 	}
 
 	return realms, nil
@@ -61,12 +62,12 @@ func (a *Auth) RealmsFile() (*RealmsFile, error) {
 func LoadAuth(at string) (*Auth, error) {
 	ac := new(Auth)
 	ac.Path = etc.ParseSystemPath(at)
-	c, err := ac.Path.Concat("config.yml").ReadAll()
+	c, err := ac.Path.Concat("Auth.txt").ReadAll()
 	if err != nil {
 		return nil, err
 	}
 
-	err = yaml.Unmarshal(c, &ac.AuthFile)
+	err = text.Unmarshal(c, &ac.AuthFile)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +77,10 @@ func LoadAuth(at string) (*Auth, error) {
 		ac.Path.Concat("key.pem").Render(),
 	)
 
+	if ac.HostExternal == "" {
+		ac.HostExternal = "localhost"
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -83,29 +88,33 @@ func LoadAuth(at string) (*Auth, error) {
 	return ac, nil
 }
 
-const DefaultAuth = `# the TCP/IP address to listen the Gophercraft HTTP API on.
-# You can reverse proxy this however you like.
-http_internal: 0.0.0.0:8086
+const DefaultAuth = `{
+	// the TCP/IP address to listen the Gophercraft HTTP API on.
+  // You can reverse proxy this however you like.
+	HTTPInternal 0.0.0.0:8086
 
-# The public hostname of your Gophercraft API server.
-# if left uncommented, it will be set to localhost
-# this is needed to tell the client where the REST logon service is located.
-#
-# host_external: gcraft.example.com
+	// The public hostname of your Gophercraft API server.
+	// if left uncommented, it will be set to localhost
+	// this is needed to tell the client where the REST logon service is located.
+	// 
+	// HostExternal gcraft.example.com
 
-# The TCP/IP addresses to listen Auth/Realmlist servers on.
-# it's not a good idea not to change these ports.
-auth_listen: 0.0.0.0:3724
-bnet_listen: 0.0.0.0:1119
-bnet_rest_listen: 0.0.0.0:1120
+	// The TCP/IP addresses to listen Auth/Realmlist servers on.
+	// Keep these unchanged, unless you really know what you're doing.
+	AuthListen 0.0.0.0:3724
+	BnetListen 0.0.0.0:1119
+	BnetRESTListen 0.0.0.0:1120
 
-# ~~ DB OPTIONS ~~
-# the go-xorm SQL driver to use.
-db_driver: mysql
+	// Database options
+	// the go-xorm SQL driver to use.
+	DBDriver mysql
 
-# the go-xorm SQL URL to use.
-db_url: root:password@/gcraft_auth
-`
+	// the go-xorm SQL URL to use.
+	DBURL root:password@/gcraft_auth
+
+	// Alpha: uncomment this to use the Alpha protocol.
+	// AlphaRealmlistListen 0.0.0.0:9100
+}`
 
 func GenerateTLSKeyPair(at string) error {
 	dir := etc.ParseSystemPath(at)
@@ -125,7 +134,7 @@ func GenerateDefaultAuth(at string) error {
 		return err
 	}
 
-	path.Concat("config.yml").WriteAll([]byte(DefaultAuth))
+	path.Concat("Auth.txt").WriteAll([]byte(DefaultAuth))
 
 	return GenerateTLSKeyPair(path.Render())
 }

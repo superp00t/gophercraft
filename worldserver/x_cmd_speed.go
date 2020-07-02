@@ -36,7 +36,7 @@ func (m *Map) UpdateSpeed(g guid.GUID, st update.SpeedType) {
 		return
 	}
 
-	speeds := obj.Speeds()
+	speeds := obj.Movement().Speeds
 
 	if g.HighType() == guid.Player {
 		sess := obj.(*Session)
@@ -48,7 +48,7 @@ func (m *Map) UpdateSpeed(g guid.GUID, st update.SpeedType) {
 	}
 
 	pkt := packet.NewWorldPacket(pair.Spline)
-	g.EncodePacked(m.Phase.Server.Config.Version, pkt)
+	g.EncodePacked(m.Phase.Server.Build(), pkt)
 	pkt.WriteFloat32(speeds[st])
 
 	m.NearSet(obj).Iter(func(s *Session) {
@@ -67,6 +67,6 @@ func x_Speed(c *C) {
 		speed = 1
 	}
 
-	c.Session.PlayerSpeeds[update.Run] = speed
+	c.Session.MoveSpeeds[update.Run] = speed
 	c.Session.Map().UpdateSpeed(c.Session.GUID(), update.Run)
 }

@@ -3,6 +3,7 @@ package srp
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/hex"
 	"math/big"
 )
 
@@ -50,8 +51,36 @@ func (x *BigNum) Mod(y *BigNum) *BigNum {
 	return &BigNum{new(big.Int).Mod(x.X, y.X)}
 }
 
-func (x *BigNum) ToArray() []byte {
-	return reverseBuffer(x.X.Bytes())
+func (x *BigNum) ToArray(ln ...int) []byte {
+	buffer := reverseBuffer(x.X.Bytes())
+	if len(ln) > 0 {
+		length := ln[0]
+		if len(buffer) < length {
+			buffer = append(buffer, make([]byte, length-len(buffer))...)
+		}
+
+		if len(buffer) > length {
+			buffer = buffer[:length]
+		}
+	}
+
+	if len(ln) > 0 {
+		if len(buffer) != ln[0] {
+			panic("invalid size")
+		}
+	}
+
+	return buffer
+}
+
+func (x *BigNum) String() string {
+	return x.X.String()
+}
+
+func (x *BigNum) Copy() *BigNum {
+	deref := *x.X
+	y := &BigNum{&deref}
+	return y
 }
 
 func BigNumFromArray(arr []byte) *BigNum {
@@ -71,4 +100,27 @@ func BigNumFromRand(l int) *BigNum {
 
 func BigNumFromInt(i int64) *BigNum {
 	return &BigNum{big.NewInt(i)}
+}
+
+func NewBigNum() *BigNum {
+	return &BigNum{new(big.Int)}
+}
+
+// Big-Endian.
+func NewBigNumFromHex(hx string) *BigNum {
+	bytes, err := hex.DecodeString(hx)
+	if err != nil {
+		panic(err)
+	}
+	X := &BigNum{X: new(big.Int).SetBytes(bytes)}
+	return X
+}
+
+// Big-Endian.
+func (x *BigNum) ToHex() string {
+	return hex.EncodeToString(x.X.Bytes())
+}
+
+func (x *BigNum) ToHexLE(ln ...int) string {
+	return hex.EncodeToString(x.ToArray(ln...))
 }

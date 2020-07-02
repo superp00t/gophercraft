@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/superp00t/gophercraft/gcore/sys"
+	"github.com/superp00t/gophercraft/vsn"
 
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/datapack"
@@ -35,6 +36,7 @@ type WorldServer struct {
 	AuthServiceClient sys.AuthServiceClient
 	tlsConfig         *tls.Config
 	gameObjectCounter uint64
+	StartTime         time.Time
 }
 
 func Start(opts *config.World) error {
@@ -44,6 +46,7 @@ func Start(opts *config.World) error {
 	ws.PlayerList = make(map[string]*Session)
 	ws.scriptFunc = make(chan func() error)
 	ws.gameObjectCounter = 1
+	ws.StartTime = time.Now()
 	core, err := wdb.NewCore(opts.DBDriver, opts.DBURL)
 	if err != nil {
 		return err
@@ -68,6 +71,10 @@ func Start(opts *config.World) error {
 
 	go ws.connectRPC()
 
+	if opts.Version == vsn.Alpha {
+		go ws.serveRedirect()
+	}
+
 	characterCt, err := ws.DB.Count(new(wdb.Character))
 	if err != nil {
 		return err
@@ -81,6 +88,8 @@ func Start(opts *config.World) error {
 		return err
 	}
 
+	yo.Ok("Worldserver started to listen at", opts.Listen)
+
 	for {
 		c, err := l.Accept()
 		if err != nil {
@@ -89,6 +98,10 @@ func Start(opts *config.World) error {
 
 		go ws.Handle(c)
 	}
+}
+
+func (ws *WorldServer) Build() vsn.Build {
+	return vsn.Build(ws.Config.Version)
 }
 
 func (ws *WorldServer) RealmID() uint64 {
@@ -111,8 +124,13 @@ func (ws *WorldServer) Handle(c net.Conn) {
 		Seed2: randomSalt(16),
 	}
 
-	dat := smsg.Encode(uint16(ws.Config.Version))
+	dat := smsg.Encode(ws.Config.Version)
 	c.Write(dat)
+
+	if ws.Config.Version.RemovedIn(vsn.V1_12_1) {
+		ws.handleAlpha(c)
+		return
+	}
 
 	buf := make([]byte, 512)
 	wr, err := c.Read(buf)
@@ -121,6 +139,8 @@ func (ws *WorldServer) Handle(c net.Conn) {
 		c.Close()
 		return
 	}
+
+	yo.Spew(buf)
 
 	cmsg, err := packet.UnmarshalCMSGAuthSession(buf[:wr])
 	if err != nil {
@@ -143,7 +163,7 @@ func (ws *WorldServer) Handle(c net.Conn) {
 	// This connects back to gcraft_core_auth, checking to see if this client is actually a registered user.
 	resp, err := ws.AuthServiceClient.VerifyWorld(context.Background(), &sys.VerifyWorldQuery{
 		RealmID:     ws.Config.RealmID,
-		Build:       cmsg.Build,
+		Build:       uint32(cmsg.Build),
 		Account:     cmsg.Account,
 		GameAccount: "Zero",
 		IP:          c.RemoteAddr().String(),
@@ -166,14 +186,13 @@ func (ws *WorldServer) Handle(c net.Conn) {
 		return
 	}
 
-	crypt := packet.NewCrypter(cmsg.Build, c, resp.SessionKey, true)
+	crypt := packet.NewConnection(cmsg.Build, c, resp.SessionKey, true)
 	session := &Session{
 		GameAccount:   resp.GameAccount,
 		AddonData:     cmsg.AddonData,
 		SessionKey:    resp.SessionKey,
 		WS:            ws,
-		C:             c,
-		Crypter:       crypt,
+		Connection:    crypt,
 		Tier:          resp.Tier,
 		messageBroker: make(chan *packet.WorldPacket, 64),
 	}
@@ -251,6 +270,26 @@ func (s *WorldServer) GetSessionByGUID(g guid.GUID) (*Session, error) {
 	return nil, fmt.Errorf("could not find session corresponding to input")
 }
 
+func (ws *WorldServer) GetPlayerNameByGUID(g guid.GUID) (string, error) {
+	plyr, err := ws.GetSessionByGUID(g)
+	if err == nil {
+		return plyr.PlayerName(), nil
+	}
+
+	var chr wdb.Character
+
+	found, err := ws.DB.Where("id = ?", g.Counter()).Get(&chr)
+	if err != nil {
+		return "", err
+	}
+
+	if !found {
+		return "", fmt.Errorf("no character found for guid %s", g)
+	}
+
+	return chr.Name, nil
+}
+
 func (s *WorldServer) GetUnitNameByGUID(g guid.GUID) (string, error) {
 	if g == guid.Nil {
 		return "", nil
@@ -268,6 +307,38 @@ func (s *WorldServer) GetUnitNameByGUID(g guid.GUID) (string, error) {
 	default:
 		return "", fmt.Errorf("cannot name this type (%s)", g.HighType())
 	}
+}
+
+func (s *WorldServer) GetSessionByPlayerName(playerName string) (*Session, error) {
+	s.PlayersL.Lock()
+	session := s.PlayerList[playerName]
+	s.PlayersL.Unlock()
+	if session != nil {
+		return session, nil
+	}
+
+	return nil, fmt.Errorf("no session for player '%s'", playerName)
+}
+
+func (s *WorldServer) GetGUIDByPlayerName(playerName string) (guid.GUID, error) {
+	s.PlayersL.Lock()
+	session := s.PlayerList[playerName]
+	s.PlayersL.Unlock()
+	if session != nil {
+		return session.GUID(), nil
+	}
+
+	var chr wdb.Character
+	found, err := s.DB.Where("name = ?", playerName).Get(&chr)
+	if err != nil {
+		return guid.Nil, err
+	}
+
+	if !found {
+		return guid.Nil, fmt.Errorf("no player by the name of %s", playerName)
+	}
+
+	return guid.RealmSpecific(guid.Player, s.RealmID(), chr.ID), nil
 }
 
 func (s *Session) SendAuthWaitQueue(position uint32) {

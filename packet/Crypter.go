@@ -10,12 +10,28 @@ import (
 	"github.com/superp00t/etc"
 
 	"github.com/superp00t/gophercraft/arc4"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
-func NewCipher(version uint32, sessionKey []byte, server bool) (arc4.Cipher, error) {
+type dummyCipher struct {
+}
+
+func (d dummyCipher) Init(server bool, key []byte) error {
+	return nil
+}
+
+func (d dummyCipher) Decrypt(data []byte) {
+}
+
+func (d dummyCipher) Encrypt(data []byte) {
+}
+
+func NewCipher(version vsn.Build, sessionKey []byte, server bool) (arc4.Cipher, error) {
 	var c arc4.Cipher
 
 	switch version {
+	case vsn.Alpha:
+		c = dummyCipher{}
 	case 5875:
 		c = &arc4.Cipher5875{}
 	case 12340:
@@ -29,8 +45,8 @@ func NewCipher(version uint32, sessionKey []byte, server bool) (arc4.Cipher, err
 	return c, nil
 }
 
-// Crypter provides a buffered communication pipe with which to send and receive partially encrypted packets through the game protocol.
-type Crypter struct {
+// Connection provides a buffered communication pipe with which to send and receive partially encrypted packets through the game protocol.
+type Connection struct {
 	Conn       net.Conn
 	Reader     *bufio.Reader
 	SessionKey []byte
@@ -40,8 +56,8 @@ type Crypter struct {
 	closed     bool
 }
 
-func NewCrypter(version uint32, c net.Conn, sessionKey []byte, server bool) *Crypter {
-	cr := new(Crypter)
+func NewConnection(version vsn.Build, c net.Conn, sessionKey []byte, server bool) *Connection {
+	cr := new(Connection)
 	cr.Conn = c
 	cr.Reader = bufio.NewReaderSize(c, 65535)
 	cr.SessionKey = sessionKey
@@ -64,7 +80,7 @@ func (wp *WorldPacket) Frame() Frame {
 	return Frame{wp.Type, wp.Buffer.Bytes()}
 }
 
-func (cl *Crypter) SendFrame(f Frame) error {
+func (cl *Connection) SendFrame(f Frame) error {
 	cl.write.Lock()
 	defer cl.write.Unlock()
 	offset := 6
@@ -87,7 +103,7 @@ func (cl *Crypter) SendFrame(f Frame) error {
 	return err
 }
 
-func (cl *Crypter) ReadFrame() (Frame, error) {
+func (cl *Connection) ReadFrame() (Frame, error) {
 	offset := 4
 	header := make([]byte, 6)
 	if cl.Server == true {

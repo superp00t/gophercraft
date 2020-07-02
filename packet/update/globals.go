@@ -1,5 +1,3 @@
-//Package update provides an interface serializing/deserializing SMSG_UPDATE_OBJECT, a packet which handles many crucial aspects to game synchronization.
-//Instead of mapping codes for a single game version, this package uses multiple "descriptor modules", which describe the offsets that Globals resolve to.
 package update
 
 // Global contains unique references to object properties serialized in multiple versions of SMSG_UPDATE_OBJECT:

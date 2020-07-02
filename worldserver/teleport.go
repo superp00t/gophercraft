@@ -29,7 +29,7 @@ func (s *Session) SendTeleportAck(g guid.GUID, mapID uint32, pos update.Position
 		Flags:    0,
 		Position: pos,
 	}
-	update.EncodeMovementInfo(s.Version(), pkt.Buffer, mi)
+	update.EncodeMovementInfo(s.Build(), pkt.Buffer, mi)
 	s.SendAsync(pkt)
 }
 
@@ -64,7 +64,7 @@ func (s *Session) TeleportTo(mapID uint32, newPos update.Position) {
 
 		for _, sess := range s.Map().NearSet(s) {
 			// if our new location is too far from this player
-			if newPos.Dist2D(sess.Position().Point3) > s.WS.Config.Float32("world.maxVisibilityRange") {
+			if newPos.Dist2D(sess.Position().Point3) > s.WS.Config.Float32("Sync.VisibilityRange") {
 				// make player s disappear in their client
 				sess.SendObjectDelete(s.GUID())
 			} else { // or else
@@ -123,16 +123,18 @@ func (s *Session) HandleZoneUpdate(e *etc.Buffer) {
 func (s *Session) HandleAreaTrigger(e *etc.Buffer) {
 	triggerID := e.ReadUint32()
 
-	var aTrigger dbc.Ent_AreaTrigger
-	found, err := s.DB().Where("id = ?", triggerID).Get(&aTrigger)
-	if !found {
-		yo.Warn("Player tried to call non existent area trigger", triggerID, err)
+	var aTrigger *dbc.Ent_AreaTrigger
+	wdb.GetData(triggerID, &aTrigger)
+	if aTrigger == nil {
+		yo.Warn("Player tried to call non existent area trigger", triggerID)
 		return
 	}
 	// delta is safe radius
 	const delta float32 = 5.0
 
-	if !isPointInAreaTriggerZone(&aTrigger, s.CurrentMap, s.PlayerPosition.X, s.PlayerPosition.Y, s.PlayerPosition.Z, delta) {
+	pos := s.Position()
+
+	if !isPointInAreaTriggerZone(aTrigger, s.CurrentMap, pos.X, pos.Y, pos.Z, delta) {
 		yo.Warn("Player", s.PlayerName(), "tried to teleport to area trigger", triggerID, "without being in correct position")
 		return
 	}
@@ -242,7 +244,7 @@ func (s *Session) SetSummonLocation(phase string, mapID uint32, pos update.Posit
 
 func (s *Session) SendSummonRequest(summoner guid.GUID, zoneID uint32, timeout time.Duration) {
 	pkt := packet.NewWorldPacket(packet.SMSG_SUMMON_REQUEST)
-	summoner.EncodeUnpacked(s.Version(), pkt)
+	summoner.EncodeUnpacked(s.Build(), pkt)
 	pkt.WriteUint32(zoneID)
 	pkt.WriteUint32(uint32(timeout / time.Millisecond))
 	s.SendAsync(pkt)

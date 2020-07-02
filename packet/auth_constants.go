@@ -1,7 +1,7 @@
 package packet
 
-//go:generate stringer -type=AuthType
-//go:generate stringer -type=ErrorType
+//go:generate gcraft_stringer -type=AuthType
+//go:generate gcraft_stringer -type=ErrorType
 const (
 	WOW_SUCCESS                              ErrorType = 0x00
 	WOW_FAIL_BANNED                          ErrorType = 0x03

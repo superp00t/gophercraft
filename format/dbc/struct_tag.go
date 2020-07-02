@@ -30,10 +30,6 @@ type tagOpt struct {
 	Len  int64
 }
 
-func (d *DBC) gid() int64 {
-	return int64(d.Version)
-}
-
 func parseInt(e *etc.Buffer) int64 {
 	str := ""
 
@@ -83,7 +79,7 @@ loop:
 			break loop
 		case '-':
 			if two {
-				panic("blp: two - characters are not allowed when parsing range selector.")
+				panic("dbc: two - characters are not allowed when parsing range selector.")
 			}
 
 			rng = append(rng, parseInt(numBuf))

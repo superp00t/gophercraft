@@ -4,12 +4,12 @@ import (
 	"log"
 
 	"github.com/superp00t/gophercraft/gcore/sys"
+	"github.com/superp00t/gophercraft/vsn"
 
 	"os"
 
 	"github.com/superp00t/etc"
 	"github.com/superp00t/etc/yo"
-	"github.com/superp00t/gophercraft/gcore"
 	"github.com/superp00t/gophercraft/gcore/config"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -21,7 +21,7 @@ func main() {
 	yo.Stringf("c", "config", "your realm configuration directory", etc.LocalDirectory().Concat("gcraft_world_1").Render())
 
 	yo.Main("Gophercraft World Server", func(a []string) {
-		gcore.PrintLicense()
+		vsn.PrintBanner()
 
 		cpath := yo.StringG("c")
 		if cpath == "" {

@@ -5,7 +5,7 @@
 //   3d objects/textures
 //   Map geometry
 //   Sound files
-//   CSV files for patching the server and client databases
+//   JSON files for patching the server and client databases
 package datapack
 
 import (
@@ -16,8 +16,8 @@ import (
 	"os"
 	"sort"
 
-	"github.com/go-yaml/yaml"
 	"github.com/superp00t/etc"
+	"github.com/superp00t/gophercraft/datapack/text"
 )
 
 type WriteFile io.WriteCloser
@@ -61,13 +61,13 @@ func RegisterDriver(key string, value func() Driver) {
 }
 
 type PackConfig struct {
-	Name          string   `yaml:"name"`
-	Description   string   `yaml:"description"`
-	Author        string   `yaml:"author"`
-	Version       string   `yaml:"version"`
-	Depends       []string `yaml:"depends"`
-	ServerScripts []string `yaml:"server_scripts,omitempty"`
-	ClientScripts []string `yaml:"client_scripts,omitempty"`
+	Name          string
+	Description   string
+	Author        string
+	Version       string
+	Depends       []string
+	ServerScripts []string
+	ClientScripts []string
 }
 
 type Pack struct {
@@ -126,12 +126,12 @@ func OpenPack(path string) (*Pack, error) {
 		return nil, err
 	}
 
-	yb, err := p.ReadBytes("pack.yml")
+	yb, err := p.ReadBytes("Pack.txt")
 	if err != nil {
 		return nil, err
 	}
 
-	err = yaml.Unmarshal(yb, &p.PackConfig)
+	err = text.Unmarshal(yb, &p.PackConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,6 @@ func Open(directory string) (*Loader, error) {
 
 func (p *Pack) Exists(path string) bool {
 	list := p.List()
-	// yo.Spew(list)
 	for _, v := range list {
 		if v == path {
 			return true
@@ -188,12 +187,11 @@ func Author(cfg PackConfig) (*Pack, error) {
 		return nil, err
 	}
 
-	data, err := yaml.Marshal(cfg)
+	data, err := text.Marshal(cfg)
 	if err != nil {
 		panic(err)
 	}
-
-	tempDir.Concat("pack.yml").WriteAll(data)
+	tempDir.Concat("Pack.txt").WriteAll(data)
 
 	pack, err := OpenPack(tempDir.Render())
 	if err != nil {

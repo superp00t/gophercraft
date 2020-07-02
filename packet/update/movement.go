@@ -2,10 +2,11 @@ package update
 
 import (
 	"fmt"
+	"io"
 	"strings"
 
-	"github.com/superp00t/etc"
 	"github.com/superp00t/gophercraft/guid"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 //go:generate gcraft_stringer -type=SpeedType
@@ -179,7 +180,7 @@ type UpdateFlagDescriptor map[UpdateFlags]uint32
 type MoveFlagDescriptor map[MoveFlags]uint32
 
 var (
-	UpdateFlagDescriptors = map[uint32]UpdateFlagDescriptor{
+	UpdateFlagDescriptors = map[vsn.Build]UpdateFlagDescriptor{
 		5875: {
 			UpdateFlagSelf:        0x0001,
 			UpdateFlagTransport:   0x0002,
@@ -191,7 +192,7 @@ var (
 		},
 	}
 
-	MoveFlagDescriptors = map[uint32]MoveFlagDescriptor{
+	MoveFlagDescriptors = map[vsn.Build]MoveFlagDescriptor{
 		5875: {
 			MoveFlagForward:     0x00000001,
 			MoveFlagBackward:    0x00000002,
@@ -221,7 +222,7 @@ var (
 		},
 	}
 
-	SpeedLists = map[uint32][]SpeedType{
+	SpeedLists = map[vsn.Build][]SpeedType{
 		5875: {
 			Walk,
 			Run,
@@ -238,21 +239,29 @@ type Position struct {
 	O float32
 }
 
-func EncodePosition(out *etc.Buffer, q Position) {
-	EncodePoint3(out, q.Point3)
-	out.WriteFloat32(q.O)
+func EncodePosition(out io.Writer, q Position) error {
+	err := EncodePoint3(out, q.Point3)
+	if err != nil {
+		return err
+	}
+	return writeFloat32(out, q.O)
 }
 
-func DecodePosition(in *etc.Buffer) Position {
-	q := Position{}
-	q.Point3 = DecodePoint3(in)
-	q.O = in.ReadFloat32()
-	return q
+func DecodePosition(in io.Reader) (Position, error) {
+	var q Position
+	var err error
+	q.Point3, err = DecodePoint3(in)
+	if err != nil {
+		return q, err
+	}
+	q.O, err = readFloat32(in)
+	return q, err
 }
 
 type Speeds map[SpeedType]float32
 
 type MovementBlock struct {
+	ID          guid.GUID
 	UpdateFlags UpdateFlags
 	Info        *MovementInfo
 	Speeds      Speeds
@@ -264,13 +273,18 @@ type MovementBlock struct {
 	WorldTime   uint32
 }
 
-func decodeUpdateFlags(version uint32, in *etc.Buffer) (UpdateFlags, error) {
+func decodeUpdateFlags(version vsn.Build, in io.Reader) (UpdateFlags, error) {
 	descriptor, ok := UpdateFlagDescriptors[version]
 	if !ok {
 		return 0, fmt.Errorf("update: no move flag descriptor for %d", version)
 	}
 
-	uf := uint32(in.ReadByte())
+	ufb, err := readUint8(in)
+	if err != nil {
+		return 0, err
+	}
+
+	uf := uint32(ufb)
 
 	out := UpdateFlags(0)
 
@@ -283,7 +297,7 @@ func decodeUpdateFlags(version uint32, in *etc.Buffer) (UpdateFlags, error) {
 	return out, nil
 }
 
-func encodeUpdateFlags(version uint32, outb *etc.Buffer, uf UpdateFlags) error {
+func encodeUpdateFlags(version vsn.Build, outb io.Writer, uf UpdateFlags) error {
 	descriptor, ok := UpdateFlagDescriptors[version]
 	if !ok {
 		return fmt.Errorf("update: no move flag descriptor for %d", version)
@@ -297,18 +311,19 @@ func encodeUpdateFlags(version uint32, outb *etc.Buffer, uf UpdateFlags) error {
 		}
 	}
 
-	outb.WriteByte(out)
-
-	return nil
+	return writeUint8(outb, out)
 }
 
-func decodeMoveFlags(version uint32, in *etc.Buffer) (MoveFlags, error) {
+func decodeMoveFlags(version vsn.Build, in io.Reader) (MoveFlags, error) {
 	descriptor, ok := MoveFlagDescriptors[version]
 	if !ok {
 		return 0, fmt.Errorf("update: no move flag descriptor for %d", version)
 	}
 
-	mf := in.ReadUint32()
+	mf, err := readUint32(in)
+	if err != nil {
+		return 0, err
+	}
 
 	out := MoveFlags(0)
 
@@ -321,7 +336,7 @@ func decodeMoveFlags(version uint32, in *etc.Buffer) (MoveFlags, error) {
 	return out, nil
 }
 
-func encodeMoveFlags(version uint32, outb *etc.Buffer, mf MoveFlags) error {
+func encodeMoveFlags(version vsn.Build, outb io.Writer, mf MoveFlags) error {
 	descriptor, ok := MoveFlagDescriptors[version]
 	if !ok {
 		return fmt.Errorf("update: no move flag descriptor for %d", version)
@@ -335,78 +350,127 @@ func encodeMoveFlags(version uint32, outb *etc.Buffer, mf MoveFlags) error {
 		}
 	}
 
-	outb.WriteUint32(out)
-
-	return nil
+	return writeUint32(outb, out)
 }
 
-func EncodeMovementInfo(version uint32, out *etc.Buffer, mi *MovementInfo) error {
+func EncodeMovementInfo(version vsn.Build, out io.Writer, mi *MovementInfo) error {
 	err := encodeMoveFlags(version, out, mi.Flags)
 	if err != nil {
 		return err
 	}
 
-	out.WriteUint32(mi.Time)
-	EncodePosition(out, mi.Position)
+	if err = writeUint32(out, mi.Time); err != nil {
+		return err
+	}
+
+	if err = EncodePosition(out, mi.Position); err != nil {
+		return err
+	}
 
 	if mi.Flags&MoveFlagOnTransport != 0 {
 		mi.TransportGUID.EncodePacked(version, out)
-		EncodePosition(out, mi.TransportPosition)
+		if err = EncodePosition(out, mi.TransportPosition); err != nil {
+			return err
+		}
 	}
 
 	if mi.Flags&MoveFlagSwimming != 0 {
-		out.WriteFloat32(mi.SwimPitch)
+		if err = writeFloat32(out, mi.SwimPitch); err != nil {
+			return err
+		}
 	}
 
-	out.WriteUint32(mi.FallTime)
+	if err = writeUint32(out, mi.FallTime); err != nil {
+		return err
+	}
 
 	if mi.Flags&MoveFlagFalling != 0 {
-		out.WriteFloat32(mi.FallVelocity)
-		out.WriteFloat32(mi.FallSin)
-		out.WriteFloat32(mi.FallCos)
-		out.WriteFloat32(mi.FallXYSpeed)
+		if err = writeFloat32(out, mi.FallVelocity); err != nil {
+			return err
+		}
+		if err = writeFloat32(out, mi.FallSin); err != nil {
+			return err
+		}
+		if err = writeFloat32(out, mi.FallCos); err != nil {
+			return err
+		}
+		if err = writeFloat32(out, mi.FallXYSpeed); err != nil {
+			return err
+		}
 	}
 
 	if mi.Flags&MoveFlagSplineElevation != 0 {
-		out.WriteFloat32(mi.SplineElevation)
+		if err = writeFloat32(out, mi.SplineElevation); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func DecodeMovementInfo(version uint32, in *etc.Buffer) (*MovementInfo, error) {
+func DecodeMovementInfo(version vsn.Build, in io.Reader) (*MovementInfo, error) {
 	info := new(MovementInfo)
 	var err error
 	info.Flags, err = decodeMoveFlags(version, in)
 	if err != nil {
 		return nil, err
 	}
-	info.Time = in.ReadUint32()
-	info.Position = DecodePosition(in)
+	info.Time, err = readUint32(in)
+	if err != nil {
+		return nil, err
+	}
+	info.Position, err = DecodePosition(in)
+	if err != nil {
+		return nil, err
+	}
 
 	if info.Flags&MoveFlagOnTransport != 0 {
 		info.TransportGUID, err = guid.DecodePacked(version, in)
 		if err != nil {
 			return nil, err
 		}
-		info.TransportPosition = DecodePosition(in)
+		info.TransportPosition, err = DecodePosition(in)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if info.Flags&MoveFlagSwimming != 0 {
-		info.SwimPitch = in.ReadFloat32()
+		info.SwimPitch, err = readFloat32(in)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	info.FallTime = in.ReadUint32()
+	info.FallTime, err = readUint32(in)
+	if err != nil {
+		return nil, err
+	}
 
 	if info.Flags&MoveFlagFalling != 0 {
-		info.FallVelocity = in.ReadFloat32()
-		info.FallSin = in.ReadFloat32()
-		info.FallCos = in.ReadFloat32()
-		info.FallXYSpeed = in.ReadFloat32()
+		info.FallVelocity, err = readFloat32(in)
+		if err != nil {
+			return nil, err
+		}
+		info.FallSin, err = readFloat32(in)
+		if err != nil {
+			return nil, err
+		}
+		info.FallCos, err = readFloat32(in)
+		if err != nil {
+			return nil, err
+		}
+		info.FallXYSpeed, err = readFloat32(in)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if info.Flags&MoveFlagSplineElevation != 0 {
-		info.SplineElevation = in.ReadFloat32()
+		info.SplineElevation, err = readFloat32(in)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return info, nil
@@ -435,56 +499,75 @@ func (mBlock *MovementBlock) Type() BlockType {
 	return Movement
 }
 
-// only supports 5875 so far
-func DecodeMovementBlock(version uint32, in *etc.Buffer) (*MovementBlock, error) {
-	mBlock := new(MovementBlock)
+func (decoder *Decoder) IsCreateBlock() bool {
+	return decoder.CurrentBlockType == CreateObject || decoder.CurrentBlockType == SpawnObject
+}
 
+// only supports 5875 so far
+func (decoder *Decoder) DecodeMovementBlock() (*MovementBlock, error) {
+	mBlock := new(MovementBlock)
 	var err error
-	mBlock.UpdateFlags, err = decodeUpdateFlags(version, in)
+
+	mBlock.UpdateFlags, err = decodeUpdateFlags(decoder.Build, decoder.Reader)
 	if err != nil {
 		return nil, err
 	}
 
 	if mBlock.UpdateFlags&UpdateFlagLiving != 0 {
 		var err error
-		mBlock.Info, err = DecodeMovementInfo(version, in)
+		mBlock.Info, err = DecodeMovementInfo(decoder.Build, decoder.Reader)
 		if err != nil {
 			return nil, err
 		}
 
 		mBlock.Speeds = make(map[SpeedType]float32)
 
-		for _, speed := range SpeedLists[version] {
-			mBlock.Speeds[speed] = in.ReadFloat32()
+		for _, speed := range SpeedLists[decoder.Build] {
+			mBlock.Speeds[speed], err = readFloat32(decoder.Reader)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		if mBlock.Info.Flags&MoveFlagSplineEnabled != 0 {
-			mBlock.Spline, err = DecodeMoveSpline(version, in)
+			mBlock.Spline, err = DecodeMoveSpline(decoder.Build, decoder.Reader)
 			if err != nil {
 				return nil, err
 			}
 		}
 	} else if mBlock.UpdateFlags&UpdateFlagHasPosition != 0 {
-		mBlock.Position = DecodePosition(in)
+		mBlock.Position, err = DecodePosition(decoder.Reader)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if mBlock.UpdateFlags&UpdateFlagHighGUID != 0 {
-		mBlock.HighGUID = in.ReadUint32()
+		mBlock.HighGUID, err = readUint32(decoder.Reader)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if mBlock.UpdateFlags&UpdateFlagAll != 0 {
-		mBlock.All = in.ReadUint32()
+		mBlock.All, err = readUint32(decoder.Reader)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if mBlock.UpdateFlags&UpdateFlagTransport != 0 {
-		mBlock.WorldTime = in.ReadUint32()
+		mBlock.WorldTime, err = readUint32(decoder.Reader)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return mBlock, nil
 }
 
-func (mb *MovementBlock) WriteTo(g guid.GUID, e *Encoder) error {
-	if err := encodeUpdateFlags(e.Version, e.Buffer, mb.UpdateFlags); err != nil {
+func (mb *MovementBlock) WriteData(e *Encoder, mask VisibilityFlags, create bool) error {
+	if err := encodeUpdateFlags(e.Build, e, mb.UpdateFlags); err != nil {
 		return err
 	}
 
@@ -493,40 +576,48 @@ func (mb *MovementBlock) WriteTo(g guid.GUID, e *Encoder) error {
 			return fmt.Errorf("update: error serializing MovementBlock: living bit set but Info is nil")
 		}
 
-		err := EncodeMovementInfo(e.Version, e.Buffer, mb.Info)
+		err := EncodeMovementInfo(e.Build, e, mb.Info)
 		if err != nil {
 			return err
 		}
 
-		sl, ok := SpeedLists[e.Version]
+		sl, ok := SpeedLists[e.Build]
 		if !ok {
-			return fmt.Errorf("update: no SpeedLists for version %d", e.Version)
+			return fmt.Errorf("update: no SpeedLists for version %s", e.Build)
 		}
 
 		for _, v := range sl {
-			e.Buffer.WriteFloat32(mb.Speeds[v])
+			if err := writeFloat32(e, mb.Speeds[v]); err != nil {
+				return err
+			}
 		}
 
 		if mb.Info.Flags&MoveFlagSplineEnabled != 0 {
-			err = EncodeMoveSpline(e.Version, e.Buffer, mb.Spline)
+			err = EncodeMoveSpline(e.Build, e, mb.Spline)
 			if err != nil {
 				return err
 			}
 		}
 	} else if mb.UpdateFlags&UpdateFlagHasPosition != 0 {
-		EncodePosition(e.Buffer, mb.Position)
+		EncodePosition(e, mb.Position)
 	}
 
 	if mb.UpdateFlags&UpdateFlagHighGUID != 0 {
-		e.WriteUint32(mb.HighGUID)
+		if err := writeUint32(e, mb.HighGUID); err != nil {
+			return err
+		}
 	}
 
 	if mb.UpdateFlags&UpdateFlagAll != 0 {
-		e.WriteUint32(mb.All)
+		if err := writeUint32(e, mb.All); err != nil {
+			return err
+		}
 	}
 
 	if mb.UpdateFlags&UpdateFlagTransport != 0 {
-		e.WriteUint32(mb.WorldTime)
+		if err := writeUint32(e, mb.WorldTime); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -3,10 +3,11 @@ package worldserver
 import (
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/packet"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 func (s *Session) IntroductoryPackets() {
-	if s.WS.Config.Version == 5875 {
+	if s.Build().RemovedIn(vsn.V2_4_3) {
 		return
 	}
 
@@ -16,7 +17,7 @@ func (s *Session) IntroductoryPackets() {
 	}
 
 	v2 := packet.NewWorldPacket(packet.SMSG_CLIENTCACHE_VERSION)
-	v2.WriteUint32(s.Version())
+	v2.WriteUint32(uint32(s.Build()))
 	s.SendAsync(v2)
 
 	v3 := packet.NewWorldPacket(packet.SMSG_TUTORIAL_FLAGS)

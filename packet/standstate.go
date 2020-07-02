@@ -11,5 +11,4 @@ const (
 	UNIT_STAND_STATE_DEAD             = 7
 	UNIT_STAND_STATE_KNEEL            = 8
 	UNIT_STAND_STATE_CUSTOM           = 9 // confirm for vanilla - used on Cthun in later sniffs
-
 )

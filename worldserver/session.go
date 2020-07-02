@@ -3,7 +3,6 @@ package worldserver
 import (
 	"fmt"
 	"io"
-	"net"
 	"strings"
 	"sync"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/superp00t/gophercraft/guid"
 	"github.com/superp00t/gophercraft/warden"
 
+	"github.com/superp00t/gophercraft/gcore/config"
 	"github.com/superp00t/gophercraft/gcore/sys"
 	"github.com/superp00t/gophercraft/packet"
 )
@@ -28,41 +28,37 @@ const (
 
 type Session struct {
 	// Account data
-	Tier        sys.Tier
+	WS          *WorldServer
+	Connection  *packet.Connection
 	State       SessionState
+	Warden      *warden.Warden
+	Tier        sys.Tier
 	GameAccount uint64
 	SessionKey  []byte
 	AddonData   []byte
-	Warden      *warden.Warden
-	WS          *WorldServer
-	C           net.Conn
-	Crypter     *packet.Crypter
 	Char        *wdb.Character
 	lInventory  sync.Mutex
 	Inventory   map[guid.GUID]*Item
-	summons     *summons
 
 	// In-world data
 	CurrentPhase string
 	CurrentMap   uint32
 	ZoneID       uint32
+	Group        *Group
+	GroupInvite  guid.GUID
+	summons      *summons
 	// currently tracked objects
 	lTrackedGUIDs sync.Mutex
 	TrackedGUIDs  []guid.GUID
 
 	*update.ValuesBlock
 
-	PlayerSpeeds   update.Speeds
-	SpeedModifier  float32
-	PlayerPosition update.Position
+	MoveSpeeds   update.Speeds
+	MovementInfo *update.MovementInfo
 
 	messageBroker chan *packet.WorldPacket
 	brokerClosed  bool
 	objectDebug   bool
-}
-
-func (s *Session) Living() bool {
-	return true
 }
 
 func (s *Session) TypeID() guid.TypeID {
@@ -78,21 +74,31 @@ func (s *Session) Values() *update.ValuesBlock {
 	return s.ValuesBlock
 }
 
+func (s *Session) Movement() *update.MovementBlock {
+	mData := &update.MovementBlock{
+		Speeds:   s.MoveSpeeds,
+		Position: s.MovementInfo.Position,
+		Info:     s.MovementInfo,
+	}
+
+	mData.UpdateFlags |= update.UpdateFlagLiving
+	mData.UpdateFlags |= update.UpdateFlagHasPosition
+
+	mData.UpdateFlags |= update.UpdateFlagAll
+	mData.All = 0x1
+	return mData
+}
+
 func (s *Session) Position() update.Position {
-	return s.PlayerPosition
+	return s.MovementInfo.Position
 }
 
 func (s *Session) Speeds() update.Speeds {
-	speeds := s.PlayerSpeeds
-	for k := range speeds {
-		speeds[k] = speeds[k] * s.SpeedModifier
-	}
-
-	return speeds
+	return s.MoveSpeeds
 }
 
 func (s *Session) ReadCrypt() (packet.WorldType, []byte, error) {
-	frame, err := s.Crypter.ReadFrame()
+	frame, err := s.Connection.ReadFrame()
 	if err != nil {
 		return 0, nil, err
 	}
@@ -105,16 +111,17 @@ func (s *Session) SendAsync(p *packet.WorldPacket) {
 	if !s.brokerClosed {
 		s.messageBroker <- p
 	} else {
-		yo.Warn("Broker is clossed")
+		yo.Warn("Broker is closed")
 	}
 }
 
 func (s *Session) oldGUID() bool {
-	return s.Version() <= 20000
+	// Patch 6.0.2
+	return s.Build() < 19027
 }
 
 func (s *Session) decodeUnpackedGUID(in io.Reader) guid.GUID {
-	g, err := guid.DecodeUnpacked(s.Version(), in)
+	g, err := guid.DecodeUnpacked(s.Build(), in)
 	if err != nil {
 		return guid.Nil
 	}
@@ -136,7 +143,7 @@ func (s *Session) convertClientGUID(g guid.GUID) guid.GUID {
 }
 
 func (s *Session) decodePackedGUID(in io.Reader) guid.GUID {
-	g, err := guid.DecodePacked(s.Version(), in)
+	g, err := guid.DecodePacked(s.Build(), in)
 	if err != nil {
 		yo.Warn(err)
 		return guid.Nil
@@ -146,7 +153,7 @@ func (s *Session) decodePackedGUID(in io.Reader) guid.GUID {
 }
 
 func (s *Session) SendSync(p *packet.WorldPacket) error {
-	return s.Crypter.SendFrame(packet.Frame{
+	return s.Connection.SendFrame(packet.Frame{
 		Type: p.Type,
 		Data: p.Finish(),
 	})
@@ -170,56 +177,62 @@ func (s *Session) HandleJoin(e *etc.Buffer) {
 		return
 	}
 
-	gid, err := guid.DecodeUnpacked(s.Version(), e)
+	// todo: handle player already in world
+
+	gid := s.decodeUnpackedGUID(e)
+	if gid == guid.Nil {
+		return
+	}
+
+	yo.Println("Player join requested", gid)
+
+	if sess, _ := s.WS.GetSessionByGUID(gid); sess != nil {
+		s.SendLoginFailure(packet.CharLoginDuplicateCharacter)
+		return
+	}
+
+	var chr wdb.Character
+
+	found, err := s.DB().Where("game_account = ?", s.GameAccount).Where("id = ?", gid.Counter()).Get(&chr)
 	if err != nil {
 		panic(err)
 	}
 
-	yo.Println("Player join requested")
-
-	var cl []wdb.Character
-
-	s.DB().Find(&cl)
-
-	for _, v := range cl {
-		if v.ID == gid.Counter() {
-			s.Char = &v
-			yo.Println("GUID found for character", v.Name, gid)
-			s.SetupOnLogin()
-			return
-		}
+	if found {
+		s.Char = &chr
+		yo.Println("GUID found for character", chr.Name, gid)
+		s.SetupOnLogin()
+		return
 	}
 
 	// Todo handle unknown GUID
+	s.SendLoginFailure(packet.CharLoginNoCharacter)
+}
+
+func (s *Session) Cleanup() {
+	if s.Char != nil {
+		s.CleanupPlayer()
+	}
+
+	s.Connection.Conn.Close()
+	s.brokerClosed = true
+	close(s.messageBroker)
 }
 
 func (s *Session) Handle() {
 	for {
-		f, err := s.Crypter.ReadFrame()
+		f, err := s.Connection.ReadFrame()
 		if err != nil {
 			yo.Println(err)
-			if s.Char != nil {
-				s.WS.PlayersL.Lock()
-				if pls := s.WS.PlayerList[s.PlayerName()]; pls != nil {
-					delete(s.WS.PlayerList, s.PlayerName())
-				}
-				s.WS.PlayersL.Unlock()
-			}
-
-			if s.State == InWorld {
-				s.Map().RemoveObject(s.GUID())
-			}
-
-			s.Crypter.Conn.Close()
-			s.brokerClosed = true
-			close(s.messageBroker)
+			s.Cleanup()
 			return
 		}
 
 		yo.Println(f.Type, "requested", len(f.Data))
 
 		if strings.HasPrefix(f.Type.String(), "WorldType(") {
-			s.Crypter.Conn.Close()
+			s.Connection.Conn.Close()
+			s.Cleanup()
 			continue
 		}
 
@@ -236,11 +249,13 @@ func (s *Session) Handle() {
 				fn(s, f.Type, f.Data)
 			case func(*Session, *etc.Buffer):
 				fn(s, etc.FromBytes(f.Data))
+			case func(*Session):
+				fn(s)
 			default:
 				panic("unusable function type for " + f.Type.String())
 			}
 		} else {
-			yo.Warn("Unauthorized packet sent from ", s.Crypter.Conn.RemoteAddr().String())
+			yo.Warn("Unauthorized packet sent from ", s.Connection.Conn.RemoteAddr().String())
 		}
 	}
 }
@@ -276,5 +291,9 @@ func (s *Session) Map() *Map {
 }
 
 func (s *Session) GetPlayerClass() packet.Class {
-	return packet.Class(s.GetByteValue(update.UnitClass))
+	return packet.Class(s.GetByte("Class"))
+}
+
+func (s *Session) Config() *config.World {
+	return s.WS.Config
 }

@@ -1,7 +1,7 @@
 package worldserver
 
 import (
-	"github.com/superp00t/etc/yo"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/superp00t/gophercraft/packet/update"
 	"github.com/superp00t/gophercraft/worldserver/wdb"
 )
@@ -20,17 +20,21 @@ func x_Tele(c *C) {
 	if len(c.Args) == 1 {
 		portID := c.String(0)
 
-		var port wdb.PortLocation
-		found, _ := c.Session.WS.DB.Where("port_id = ?", portID).Get(&port)
+		var port *wdb.PortLocation
+		wdb.GetData(portID, &port)
 
-		if !found {
-			found, _ = c.Session.WS.DB.Where("port_id like ?", portID+"%").Get(&port)
-			if !found {
+		if port == nil {
+			var ports []*wdb.PortLocation
+			if err := wdb.SearchTemplates(portID, 1, &ports); err != nil {
+				c.Session.Warnf("%s", err)
+				return
+			}
+			if len(ports) == 0 {
 				c.Session.Warnf("could not find port location: '%s'", portID)
 				return
 			}
-			yo.Warn(port.Name)
-			c.Session.Warnf("Could not find teleport location %s, sending you to %s.", portID, port.Name)
+			port = ports[0]
+			c.Session.Warnf("Could not find teleport location %s, sending you to %s.", portID, port.ID)
 		}
 
 		mapID = port.Map
@@ -38,6 +42,7 @@ func x_Tele(c *C) {
 		pos.Y = port.Y
 		pos.Z = port.Z
 		pos.O = port.O
+		c.Session.Warnf("%s", spew.Sdump(port))
 	} else {
 		pos.X = c.Float32(0)
 		pos.Y = c.Float32(1)

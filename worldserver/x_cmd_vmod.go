@@ -1,97 +1,76 @@
 package worldserver
 
 import (
+	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/superp00t/gophercraft/guid"
-	"github.com/superp00t/gophercraft/packet/update"
 )
 
 func x_VMod(c *C) {
 	if len(c.Args) < 1 {
-		c.Session.Warnf(".vmod ValueOfPiGlobal=f3.14")
+		c.Session.Warnf(".vmod ClassName 3.14")
 		return
 	}
 
-	tgt := c.Session.GUID()
+	var args []interface{}
 
-	if t := c.Session.GetTarget(); t != guid.Nil {
-		tgt = t
-	}
-
-	if tgt.HighType() == guid.Player {
-		_, err := c.Session.WS.GetSessionByGUID(tgt)
+	for x := 0; x < len(c.Args)-1; x++ {
+		arg := c.Args[x]
+		idx, err := strconv.ParseInt(arg, 0, 64)
 		if err != nil {
-			c.Session.Warnf("%s", err.Error())
-			return
+			args = append(args, arg)
+		} else {
+			args = append(args, int(idx))
 		}
 	}
 
-	changeMask := map[update.Global]interface{}{}
+	newValue := c.Args[len(c.Args)-1]
 
-	for _, v := range c.Args {
-		els := strings.Split(v, "=")
-		if len(els) != 2 {
-			c.Session.Warnf("failed to parse input")
-			return
-		}
+	off, val, err := c.Session.FindValueOffset(args...)
+	if err != nil {
+		c.Session.Warnf("%s", err)
+		return
+	}
 
-		glob, err := update.GlobalFromString(els[0])
+	c.Session.Warnf("Value found: 0x%04X (%d) %s", off, off, val.Type())
+
+	if val.Type() == reflect.TypeOf(guid.GUID{}) {
+		id, err := guid.FromString(newValue)
 		if err != nil {
-			c.Session.Warnf("invalid global key: %s", err.Error())
+			c.Session.Warnf("%s", err)
 			return
 		}
-
-		value := els[1]
-		if len(value) <= 1 {
-			c.Session.Warnf("no value type specifier")
-			return
-		}
-
-		switch value[0] {
-		case 'f':
-			f64, err := strconv.ParseFloat(value[1:], 32)
-			if err != nil {
-				c.Session.Warnf("%s", err.Error())
-				return
-			}
-
-			changeMask[glob] = float32(f64)
-		case 'i':
-			i32, err := strconv.ParseInt(value[1:], 0, 32)
-			if err != nil {
-				c.Session.Warnf("%s", err.Error())
-				return
-			}
-
-			changeMask[glob] = int32(i32)
-		case 'u':
-			u32, err := strconv.ParseUint(value[1:], 0, 32)
-			if err != nil {
-				c.Session.Warnf("%s", err.Error())
-				return
-			}
-
-			changeMask[glob] = uint32(u32)
-		case 'g':
-			g, err := guid.FromString(value[1:])
-			if err != nil {
-				c.Session.Warnf("%s", err.Error())
-				return
-			}
-
-			changeMask[glob] = g
-		case 'b':
-			b, err := strconv.ParseUint(value[1:], 0, 8)
-			if err != nil {
-				c.Session.Warnf("%s", err.Error())
-				return
-			}
-
-			changeMask[glob] = uint8(b)
-		}
+		val.Set(reflect.ValueOf(id))
+		c.Session.ValuesBlock.ChangeMask.Set(off, true)
+		c.Session.ValuesBlock.ChangeMask.Set(off+1, true)
+		return
 	}
 
-	c.Session.Map().ModifyObject(tgt, changeMask)
+	switch val.Kind() {
+	case reflect.Uint8, reflect.Uint32:
+		u64, err := strconv.ParseUint(newValue, 0, 32)
+		if err != nil {
+			c.Session.Warnf("%s", err)
+			return
+		}
+		val.SetUint(u64)
+		c.Session.ValuesBlock.ChangeMask.Set(off, true)
+	case reflect.Int32:
+		i64, err := strconv.ParseInt(newValue, 0, 32)
+		if err != nil {
+			c.Session.Warnf("%s", err)
+			return
+		}
+		val.SetInt(i64)
+		c.Session.ValuesBlock.ChangeMask.Set(off, true)
+	case reflect.Bool:
+		tru := newValue == "true"
+		val.SetBool(tru)
+		c.Session.ValuesBlock.ChangeMask.Set(off, true)
+	default:
+		c.Session.Warnf("unknown kind %s", val.Kind())
+		return
+	}
+	c.Session.Map().PropagateChanges(c.Session.GUID())
 }

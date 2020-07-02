@@ -100,6 +100,22 @@ var (
 		},
 
 		{
+			"gm",
+			nil,
+			sys.Tier_GameMaster,
+			"Game Master commands",
+			[]Command{
+				{
+					"fly",
+					[][]string{{"on/off"}},
+					sys.Tier_GameMaster,
+					"Turns flying on or off.",
+					x_Fly,
+				},
+			},
+		},
+
+		{
 			"xgps",
 			[][]string{
 				{"yards", "direction"},
@@ -163,6 +179,14 @@ var (
 			sys.Tier_Admin,
 			"modifies a set of values",
 			x_VMod,
+		},
+
+		{
+			"sstats",
+			nil,
+			sys.Tier_Admin,
+			"view server stats",
+			x_Stats,
 		},
 
 		{

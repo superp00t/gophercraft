@@ -3,7 +3,7 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"math/big"
+	"fmt"
 	"net"
 	"time"
 
@@ -11,11 +11,12 @@ import (
 
 	"github.com/superp00t/gophercraft/packet"
 	"github.com/superp00t/gophercraft/srp"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 type Backend interface {
 	GetAccount(user string) *Account
-	ListRealms(user string, buildnumber uint32) []packet.RealmListing
+	ListRealms(user string, buildnumber vsn.Build) []packet.RealmListing
 	StoreKey(user string, K []byte)
 	HandleSpecialConn(protocol string, conn net.Conn)
 }
@@ -67,14 +68,14 @@ type Server struct {
 
 func (server *Server) Handle(cn net.Conn) {
 	var (
-		acc *Account
-		g   *srp.BigNum
-		s   *srp.BigNum
-		N   *srp.BigNum
-		v   *srp.BigNum
-		b   *srp.BigNum
-		B   *srp.BigNum
-		alc *packet.AuthLogonChallenge_C
+		acc  *Account
+		g    *srp.BigNum
+		salt *srp.BigNum
+		N    *srp.BigNum
+		v    *srp.BigNum
+		b    *srp.BigNum
+		B    *srp.BigNum
+		alc  *packet.AuthLogonChallenge_C
 	)
 
 	c := wrapConn(cn)
@@ -99,7 +100,6 @@ func (server *Server) Handle(cn net.Conn) {
 			}
 
 			if packet.AuthType(data[0]) != packet.AUTH_LOGON_CHALLENGE {
-				// SSH server for remote administration
 				server.Backend.HandleSpecialConn("grpc", c)
 				return
 			}
@@ -122,6 +122,10 @@ func (server *Server) Handle(cn net.Conn) {
 				c.Close()
 				return
 			}
+
+			fmt.Println("Challenge buffer")
+			yo.Spew(buf[:rd])
+			yo.Spew(alc)
 
 			build := alc.Build
 			validBuilds := []uint16{
@@ -164,28 +168,27 @@ func (server *Server) Handle(cn net.Conn) {
 
 			state = stateChallenging
 
-			// Perform SRP check
-			nh := "894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7"
-			nb, _ := hex.DecodeString(nh)
-			N = &srp.BigNum{X: new(big.Int).SetBytes(nb)}
-			v, s, _ = srp.ServerCalcVSX(acc.IdentityHash, N)
+			// Generate parameters
+			salt = srp.BigNumFromRand(32)
+			g = srp.Generator.Copy()
+			N = srp.Prime.Copy()
 
-			g = srp.BigNumFromInt(7)
-			b = srp.BigNumFromRand(19)
-			gmod := g.ModExp(b, N)
-			B = ((v.Multiply(srp.BigNumFromInt(3))).Add(gmod)).Mod(N)
+			// Compute temporary variables
+			_, v = srp.CalculateVerifier(acc.IdentityHash, g, N, salt)
+			b, B = srp.ServerGenerateEphemeralValues(g, N, v)
+
 			pkt := &packet.AuthLogonChallenge_S{
-				Cmd:   packet.AUTH_LOGON_CHALLENGE,
-				Error: packet.WOW_SUCCESS,
-				B:     B.ToArray(),
-				G:     7,
-				N:     N.ToArray(),
-				S:     s.ToArray(),
-				Unk3:  srp.BigNumFromRand(16).ToArray(),
+				Cmd:              packet.AUTH_LOGON_CHALLENGE,
+				Error:            packet.WOW_SUCCESS,
+				B:                B.ToArray(32),
+				G:                g.ToArray(1),
+				N:                N.ToArray(32),
+				S:                salt.ToArray(32),
+				VersionChallenge: srp.BigNumFromRand(16).ToArray(16),
 			}
 
 			c.Write(pkt.Encode())
-		// Client posts cryptographic material to the server to complete SRP.
+		// Client has posted cryptographic material to the server to complete SRP.
 		case packet.AUTH_LOGON_PROOF:
 			if state != stateChallenging {
 				break
@@ -197,12 +200,14 @@ func (server *Server) Handle(cn net.Conn) {
 				return
 			}
 
-			K, valid, M3 := srp.ServerLogonProof(acc.Username,
+			yo.Spew(alpc)
+
+			K, valid, M2 := srp.ServerLogonProof(acc.Username,
 				srp.BigNumFromArray(alpc.A),
 				srp.BigNumFromArray(alpc.M1),
 				b,
 				B,
-				s,
+				salt,
 				N,
 				v)
 
@@ -218,19 +223,19 @@ func (server *Server) Handle(cn net.Conn) {
 				}
 
 				c.Write(resp)
-				// time.Sleep(1 * time.Second)
-				// c.Close()
 				continue
 			}
 
 			server.StoreKey(acc.Username, K)
 
 			yo.Println(acc.Username, "successfully authenticated")
+			yo.Println("Client A", hex.EncodeToString(alpc.A))
+			yo.Println("Client m1", hex.EncodeToString(alpc.M1))
 
 			proof := &packet.AuthLogonProof_S{
 				Cmd:          packet.AUTH_LOGON_PROOF,
 				Error:        packet.WOW_SUCCESS,
-				M2:           M3,
+				M2:           M2,
 				AccountFlags: 0x00800000,
 				SurveyID:     0,
 				Unk3:         0,
@@ -249,7 +254,7 @@ func (server *Server) Handle(cn net.Conn) {
 				break
 			}
 
-			rls := server.ListRealms(acc.Username, uint32(alc.Build))
+			rls := server.ListRealms(acc.Username, vsn.Build(alc.Build))
 			rlst := &packet.RealmList_S{
 				Cmd:    packet.REALM_LIST,
 				Realms: rls,

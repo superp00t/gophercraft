@@ -18,6 +18,6 @@ func x_Summon(c *C) {
 		return
 	}
 
-	plyr.SetSummonLocation(c.Session.CurrentPhase, c.Session.CurrentMap, c.Session.PlayerPosition)
+	plyr.SetSummonLocation(c.Session.CurrentPhase, c.Session.CurrentMap, c.Session.Position())
 	plyr.SendSummonRequest(c.Session.GUID(), c.Session.ZoneID, 2*time.Minute)
 }

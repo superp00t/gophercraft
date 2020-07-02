@@ -1,8 +1,10 @@
 package packet
 
+import "strings"
+
 type WorldType uint32
 
-//go:generate gcraft_stringer -type=WorldType
+//go:generate gcraft_stringer -type=WorldType -fromString
 
 const (
 	CMSG_BOOTME                                                      WorldType = 0x001
@@ -2335,13 +2337,13 @@ const (
 	M_SMSG_COMPRESSED_PACKET       WorldType = 0x3052
 	M_SMSG_MULTIPLE_PACKETS        WorldType = 0x3051
 	// Deleted opcodes, here only to allow compile
-	M_SMSG_ARENA_TEAM_STATS              WorldType = 0xBADD
-	M_SMSG_BUY_BANK_SLOT_RESULT          WorldType = 0xBADD
-	M_SMSG_BF_MGR_EJECTED                WorldType = 0xBADD
-	M_SMSG_BF_MGR_ENTERING               WorldType = 0xBADD
-	M_SMSG_BF_MGR_ENTRY_INVITE           WorldType = 0xBADD
-	M_SMSG_BF_MGR_QUEUE_INVITE           WorldType = 0xBADD
-	M_SMSG_BF_MGR_QUEUE_REQUEST_RESPONSE WorldType = 0xBADD
+	M_SMSG_ARENA_TEAM_STATS                                   WorldType = 0xBADD
+	M_SMSG_BUY_BANK_SLOT_RESULT                               WorldType = 0xBADD
+	M_SMSG_BF_MGR_EJECTED                                     WorldType = 0xBADD
+	M_SMSG_BF_MGR_ENTERING                                    WorldType = 0xBADD
+	M_SMSG_BF_MGR_ENTRY_INVITE                                WorldType = 0xBADD
+	M_SMSG_BF_MGR_QUEUE_INVITE                                WorldType = 0xBADD
+	M_SMSG_BF_MGR_QUEUE_REQUEST_RESPONSE                      WorldType = 0xBADD
 	M_CMSG_ACCEPT_GUILD_INVITE                                WorldType = 0x35FD
 	M_CMSG_ACCEPT_LEVEL_GRANT                                 WorldType = 0x34FA
 	M_CMSG_ACCEPT_TRADE                                       WorldType = 0x315A
@@ -3070,8 +3072,36 @@ const (
 	M_CMSG_WHO_IS                                             WorldType = 0x3682
 	M_CMSG_WORLD_PORT_RESPONSE                                WorldType = 0x35FA
 	M_CMSG_WRAP_ITEM                                          WorldType = 0x3994
-	M_CMSG_BF_MGR_ENTRY_INVITE_RESPONSE WorldType = 0xBADD
-	M_CMSG_BF_MGR_QUEUE_INVITE_RESPONSE WorldType = 0xBADD
-	M_CMSG_BF_MGR_QUEUE_EXIT_REQUEST    WorldType = 0xBADD
+	M_CMSG_BF_MGR_ENTRY_INVITE_RESPONSE                       WorldType = 0xBADD
+	M_CMSG_BF_MGR_QUEUE_INVITE_RESPONSE                       WorldType = 0xBADD
+	M_CMSG_BF_MGR_QUEUE_EXIT_REQUEST                          WorldType = 0xBADD
 )
 
+func (wt WorldType) Description() string {
+	return "Game Opcode"
+}
+
+func (wt WorldType) Predict(name string) []string {
+	if name == "" {
+		return nil
+	}
+
+	var max WorldType = 0x4000
+
+	var prediction []string
+	for x := WorldType(0); x < max; x++ {
+		str := x.String()
+		if strings.HasPrefix(str, "WorldType(") {
+			continue
+		}
+
+		if strings.HasPrefix(str, name) {
+			prediction = append(prediction, str)
+		}
+	}
+	return prediction
+}
+
+func (wt WorldType) ToValue(name string) (interface{}, error) {
+	return WorldTypeFromString(name)
+}

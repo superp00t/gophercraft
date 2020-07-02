@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	Empty = 0xffffffff
+	Empty = -1
 
 	// InventoryTypes
 	IT_Unequippable = 0
@@ -45,7 +45,7 @@ type Ent_CharStartOutfit struct {
 	Class          packet.Class `xorm:"'class'"`
 	Gender         uint8        `xorm:"'gender'"`
 	OutfitID       uint8        `xorm:"'outfit_id'"`
-	ItemIDs        []uint32     `xorm:"'item_ids'" dbc:"5875(len:12),12340(len:24)"`
-	DisplayInfoIDs []uint32     `xorm:"'display_info_ids'" dbc:"5875(len:12),12340(len:24)"`
-	InventoryTypes []uint32     `xorm:"'inventory_types'" dbc:"5875(len:12),12340(len:24)"`
+	ItemIDs        []int32      `xorm:"'item_ids'" dbc:"5875(len:12),12340(len:24)"`
+	DisplayInfoIDs []int32      `xorm:"'display_info_ids'" dbc:"5875(len:12),12340(len:24)"`
+	InventoryTypes []int32      `xorm:"'inventory_types'" dbc:"5875(len:12),12340(len:24)"`
 }

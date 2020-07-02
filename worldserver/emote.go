@@ -1,6 +1,7 @@
 package worldserver
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/superp00t/etc"
@@ -9,6 +10,7 @@ import (
 	"github.com/superp00t/gophercraft/guid"
 	"github.com/superp00t/gophercraft/packet"
 	"github.com/superp00t/gophercraft/packet/update"
+	"github.com/superp00t/gophercraft/worldserver/wdb"
 )
 
 func (s *Session) IsAlive() bool {
@@ -35,7 +37,7 @@ func (s *Session) HandleStandStateChange(e *etc.Buffer) {
 }
 
 func (s *Session) SetStandState(value uint8) {
-	s.SetByteValue(update.UnitStandState, value)
+	s.SetByte("StandState", value)
 	s.Map().PropagateChanges(s.GUID())
 }
 
@@ -54,22 +56,18 @@ func (s *Session) HandleTextEmote(e *etc.Buffer) {
 
 	yo.Warn(textEmote, emoteID)
 
-	var emotes []dbc.Ent_EmotesText
-	if err := s.DB().Where("id = ?", textEmote).Find(&emotes); err != nil {
-		yo.Fatal(err)
-	}
+	var emote *dbc.Ent_EmotesText
+	wdb.GetData(textEmote, &emote)
 
-	if len(emotes) == 0 {
+	if emote == nil {
 		s.Warnf("You appear to have sent an invalid emote command. Check to see if you have a base datapack installed.")
 		return
 	}
 
-	em := emotes[0]
-
-	switch em.EmoteID {
+	switch emote.EmoteID {
 	case 12, 13, 16, 0: //sleep, sit, kneel, none
 	default:
-		s.HandleEmoteCommand(em.EmoteID)
+		s.HandleEmoteCommand(emote.EmoteID)
 	}
 
 	var data string
@@ -84,7 +82,7 @@ func (s *Session) HandleTextEmote(e *etc.Buffer) {
 
 	// // toSelfPacket := packet.NewWorldPacket(packet.SMSG_TEXT_EMOTE)
 	emoPacket := packet.NewWorldPacket(packet.SMSG_TEXT_EMOTE)
-	s.GUID().EncodeUnpacked(s.Version(), emoPacket)
+	s.GUID().EncodeUnpacked(s.Build(), emoPacket)
 	emoPacket.WriteUint32(textEmote)
 	emoPacket.WriteUint32(emoteID)
 	emoPacket.WriteUint32(uint32(len(data)) + 1)
@@ -97,20 +95,19 @@ func (s *Session) HandleTextEmote(e *etc.Buffer) {
 func (s *Session) HandleEmoteCommand(emoteID uint32) {
 	p := packet.NewWorldPacket(packet.SMSG_EMOTE)
 	p.WriteUint32(emoteID)
-	s.GUID().EncodeUnpacked(s.Version(), p)
+	s.GUID().EncodeUnpacked(s.Build(), p)
 	s.SendAreaAll(p)
 }
 
 func (s *Session) GetTarget() guid.GUID {
-	return s.GetGUIDValue(update.UnitTarget)
+	return s.GetGUID("Target")
 }
 
 func (s *Session) HandleTarget(e *etc.Buffer) {
 	tgt := s.decodeUnpackedGUID(e)
 
-	s.Map().ModifyObject(s.GUID(), map[update.Global]interface{}{
-		update.UnitTarget: tgt,
-	})
+	s.SetGUID("Target", tgt)
+	s.Map().PropagateChanges(s.GUID())
 }
 
 func (s *Session) SitChair(chair *GameObject) {
@@ -152,4 +149,15 @@ func (s *Session) SitChair(chair *GameObject) {
 	}
 
 	s.SetStandState(packet.UNIT_STAND_STATE_SIT_LOW_CHAIR + uint8(height))
+}
+
+func (s *Session) HandleSheathe(e *etc.Buffer) {
+	state := e.ReadUint32()
+	fmt.Println("sheathe", state)
+	if state > 3 {
+		state = 0
+	}
+
+	s.ValuesBlock.SetByte("SheathState", uint8(state))
+	s.UpdatePlayer()
 }

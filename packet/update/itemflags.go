@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 //go:generate gcraft_stringer -type=ItemFlag -method=ToString -fromString
@@ -37,7 +39,7 @@ const (
 
 type ItemFlagDescriptor map[ItemFlag]uint64
 
-var ItemFlagDescriptors = map[uint32]ItemFlagDescriptor{
+var ItemFlagDescriptors = map[vsn.Build]ItemFlagDescriptor{
 	5875: {
 		ItemFlagNoPickup:                       0x00000001, // not used
 		ItemFlagConjured:                       0x00000002,
@@ -156,7 +158,7 @@ func ParseItemFlag(str string) (ItemFlag, error) {
 	return flag, nil
 }
 
-func DecodeItemFlagInteger(version uint32, value uint64) (ItemFlag, error) {
+func DecodeItemFlagInteger(version vsn.Build, value uint64) (ItemFlag, error) {
 	descriptor, ok := ItemFlagDescriptors[version]
 	if !ok {
 		return 0, fmt.Errorf("no descriptor found for version %d", version)
@@ -173,7 +175,7 @@ func DecodeItemFlagInteger(version uint32, value uint64) (ItemFlag, error) {
 	return iflag, nil
 }
 
-func (iflg ItemFlag) Resolve(version uint32) (uint64, error) {
+func (iflg ItemFlag) Resolve(version vsn.Build) (uint64, error) {
 	desc, ok := ItemFlagDescriptors[version]
 
 	if !ok {
@@ -190,7 +192,7 @@ func (iflg ItemFlag) Resolve(version uint32) (uint64, error) {
 	return out, nil
 }
 
-func (iflg ItemFlag) Encode(wr io.Writer, version uint32) error {
+func (iflg ItemFlag) Encode(wr io.Writer, version vsn.Build) error {
 	code, err := iflg.Resolve(version)
 	if err != nil {
 		panic(err)

@@ -10,7 +10,7 @@ import (
 )
 
 func TestTagParse(t *testing.T) {
-	tagTest(t, "(loc),5875-12340(only,len:35)", tagStructure{
+	tagTest(t, "(loc),5875-12340(only,len:35)", tag{
 		rulesets: []ruleset{
 			{
 				[]int64{},
@@ -29,7 +29,7 @@ func TestTagParse(t *testing.T) {
 	})
 
 	// range selector
-	tagTest(t, ",5875-(len:50),-5875(len:48)", tagStructure{
+	tagTest(t, ",5875-(len:50),-5875(len:48)", tag{
 		rulesets: []ruleset{
 			{
 				[]int64{5875, -1},
@@ -47,7 +47,7 @@ func TestTagParse(t *testing.T) {
 		},
 	})
 
-	tagTest(t, "(loc)", tagStructure{
+	tagTest(t, "(loc)", tag{
 		rulesets: []ruleset{
 			{
 				[]int64{},
@@ -59,7 +59,7 @@ func TestTagParse(t *testing.T) {
 	})
 }
 
-func tagTest(t *testing.T, str string, shouldBe tagStructure) {
+func tagTest(t *testing.T, str string, shouldBe tag) {
 	if tg := parseTag(str); !reflect.DeepEqual(tg, shouldBe) {
 		fmt.Println("Error parsing", str)
 		fmt.Println("Should be: ", spew.Sdump(shouldBe))
@@ -69,7 +69,7 @@ func tagTest(t *testing.T, str string, shouldBe tagStructure) {
 }
 
 func TestFiles(t *testing.T) {
-	testFiles := etc.Import("github.com/superp00t/gophercraft/blizzardry/dbc/testfiles")
+	testFiles := etc.Import("github.com/superp00t/gophercraft/format/dbc/testfiles")
 	fmt.Printf("'%s'\n", testFiles.Render())
 
 	f, err := testFiles.Concat("12340", "BarberShopStyle.dbc").ReadAll()

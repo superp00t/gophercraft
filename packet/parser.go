@@ -1,224 +1,210 @@
 package packet
 
-import (
-	"compress/zlib"
-	"encoding/binary"
-	"fmt"
-	"io"
+// type Parser struct {
+// 	Version uint32
+// }
 
-	"github.com/superp00t/gophercraft/packet/update"
+// func NewParser(version uint32) *Parser {
+// 	return &Parser{version}
+// }
 
-	"io/ioutil"
+// type MultiPacket struct {
+// 	Data []struct {
+// 		Opcode WorldType
+// 		Data   []byte
+// 	}
+// }
 
-	"github.com/superp00t/etc"
-	"github.com/superp00t/gophercraft/guid"
-)
+// const cmpConstant = 0x9827D8F1
 
-type Parser struct {
-	Version uint32
-}
+// func UnmarshalCompressedPacket(b []byte) (WorldType, []byte, error) {
+// 	expected := len(b) - 12
 
-func NewParser(version uint32) *Parser {
-	return &Parser{version}
-}
+// 	e := etc.FromBytes(b)
+// 	uncompressedSize := e.ReadUint32()
+// 	uncompressedAdler := e.ReadUint32()
+// 	// compressedAdler := e.ReadUint32()
+// 	e.ReadUint32()
+// 	fmt.Println("expecting", expected)
+// 	compressedData := etc.FromBytes(e.ReadBytes(e.Available()))
+// 	if compressedData.Len() != expected {
+// 		panic(compressedData.Len())
+// 	}
 
-type MultiPacket struct {
-	Data []struct {
-		Opcode WorldType
-		Data   []byte
-	}
-}
+// 	if uncompressedSize > 120000 {
+// 		return 0, nil, fmt.Errorf("packet: attempted to decompress extremely large packet.")
+// 	}
 
-const cmpConstant = 0x9827D8F1
+// 	// pCompressedAdler := Adler32(cmpConstant, compressedData.Bytes())
 
-func UnmarshalCompressedPacket(b []byte) (WorldType, []byte, error) {
-	expected := len(b) - 12
+// 	// if pCompressedAdler != compressedAdler {
+// 	// 	return 0, nil, fmt.Errorf("packet: UnmarshalCompressedPacket: compressed packet checksum mismatch (packet's 0x%08X !== calculated 0x%08X)", compressedAdler, pCompressedAdler)
+// 	// }
 
-	e := etc.FromBytes(b)
-	uncompressedSize := e.ReadUint32()
-	uncompressedAdler := e.ReadUint32()
-	// compressedAdler := e.ReadUint32()
-	e.ReadUint32()
-	fmt.Println("expecting", expected)
-	compressedData := etc.FromBytes(e.ReadBytes(e.Available()))
-	if compressedData.Len() != expected {
-		panic(compressedData.Len())
-	}
+// 	z, err := zlib.NewReader(compressedData)
+// 	if err != nil {
+// 		return 0, nil, err
+// 	}
 
-	if uncompressedSize > 120000 {
-		return 0, nil, fmt.Errorf("packet: attempted to decompress extremely large packet.")
-	}
+// 	// unc := make([]byte, uncompressedSize)
+// 	// _, err = z.Read(unc)
+// 	// if err != nil {
+// 	// 	return 0, nil, err
+// 	// }
 
-	// pCompressedAdler := Adler32(cmpConstant, compressedData.Bytes())
+// 	unc, err := ioutil.ReadAll(z)
+// 	if err != nil {
 
-	// if pCompressedAdler != compressedAdler {
-	// 	return 0, nil, fmt.Errorf("packet: UnmarshalCompressedPacket: compressed packet checksum mismatch (packet's 0x%08X !== calculated 0x%08X)", compressedAdler, pCompressedAdler)
-	// }
+// 	}
 
-	z, err := zlib.NewReader(compressedData)
-	if err != nil {
-		return 0, nil, err
-	}
+// 	z.Close()
 
-	// unc := make([]byte, uncompressedSize)
-	// _, err = z.Read(unc)
-	// if err != nil {
-	// 	return 0, nil, err
-	// }
+// 	pUncompressedAdler := Adler32(
+// 		Adler32(cmpConstant, unc[:2]),
+// 		unc[2:],
+// 	)
 
-	unc, err := ioutil.ReadAll(z)
-	if err != nil {
+// 	if pUncompressedAdler != uncompressedAdler {
+// 		return 0, nil, fmt.Errorf("packet: UnmarshalCompressedPacket: uncompressed packet checksum mismatch")
+// 	}
 
-	}
+// 	u16 := binary.LittleEndian.Uint16(unc[:2])
 
-	z.Close()
+// 	return WorldType(u16), unc[2:], nil
+// }
 
-	pUncompressedAdler := Adler32(
-		Adler32(cmpConstant, unc[:2]),
-		unc[2:],
-	)
+// func UnmarshalMultiPacket(b []byte) (*MultiPacket, error) {
+// 	mp := new(MultiPacket)
+// 	e := etc.FromBytes(b)
+// 	for e.Available() > 0 {
+// 		ln := e.ReadUint16()
+// 		opcode := WorldType(e.ReadUint16())
+// 		if e.Available() < int(ln) {
+// 			return nil, fmt.Errorf("packet: UnmarshalMultiPacket, unexpected EOF")
+// 		}
+// 		data := e.ReadBytes(int(ln))
+// 		mp.Data = append(mp.Data, struct {
+// 			Opcode WorldType
+// 			Data   []byte
+// 		}{opcode, data})
+// 	}
+// 	return mp, nil
+// }
 
-	if pUncompressedAdler != uncompressedAdler {
-		return 0, nil, fmt.Errorf("packet: UnmarshalCompressedPacket: uncompressed packet checksum mismatch")
-	}
+// type Content struct {
+// 	Type        WorldType
+// 	Description string
+// 	Bytes       []byte
+// 	Data        interface{}
+// }
 
-	u16 := binary.LittleEndian.Uint16(unc[:2])
+// func (p *Parser) Parse(smsg bool, opcode WorldType, data []byte) ([]Content, error) {
+// 	switch opcode {
+// 	case M_SMSG_MULTIPLE_PACKETS:
+// 		dat, err := UnmarshalMultiPacket(data)
+// 		if err != nil {
+// 			return nil, err
+// 		}
 
-	return WorldType(u16), unc[2:], nil
-}
+// 		var pc []Content
 
-func UnmarshalMultiPacket(b []byte) (*MultiPacket, error) {
-	mp := new(MultiPacket)
-	e := etc.FromBytes(b)
-	for e.Available() > 0 {
-		ln := e.ReadUint16()
-		opcode := WorldType(e.ReadUint16())
-		if e.Available() < int(ln) {
-			return nil, fmt.Errorf("packet: UnmarshalMultiPacket, unexpected EOF")
-		}
-		data := e.ReadBytes(int(ln))
-		mp.Data = append(mp.Data, struct {
-			Opcode WorldType
-			Data   []byte
-		}{opcode, data})
-	}
-	return mp, nil
-}
+// 		for _, v := range dat.Data {
+// 			ct, err := p.Parse(smsg, v.Opcode, v.Data)
+// 			if err != nil {
+// 				return nil, err
+// 			}
 
-type Content struct {
-	Type        WorldType
-	Description string
-	Bytes       []byte
-	Data        interface{}
-}
+// 			pc = append(pc, ct...)
+// 		}
 
-func (p *Parser) Parse(smsg bool, opcode WorldType, data []byte) ([]Content, error) {
-	switch opcode {
-	case M_SMSG_MULTIPLE_PACKETS:
-		dat, err := UnmarshalMultiPacket(data)
-		if err != nil {
-			return nil, err
-		}
+// 		return pc, nil
+// 	case M_SMSG_COMPRESSED_PACKET:
+// 		return []Content{{
+// 			Type:        M_SMSG_COMPRESSED_PACKET,
+// 			Description: "server sent a compressed packet",
+// 			Bytes:       nil,
+// 			Data:        nil,
+// 		}}, nil
+// 	case SMSG_COMPRESSED_UPDATE_OBJECT:
+// 		e := etc.FromBytes(data)
+// 		e.ReadUint32()
+// 		z, err := zlib.NewReader(e)
+// 		if err != nil {
+// 			return nil, err
+// 		}
 
-		var pc []Content
+// 		o := etc.NewBuffer()
+// 		io.Copy(o, e)
+// 		z.Close()
 
-		for _, v := range dat.Data {
-			ct, err := p.Parse(smsg, v.Opcode, v.Data)
-			if err != nil {
-				return nil, err
-			}
+// 		return p.parseUpdateObject(opcode, o.Bytes())
+// 	case SMSG_UPDATE_OBJECT:
+// 		return p.parseUpdateObject(opcode, data)
+// 	case CMSG_CHAR_ENUM:
+// 		return emptyDescription(opcode, data, "client requested character list")
+// 	case SMSG_CHAR_ENUM:
+// 		i, err := UnmarshalCharacterList(p.Version, data)
+// 		return []Content{{
+// 			opcode,
+// 			"server sent char list",
+// 			data,
+// 			i,
+// 		}}, err
+// 	case SMSG_WARDEN_DATA:
+// 		return emptyDescription(opcode, data, "server requested Warden anticheat data")
+// 	case CMSG_WARDEN_DATA:
+// 		return emptyDescription(opcode, data, "client uploaded Warden data")
+// 	default:
+// 		return []Content{{
+// 			opcode,
+// 			fmt.Sprintf("unknown purpose (%d bytes)", len(data)),
+// 			data,
+// 			nil,
+// 		}}, nil
+// 	}
+// }
 
-			pc = append(pc, ct...)
-		}
+// func emptyDescription(wt WorldType, data []byte, desc string) ([]Content, error) {
+// 	return []Content{{
+// 		wt,
+// 		desc,
+// 		data,
+// 		nil,
+// 	}}, nil
+// }
 
-		return pc, nil
-	case M_SMSG_COMPRESSED_PACKET:
-		return []Content{{
-			Type:        M_SMSG_COMPRESSED_PACKET,
-			Description: "server sent a compressed packet",
-			Bytes:       nil,
-			Data:        nil,
-		}}, nil
-	case SMSG_COMPRESSED_UPDATE_OBJECT:
-		e := etc.FromBytes(data)
-		e.ReadUint32()
-		z, err := zlib.NewReader(e)
-		if err != nil {
-			return nil, err
-		}
+// func (p *Parser) GUIDDisplayString(g guid.GUID) string {
+// 	return g.String()
+// }
 
-		o := etc.NewBuffer()
-		io.Copy(o, e)
-		z.Close()
+// func (p *Parser) parseUpdateObject(wt WorldType, data []byte) ([]Content, error) {
+// 	uo, err := update.Unmarshal(p.Version, data)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-		return p.parseUpdateObject(opcode, o.Bytes())
-	case SMSG_UPDATE_OBJECT:
-		return p.parseUpdateObject(opcode, data)
-	case CMSG_CHAR_ENUM:
-		return emptyDescription(opcode, data, "client requested character list")
-	case SMSG_CHAR_ENUM:
-		i, err := UnmarshalCharacterList(p.Version, data)
-		return []Content{{
-			opcode,
-			"server sent char list",
-			data,
-			i,
-		}}, err
-	case SMSG_WARDEN_DATA:
-		return emptyDescription(opcode, data, "server requested Warden anticheat data")
-	case CMSG_WARDEN_DATA:
-		return emptyDescription(opcode, data, "client uploaded Warden data")
-	default:
-		return []Content{{
-			opcode,
-			fmt.Sprintf("unknown purpose (%d bytes)", len(data)),
-			data,
-			nil,
-		}}, nil
-	}
-}
+// 	description := ""
 
-func emptyDescription(wt WorldType, data []byte, desc string) ([]Content, error) {
-	return []Content{{
-		wt,
-		desc,
-		data,
-		nil,
-	}}, nil
-}
+// 	for _, v := range uo.Blocks {
+// 		switch v.Data.Type() {
+// 		case update.CreateObject, update.SpawnObject:
+// 			description += fmt.Sprintf("created gameobject %s.\n", p.GUIDDisplayString(v.GUID))
+// 		case update.Values:
+// 			vb := v.Data.(*update.ValuesBlock)
+// 			if len(vb.Values) == 1 {
+// 				for k := range vb.Values {
+// 					description += fmt.Sprintf("updated %s value: %s\n", p.GUIDDisplayString(v.GUID), k.String())
+// 				}
+// 			} else {
+// 				description += fmt.Sprintf("updated %s %d values\n", p.GUIDDisplayString(v.GUID), len(vb.Values))
+// 			}
+// 		}
+// 	}
 
-func (p *Parser) GUIDDisplayString(g guid.GUID) string {
-	return g.String()
-}
-
-func (p *Parser) parseUpdateObject(wt WorldType, data []byte) ([]Content, error) {
-	uo, err := update.Unmarshal(p.Version, data)
-	if err != nil {
-		return nil, err
-	}
-
-	description := ""
-
-	for _, v := range uo.Blocks {
-		switch v.Data.Type() {
-		case update.CreateObject, update.SpawnObject:
-			description += fmt.Sprintf("created gameobject %s.\n", p.GUIDDisplayString(v.GUID))
-		case update.Values:
-			vb := v.Data.(*update.ValuesBlock)
-			if len(vb.Values) == 1 {
-				for k := range vb.Values {
-					description += fmt.Sprintf("updated %s value: %s\n", p.GUIDDisplayString(v.GUID), k.String())
-				}
-			} else {
-				description += fmt.Sprintf("updated %s %d values\n", p.GUIDDisplayString(v.GUID), len(vb.Values))
-			}
-		}
-	}
-
-	return []Content{{
-		wt,
-		description,
-		data,
-		uo,
-	}}, nil
-}
+// 	return []Content{{
+// 		wt,
+// 		description,
+// 		data,
+// 		uo,
+// 	}}, nil
+// }

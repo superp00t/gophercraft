@@ -10,6 +10,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/gcore/sys"
+	"github.com/superp00t/gophercraft/vsn"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -61,7 +62,7 @@ func (c *Core) AnnounceRealm(ctx context.Context, req *sys.AnnounceRealmMsg) (*s
 
 	rlm.Name = req.RealmName
 	rlm.Address = req.Address
-	rlm.Version = req.Build
+	rlm.Version = vsn.Build(req.Build)
 	rlm.Description = req.RealmDescription
 	rlm.ActivePlayers = req.ActivePlayers
 	rlm.Type = req.Type

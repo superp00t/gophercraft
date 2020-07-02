@@ -6,6 +6,8 @@ import (
 	"io"
 	"strconv"
 	"strings"
+
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 var Nil = GUID{0, 0}
@@ -31,7 +33,7 @@ func Classic(u64 uint64) GUID {
 	return g
 }
 
-func DecodePacked(version uint32, reader io.Reader) (GUID, error) {
+func DecodePacked(version vsn.Build, reader io.Reader) (GUID, error) {
 	switch {
 	case version <= 12340:
 		u64 := DecodePacked64(reader)
@@ -43,7 +45,7 @@ func DecodePacked(version uint32, reader io.Reader) (GUID, error) {
 	}
 }
 
-func DecodeUnpacked(version uint32, reader io.Reader) (GUID, error) {
+func DecodeUnpacked(version vsn.Build, reader io.Reader) (GUID, error) {
 	switch {
 	case version <= 12340:
 		var bytes [8]byte

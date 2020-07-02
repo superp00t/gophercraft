@@ -62,7 +62,7 @@ type Item struct {
 }
 
 func (i *Item) Entry() uint32 {
-	return i.GetUint32Value(update.ObjectEntry)
+	return i.GetUint32("Entry")
 }
 
 func (i *Item) GUID() guid.GUID {
@@ -70,19 +70,19 @@ func (i *Item) GUID() guid.GUID {
 		return guid.Nil
 	}
 
-	return i.GetGUIDValue(update.ObjectGUID)
+	return i.GetGUID("GUID")
 }
 
 func (i *Item) PropertySeed() uint32 {
-	return i.GetUint32Value(update.ItemPropertySeed)
+	return i.GetUint32("PropertySeed")
 }
 
 func (i *Item) RandomPropertiesID() uint32 {
-	return i.GetUint32Value(update.ItemRandomPropertiesID)
+	return i.GetUint32("RandomPropertiesID")
 }
 
 func (i *Item) StackCount() uint32 {
-	sc := i.GetUint32Value(update.ItemStackCount)
+	sc := i.GetUint32("StackCount")
 	if sc == 0 {
 		return 1
 	}
@@ -91,24 +91,20 @@ func (i *Item) StackCount() uint32 {
 }
 
 func (i *Item) ContainerNumSlots() uint32 {
-	return i.GetUint32Value(update.ContainerNumSlots)
+	return i.GetUint32("NumSlots")
 }
 
 func (i *Item) BagEmpty() bool {
-	gArray, err := i.Get(update.ContainerSlots)
-	if err != nil {
-		return true
+	gArray := i.Get("Slots")
+
+	if !gArray.IsValid() {
+		panic("cannot get container slots")
 	}
 
-	if gArray == nil {
-		return true
-	}
-
-	for _, v := range gArray.([]*guid.GUID) {
-		if v != nil {
-			if *v != guid.Nil {
-				return false
-			}
+	for x := 0; x < gArray.Len(); x++ {
+		g := gArray.Index(x).Interface().(guid.GUID)
+		if g != guid.Nil {
+			return false
 		}
 	}
 
@@ -116,7 +112,7 @@ func (i *Item) BagEmpty() bool {
 }
 
 func (i *Item) IsBag() bool {
-	return i.GetUint32Value(update.ContainerNumSlots) > 0
+	return i.ValuesBlock.TypeMask&guid.TypeMaskContainer != 0
 }
 
 func (i *Item) ID() uint64 {
@@ -135,75 +131,77 @@ func (i *Item) Values() *update.ValuesBlock {
 	return i.ValuesBlock
 }
 
-func (s *Session) GetItemTemplate(it wdb.Item) wdb.ItemTemplate {
-	var itmp wdb.ItemTemplate
-	found, err := s.DB().Where("id = ?", it.ItemID).Get(&itmp)
-	if !found {
+func (s *Session) GetItemTemplate(it wdb.Item) *wdb.ItemTemplate {
+	itmp, err := s.DB().GetItemTemplate(it.ItemID)
+	if err != nil {
 		panic(err)
 	}
-
 	return itmp
 }
 
-func (s *Session) GetItemTemplateByEntry(entry uint32) wdb.ItemTemplate {
-	var itmp wdb.ItemTemplate
-	found, err := s.DB().Where("entry = ?", entry).Get(&itmp)
-	if !found {
+func (s *Session) GetItemTemplateByEntry(entry uint32) *wdb.ItemTemplate {
+	itmp, err := s.DB().GetItemTemplateByEntry(entry)
+	if err != nil {
 		panic(err)
 	}
-
 	return itmp
 }
 
 func (s *Session) NewItem(it wdb.Item) *Item {
 	template := s.GetItemTemplate(it)
+	mask := guid.TypeMaskObject | guid.TypeMaskItem
 
-	i := &Item{it.ItemID, update.NewValuesBlock()}
+	if template.ContainerSlots > 0 {
+		mask |= guid.TypeMaskContainer
+	}
+
+	values, err := update.NewValuesBlock(s.Build(), mask)
+	if err != nil {
+		panic(err)
+	}
+
+	i := &Item{it.ItemID, values}
 	g := guid.RealmSpecific(guid.Item, s.WS.RealmID(), it.ID)
-	i.SetGUIDValue(update.ObjectGUID, g)
-	i.SetUint32Value(update.ObjectEntry, template.Entry)
+	i.SetGUID("GUID", g)
+	i.SetUint32("Entry", template.Entry)
 	flg, err := update.ParseItemFlag(template.Flags)
 	if err != nil {
 		panic(err)
 	}
 
-	code, err := flg.Resolve(s.Version())
+	code, err := flg.Resolve(s.Build())
 	if err != nil {
 		panic(err)
 	}
 
-	mask := guid.TypeMaskObject | guid.TypeMaskItem
-
-	if template.ContainerSlots > 0 {
-		mask |= guid.TypeMaskContainer
-		i.SetUint32Value(update.ContainerNumSlots, uint32(template.ContainerSlots))
-		i.Set(update.ContainerSlots, make([]*guid.GUID, int(template.ContainerSlots)))
+	if mask&guid.TypeMaskContainer != 0 {
+		i.SetUint32("NumSlots", uint32(template.ContainerSlots))
 	}
 
-	i.SetTypeMask(s.Version(), mask)
-	i.SetFloat32Value(update.ObjectScaleX, 1.0)
+	i.SetFloat32("ScaleX", 1.0)
 
-	i.SetGUIDValue(update.ItemOwner, s.GUID())
+	i.SetGUID("Owner", s.GUID())
+	i.SetGUID("Contained", s.GUID())
 	if it.Creator != 0 {
-		i.SetGUIDValue(update.ItemCreator, guid.RealmSpecific(guid.Player, s.WS.RealmID(), it.Creator))
+		i.SetGUID("Creator", guid.RealmSpecific(guid.Player, s.WS.RealmID(), it.Creator))
 	}
-	i.SetUint32Value(update.ItemDurability, template.MaxDurability)
-	i.SetUint32Value(update.ItemMaxDurability, template.MaxDurability)
+	i.SetUint32("Durability", template.MaxDurability)
+	i.SetUint32("MaxDurability", template.MaxDurability)
 
 	if template.Stackable != 0 {
-		i.SetUint32Value(update.ItemStackCount, it.StackCount)
+		i.SetUint32("StackCount", it.StackCount)
 	}
 
-	i.Set(update.ItemSpellCharges, make([]*uint32, 5))
+	i.SetUint32("Duration", uint32(template.Duration))
 
-	// todo: source charges from item struct
+	//	todo: source charges from item struct
 	for x := 0; x < len(template.Spells); x++ {
-		i.SetUint32ArrayValue(update.ItemSpellCharges, x, uint32(template.Spells[x].Charges))
+		i.SetInt32ArrayValue("SpellCharges", x, int32(template.Spells[x].Charges))
 	}
 
 	yo.Warn(template.Flags, flg, fmt.Sprintf("0x%08X\n", uint32(code)))
 
-	i.SetUint32Value(update.ItemFlags, uint32(code))
+	i.SetUint32("Flags", uint32(code))
 
 	return i
 }
@@ -221,18 +219,13 @@ func (s *Session) InitInventoryManager() {
 	// 	Cols: []string{"Creator", "Entry", "Enchantments", "Properties"},
 	// }
 
-	s.ValuesBlock.Set(update.PlayerInventorySlots, make([]*guid.GUID, 39))
-
 	displaySlots := map[uint8]uint64{}
 
 	for _, v := range inv {
-		if v.Bag == 255 && v.Slot <= uint8(packet.EquipLen(s.Version())) {
+		if v.Bag == 255 && v.Slot < uint8(packet.EquipLen(s.Build())) {
 			displaySlots[v.Slot] = v.ItemID
 		}
 	}
-
-	// Fill out structure
-	s.ValuesBlock.Set(update.PlayerVisibleItems, update.InitArrayData(s.Version(), update.PlayerVisibleItems))
 
 	for i, itemID := range displaySlots {
 		var item wdb.Item
@@ -241,14 +234,14 @@ func (s *Session) InitInventoryManager() {
 			panic(err)
 		}
 
-		var itemTemplate wdb.ItemTemplate
-		found, err = s.DB().Where("id = ?", item.ItemID).Get(&itemTemplate)
-		if !found {
-			panic(err)
+		var itemTemplate *wdb.ItemTemplate
+		wdb.GetData(item.ItemID, &itemTemplate)
+		if itemTemplate == nil {
+			panic("could not find item template " + item.ItemID)
 		}
 
 		// s.ValuesBlock.SetArrayValue(update.PlayerVisibleItems, int(i), "Creator", guid.RealmSpecific(guid.Player, s.WS.RealmID(), item.Creator))
-		s.ValuesBlock.SetArrayValue(update.PlayerVisibleItems, int(i), "Entry", itemTemplate.Entry)
+		s.ValuesBlock.SetStructArrayValue("VisibleItems", int(i), "Entry", itemTemplate.Entry)
 	}
 
 	s.Inventory = make(map[guid.GUID]*Item)
@@ -263,7 +256,7 @@ func (s *Session) InitInventoryManager() {
 
 			itemObject := s.NewItem(item)
 
-			s.SetGUIDArrayValue(update.PlayerInventorySlots, int(v.Slot), itemObject.GUID())
+			s.SetGUIDArrayValue("InventorySlots", int(v.Slot), itemObject.GUID())
 
 			if itemObject.IsBag() {
 				for _, bagContent := range inv {
@@ -275,9 +268,10 @@ func (s *Session) InitInventoryManager() {
 						}
 
 						bagContentObject := s.NewItem(bagContentItem)
+						bagContentObject.SetGUID("Contained", itemObject.GUID())
 						s.Inventory[bagContentObject.GUID()] = bagContentObject
 
-						itemObject.SetGUIDArrayValue(update.ContainerSlots, int(bagContent.Slot), bagContentObject.GUID())
+						itemObject.SetGUIDArrayValue("Slots", int(bagContent.Slot), bagContentObject.GUID())
 
 						s.SendObjectCreate(bagContentObject)
 					}
@@ -295,16 +289,12 @@ func (s *Session) HandleItemQuery(e *etc.Buffer) {
 	item := e.ReadUint32()
 	fmt.Println("player queried item...", item)
 
-	var it wdb.ItemTemplate
-	found, err := s.DB().Where("entry = ?", item).Get(&it)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Queried", item, found)
+	var it *wdb.ItemTemplate
+	wdb.GetData(item, &it)
+	fmt.Println("Queried", item, it == nil)
 
 	resp := packet.NewWorldPacket(packet.SMSG_ITEM_QUERY_SINGLE_RESPONSE)
-	if !found {
+	if it == nil {
 		resp.WriteUint32(item | 0x80000000)
 		s.SendAsync(resp)
 		return
@@ -325,7 +315,7 @@ func (s *Session) HandleItemQuery(e *etc.Buffer) {
 		panic(err)
 	}
 
-	err = flg.Encode(resp, s.Version())
+	err = flg.Encode(resp, s.Build())
 	if err != nil {
 		panic(err)
 	}
@@ -437,7 +427,7 @@ func (s *Session) HandleSwapItem(e *etc.Buffer) {
 
 func (s *Session) SendEquipError(ir packet.InventoryResult, src, dest *Item) {
 	pkt := packet.NewWorldPacket(packet.SMSG_INVENTORY_CHANGE_FAILURE)
-	inv, ok := packet.InventoryResultDescriptors[s.Version()][ir]
+	inv, ok := packet.InventoryResultDescriptors[s.Build()][ir]
 	if !ok {
 		panic(fmt.Errorf("Cannot send this inventory result %d", ir))
 	}
@@ -446,7 +436,7 @@ func (s *Session) SendEquipError(ir packet.InventoryResult, src, dest *Item) {
 
 	if ir != packet.EQUIP_ERR_OK {
 		if ir == packet.EQUIP_ERR_CANT_EQUIP_LEVEL_I {
-			itt := s.GetItemTemplateByEntry(src.Entry())
+			itt, _ := s.DB().GetItemTemplateByEntry(src.Entry())
 			pkt.WriteUint32(uint32(itt.RequiredLevel))
 		}
 
@@ -460,8 +450,8 @@ func (s *Session) SendEquipError(ir packet.InventoryResult, src, dest *Item) {
 			dstGuid = dest.GUID()
 		}
 
-		srcGuid.EncodeUnpacked(s.Version(), pkt)
-		dstGuid.EncodeUnpacked(s.Version(), pkt)
+		srcGuid.EncodeUnpacked(s.Build(), pkt)
+		dstGuid.EncodeUnpacked(s.Build(), pkt)
 		pkt.WriteByte(0)
 	}
 
@@ -474,13 +464,13 @@ func (s *Session) GetItemByPos(bag, slot uint8) (*wdb.Inventory, *Item) {
 	maxSlot := uint8(24)
 
 	if bag == 255 {
-		target = s.GetGUIDArrayValue(update.PlayerInventorySlots, int(slot))
+		target = s.GetGUID("InventorySlots", int(slot))
 	} else {
 		if bag > maxSlot {
 			return nil, nil
 		}
 
-		bagGUID := s.GetGUIDArrayValue(update.PlayerInventorySlots, int(bag))
+		bagGUID := s.GetGUID("InventorySlots", int(bag))
 		if bagGUID == guid.Nil {
 			fmt.Println("bag", bag, "doesnt exist")
 			return nil, nil
@@ -491,7 +481,7 @@ func (s *Session) GetItemByPos(bag, slot uint8) (*wdb.Inventory, *Item) {
 			return nil, nil
 		}
 
-		target = bagIt.GetGUIDArrayValue(update.ContainerSlots, int(slot))
+		target = bagIt.GetGUID("Slots", int(slot))
 	}
 
 	if target == guid.Nil {
@@ -556,7 +546,7 @@ func (s *Session) IsValidPos(bag, slot uint8) bool {
 	}
 
 	// check bag slots
-	bagGUID := s.ValuesBlock.GetGUIDArrayValue(update.PlayerInventorySlots, int(bag))
+	bagGUID := s.ValuesBlock.GetGUID("InventorySlots", int(bag))
 
 	if bagGUID == guid.Nil {
 		return false
@@ -606,16 +596,18 @@ func (s *Session) EquippableIn(it *Item, slot uint8) bool {
 func (s *Session) transferItemUnsafe(srcInv *wdb.Inventory, deleteSrc bool, dstBag, dstSlot uint8) {
 	if srcInv.Bag == 255 {
 		if deleteSrc {
-			s.ValuesBlock.SetGUIDArrayValue(update.PlayerInventorySlots, int(srcInv.Slot), guid.Nil)
+			s.ValuesBlock.SetGUIDArrayValue("InventorySlots", int(srcInv.Slot), guid.Nil)
 
-			if srcInv.Slot <= 19 {
+			if srcInv.Slot < 19 {
 				// remove armor and show change
-				s.ValuesBlock.SetArrayValue(update.PlayerVisibleItems, int(srcInv.Slot), "Entry", uint32(0))
+				s.ValuesBlock.SetStructArrayValue("VisibleItems", int(srcInv.Slot), "Entry", uint32(0))
 			}
 		}
 	} else {
-		bgItem := s.GetBagItem(srcInv.Bag)
-		bgItem.SetGUIDArrayValue(update.ContainerSlots, int(srcInv.Slot), guid.Nil)
+		if deleteSrc {
+			bgItem := s.GetBagItem(srcInv.Bag)
+			bgItem.SetGUIDArrayValue("Slots", int(srcInv.Slot), guid.Nil)
+		}
 	}
 
 	srcInv.Bag = dstBag
@@ -624,7 +616,7 @@ func (s *Session) transferItemUnsafe(srcInv *wdb.Inventory, deleteSrc bool, dstB
 	go s.DB().Where("item_id = ?", srcInv.ItemID).Cols("bag", "slot").Update(srcInv)
 
 	if dstBag == 255 {
-		s.ValuesBlock.SetGUIDArrayValue(update.PlayerInventorySlots, int(dstSlot), guid.RealmSpecific(guid.Item, s.WS.RealmID(), srcInv.ItemID))
+		s.ValuesBlock.SetGUIDArrayValue("InventorySlots", int(dstSlot), guid.RealmSpecific(guid.Item, s.WS.RealmID(), srcInv.ItemID))
 
 		if dstSlot < 19 {
 			// show armor change to other players
@@ -636,11 +628,11 @@ func (s *Session) transferItemUnsafe(srcInv *wdb.Inventory, deleteSrc bool, dstB
 
 			tpl := s.GetItemTemplate(it)
 
-			s.ValuesBlock.SetArrayValue(update.PlayerVisibleItems, int(dstSlot), "Entry", tpl.Entry)
+			s.ValuesBlock.SetStructArrayValue("VisibleItems", int(dstSlot), "Entry", tpl.Entry)
 		}
 	} else {
 		bgItem := s.GetBagItem(dstBag)
-		bgItem.SetGUIDArrayValue(update.ContainerSlots, int(dstSlot), guid.RealmSpecific(guid.Item, s.WS.RealmID(), srcInv.ItemID))
+		bgItem.SetGUIDArrayValue("Slots", int(dstSlot), guid.RealmSpecific(guid.Item, s.WS.RealmID(), srcInv.ItemID))
 	}
 }
 
@@ -698,6 +690,7 @@ func (s *Session) SwapItem(srcBag, srcSlot, dstBag, dstSlot uint8) {
 	if dstBag == 255 {
 		if srcBag == 255 {
 			// What the hell? You can't put your shirt in your pants slot, come on...
+			// TODO: Actually you can swap rings and trinkets: work on this.
 			if srcSlot < 19 && dstSlot < 19 {
 				s.SendEquipError(packet.EQUIP_ERR_INTERNAL_BAG_ERROR, src, dst)
 				return
@@ -732,9 +725,12 @@ func (s *Session) SwapItem(srcBag, srcSlot, dstBag, dstSlot uint8) {
 			tpl := s.GetItemTemplateByEntry(src.Entry())
 			if tpl.Stackable != 0 {
 				availableSpace := tpl.Stackable - dst.StackCount()
-				if availableSpace != 0 {
+				if availableSpace == 0 {
+					fmt.Println("no space", dst)
+				} else {
 					srcHas := src.StackCount()
 					if availableSpace < srcHas {
+						fmt.Println("Destination can't hold all of src's stack.", srcHas, availableSpace)
 						// destination can't hold all of src's stack
 						if err := s.modifyStackCount(dst.GUID(), tpl.Stackable); err != nil {
 							panic(err)
@@ -768,6 +764,14 @@ func (s *Session) SwapItem(srcBag, srcSlot, dstBag, dstSlot uint8) {
 
 	s.SendBagUpdate(srcBag)
 
+	if dstBag == 255 {
+		src.SetGUID("Contained", s.GUID())
+		s.SendItemUpdate(src)
+	} else {
+		src.SetGUID("Contained", s.GetBagItem(dstBag).GUID())
+		s.SendItemUpdate(src)
+	}
+
 	if dstBag != srcBag {
 		s.SendBagUpdate(dstBag)
 	}
@@ -781,7 +785,7 @@ func (s *Session) getEquippableInventorySlot(ty uint8) (uint8, packet.InventoryR
 
 	if ty == dbc.IT_Bag {
 		for x := 19; x < 23; x++ {
-			if s.GetGUIDArrayValue(update.PlayerInventorySlots, x) == guid.Nil {
+			if s.GetGUID("InventorySlots", x) == guid.Nil {
 				return uint8(x), packet.EQUIP_ERR_OK
 			}
 		}
@@ -834,14 +838,17 @@ func (s *Session) removeItemByGUID(g guid.GUID) (uint32, error) {
 	}
 
 	if inv.Bag == 255 {
+		s.ValuesBlock.SetGUIDArrayValue("InventorySlots", int(inv.Slot), guid.Nil)
 		if inv.Slot < 19 {
-			s.ValuesBlock.SetArrayValue(update.PlayerVisibleItems, int(inv.Slot), "Entry", uint32(0))
+			s.ValuesBlock.SetStructArrayValue("VisibleItems", int(inv.Slot), "Entry", uint32(0))
+			s.UpdatePlayer()
+		} else {
+			s.UpdateSelf()
 		}
-		s.ValuesBlock.SetGUIDArrayValue(update.PlayerInventorySlots, int(inv.Slot), guid.Nil)
-
-		s.Map().PropagateChanges(s.GUID())
 	} else {
-		panic("nyi")
+		bagItem := s.GetBagItem(inv.Bag)
+		bagItem.SetGUIDArrayValue("Slots", int(inv.Slot), guid.Nil)
+		s.SendObjectChanges(update.Owner, bagItem)
 	}
 
 	stackCount := it.StackCount()
@@ -856,14 +863,18 @@ func (s *Session) removeItemByGUID(g guid.GUID) (uint32, error) {
 }
 
 func (s *Session) SendItemUpdate(it *Item) {
-	s.SendUpdateData(update.ValuesPrivate, &update.Data{
-		Blocks: []update.Block{
-			{
-				it.GUID(),
-				it.ValuesBlock,
-			},
-		},
-	})
+	packet := etc.NewBuffer()
+
+	enc, err := update.NewEncoder(s.Build(), packet, 1)
+	if err != nil {
+		panic(err)
+	}
+
+	if err = enc.AddBlock(it.GUID(), it.ValuesBlock, update.Owner); err != nil {
+		panic(err)
+	}
+
+	s.SendRawUpdateObjectData(packet.Bytes(), 0)
 }
 
 func (s *Session) modifyStackCount(item guid.GUID, count uint32) error {
@@ -885,7 +896,7 @@ func (s *Session) modifyStackCount(item guid.GUID, count uint32) error {
 	itemData.StackCount = count
 	go s.DB().Where("id = ?", it.ID()).Cols("stack_count").Update(&itemData)
 
-	it.SetUint32Value(update.ItemStackCount, count)
+	it.SetUint32("StackCount", count)
 	s.SendItemUpdate(it)
 
 	return nil
@@ -921,13 +932,10 @@ func (s *Session) AddItem(itemID string, count int, received, created bool) erro
 	}
 
 	// get entry from itemID
-	var template wdb.ItemTemplate
-	found, err := s.DB().Where("id = ?", itemID).Get(&template)
-	if err != nil {
-		return err
-	}
+	var template *wdb.ItemTemplate
+	wdb.GetData(itemID, &template)
 
-	if !found {
+	if template == nil {
 		return fmt.Errorf("no such item: %s", itemID)
 	}
 
@@ -1039,7 +1047,7 @@ func (s *Session) AddItem(itemID string, count int, received, created bool) erro
 		var freeSlots []bagReceiverPos
 
 		for x := 23; x < 39; x++ {
-			gp := s.ValuesBlock.GetGUIDArrayValue(update.PlayerInventorySlots, x)
+			gp := s.ValuesBlock.GetGUID("InventorySlots", x)
 
 			if gp == guid.Nil {
 				freeSlots = append(freeSlots, bagReceiverPos{
@@ -1053,7 +1061,7 @@ func (s *Session) AddItem(itemID string, count int, received, created bool) erro
 			if s.IsValidPos(uint8(x), 0) {
 				bgItem := s.GetBagItem(uint8(x))
 				for bagSlot := uint32(0); bagSlot < bgItem.ContainerNumSlots(); bagSlot++ {
-					gp := bgItem.GetGUIDArrayValue(update.ContainerSlots, int(bagSlot))
+					gp := bgItem.GetGUID("Slots", int(bagSlot))
 					if gp == guid.Nil {
 						freeSlots = append(freeSlots, bagReceiverPos{
 							Bag:  uint8(x),
@@ -1105,8 +1113,7 @@ func (s *Session) AddItem(itemID string, count int, received, created bool) erro
 			s.Inventory[it.GUID()] = it
 
 			s.SetBagGUIDSlot(pos.Bag, pos.Slot, it.GUID())
-
-			s.Map().PropagateChanges(s.GUID())
+			s.UpdateSelf()
 
 			if !sentItem {
 				s.SendNewItem(it, received, created, true, pos.Bag, pos.Slot, uint32(count))
@@ -1142,7 +1149,7 @@ func (s *Session) SendNewItem(item *Item, received, created, showInChat bool, ba
 	}
 
 	data := packet.NewWorldPacket(packet.SMSG_ITEM_PUSH_RESULT)
-	s.GUID().EncodeUnpacked(s.Version(), data)
+	s.GUID().EncodeUnpacked(s.Build(), data)
 	data.WriteUint32(boolu32(received))
 	data.WriteUint32(boolu32(created))
 	data.WriteUint32(boolu32(showInChat))
@@ -1181,7 +1188,7 @@ func (s *Session) HandleDestroyItem(e *etc.Buffer) {
 	}
 
 	if count != 0 {
-		s.modifyStackCount(item.GUID(), item.GetUint32Value(update.ItemStackCount)-uint32(count))
+		s.modifyStackCount(item.GUID(), item.GetUint32("StackCount")-uint32(count))
 	} else {
 		_, err := s.removeItemByGUID(item.GUID())
 		if err != nil {
@@ -1192,16 +1199,12 @@ func (s *Session) HandleDestroyItem(e *etc.Buffer) {
 
 func (s *Session) SetBagGUIDSlot(bag, slot uint8, g guid.GUID) {
 	if bag == 255 {
-		s.ValuesBlock.SetGUIDArrayValue(update.PlayerInventorySlots, int(slot), g)
+		s.ValuesBlock.SetGUIDArrayValue("InventorySlots", int(slot), g)
 		return
 	}
 
-	if bag > 4 {
-		panic("invalid bag")
-	}
-
 	bagItem := s.GetBagItem(bag)
-	bagItem.SetGUIDArrayValue(update.ContainerSlots, int(slot), g)
+	bagItem.SetGUIDArrayValue("Slots", int(slot), g)
 }
 
 func (s *Session) GetBagItem(bag uint8) *Item {
@@ -1209,7 +1212,7 @@ func (s *Session) GetBagItem(bag uint8) *Item {
 		panic("invalid bag")
 	}
 
-	bagGUID := s.ValuesBlock.GetGUIDArrayValue(update.PlayerInventorySlots, int(bag))
+	bagGUID := s.ValuesBlock.GetGUID("InventorySlots", int(bag))
 
 	if bagGUID == guid.Nil {
 		panic("failed bag check, call IsValidPos before calling this function")
@@ -1220,6 +1223,10 @@ func (s *Session) GetBagItem(bag uint8) *Item {
 		panic(bagGUID.String() + " refers to non-existent item")
 	}
 
+	if bagItem.IsBag() == false {
+		panic(bagGUID.String() + " is not a bag")
+	}
+
 	return bagItem
 }
 
@@ -1227,7 +1234,7 @@ func (s *Session) SendBagUpdate(bag uint8) {
 	if bag == 255 {
 		s.ValuesBlock.Lock()
 		s.Map().PropagateChanges(s.GUID())
-		s.ValuesBlock.ClearChangesAndUnlock()
+		s.ValuesBlock.Unlock()
 		return
 	}
 
@@ -1241,6 +1248,8 @@ func (s *Session) HandleSplitItem(e *etc.Buffer) {
 	dstBag := e.ReadByte()
 	dstSlot := e.ReadByte()
 	count := uint32(e.ReadByte())
+
+	fmt.Println("Splitting item", srcBag, "/", srcSlot, "->", dstBag, dstSlot)
 
 	if !s.IsValidPos(srcBag, srcSlot) {
 		s.Warnf("Invalid src pos: %d %d", srcBag, srcSlot)

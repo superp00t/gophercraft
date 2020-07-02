@@ -1,7 +1,6 @@
 package worldserver
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/superp00t/etc"
@@ -14,11 +13,10 @@ import (
 
 type GameObject struct {
 	*update.ValuesBlock
-	GOPosition update.Position
 }
 
 func (g *GameObject) GUID() guid.GUID {
-	return g.GetGUIDValue(update.ObjectGUID)
+	return g.GetGUID("GUID")
 }
 
 func (g *GameObject) TypeID() guid.TypeID {
@@ -34,7 +32,14 @@ func (g *GameObject) Living() bool {
 }
 
 func (g *GameObject) Position() update.Position {
-	return g.GOPosition
+	return update.Position{
+		Point3: update.Point3{
+			X: g.GetFloat32("PosX"),
+			Y: g.GetFloat32("PosY"),
+			Z: g.GetFloat32("PosZ"),
+		},
+		O: g.GetFloat32("Facing"),
+	}
 }
 
 func (g *GameObject) Speeds() update.Speeds {
@@ -47,51 +52,62 @@ func (g *GameObject) SetRotation(orientation, rot0, rot1, rot2, rot3 float32) {
 		rot3 = float32(math.Cos(float64(orientation) / 2))
 	}
 
-	g.SetFloat32Value(update.GObjectFacing, orientation)
-	g.SetFloat32ArrayValue(update.GObjectRotation, 0, rot0)
-	g.SetFloat32ArrayValue(update.GObjectRotation, 1, rot1)
-	g.SetFloat32ArrayValue(update.GObjectRotation, 2, rot2)
-	g.SetFloat32ArrayValue(update.GObjectRotation, 3, rot3)
+	g.SetFloat32("Facing", orientation)
+	g.SetFloat32ArrayValue("Rotation", 0, rot0)
+	g.SetFloat32ArrayValue("Rotation", 1, rot1)
+	g.SetFloat32ArrayValue("Rotation", 2, rot2)
+	g.SetFloat32ArrayValue("Rotation", 3, rot3)
 }
 
-func (m *Map) SpawnGameObject(gobjID string, pos update.Position) error {
-	ws := m.Phase.Server
+func (ws *WorldServer) NextGameObjectGUID() guid.GUID {
+	g := guid.RealmSpecific(guid.GameObject, ws.RealmID(), ws.gameObjectCounter)
+	ws.gameObjectCounter++
+	return g
+}
 
-	var tpl wdb.GameObjectTemplate
-
-	found, err := ws.DB.Where("id = ?", gobjID).Get(&tpl)
-	if !found {
-		if err != nil {
-			panic(err)
-		}
-
-		return fmt.Errorf("could not find gameobject %s", gobjID)
+func (ws *WorldServer) CreateGameObject(tpl *wdb.GameObjectTemplate, pos update.Position) *GameObject {
+	valuesBlock, err := update.NewValuesBlock(ws.Build(), guid.TypeMaskObject|guid.TypeMaskGameObject)
+	if err != nil {
+		panic(err)
+	}
+	gobj := &GameObject{
+		valuesBlock,
 	}
 
-	gobj := &GameObject{update.NewValuesBlock(), pos}
-	gobj.SetGUIDValue(update.ObjectGUID, guid.RealmSpecific(guid.GameObject, ws.RealmID(), ws.gameObjectCounter))
-	ws.gameObjectCounter++
-	gobj.SetTypeMask(ws.Config.Version, guid.TypeMaskObject|guid.TypeMaskGameObject)
-	gobj.SetUint32Value(update.ObjectEntry, tpl.Entry)
-	gobj.SetFloat32Value(update.ObjectScaleX, tpl.Size)
+	gobj.SetGUID("GUID", ws.NextGameObjectGUID())
 
-	gobj.SetUint32Value(update.GObjectDisplayID, tpl.DisplayID)
-	gobj.SetUint32Value(update.GObjectTypeID, tpl.Type)
-	gobj.SetUint32Value(update.GObjectFaction, tpl.Faction)
+	gobj.SetUint32("Entry", tpl.Entry)
+	gobj.SetFloat32("ScaleX", tpl.Size)
+
+	gobj.SetUint32("DisplayID", tpl.DisplayID)
+	gobj.SetUint32("TypeID", tpl.Type)
+	gobj.SetUint32("Faction", tpl.Faction)
 
 	flg, err := update.ParseGameObjectFlags(tpl.Flags)
 	if err != nil {
 		panic(err)
 	}
 
-	gobj.SetUint32Value(update.GObjectFlags, uint32(flg))
-	gobj.SetFloat32Value(update.GObjectPosX, pos.X)
-	gobj.SetFloat32Value(update.GObjectPosY, pos.Y)
-	gobj.SetFloat32Value(update.GObjectPosZ, pos.Z)
-	gobj.SetUint32Value(update.GObjectAnimProgress, 100)
-	gobj.SetUint32Value(update.GObjectState, 0x01)
-	gobj.Set(update.GObjectRotation, make([]*float32, 4))
+	gobj.SetUint32("Flags", uint32(flg))
+	gobj.SetFloat32("PosX", pos.X)
+	gobj.SetFloat32("PosY", pos.Y)
+	gobj.SetFloat32("PosZ", pos.Z)
+	gobj.SetUint32("AnimProgress", 100)
+	gobj.SetUint32("State", 0x01)
 	gobj.SetRotation(pos.O, 0, 0, 0, 0)
+
+	return gobj
+}
+
+func (m *Map) SpawnGameObject(gobjID string, pos update.Position) error {
+	ws := m.Phase.Server
+
+	tpl, err := ws.DB.GetGameObjectTemplate(gobjID)
+	if err != nil {
+		return err
+	}
+
+	gobj := ws.CreateGameObject(tpl, pos)
 
 	return m.AddObject(gobj)
 }
@@ -99,15 +115,9 @@ func (m *Map) SpawnGameObject(gobjID string, pos update.Position) error {
 func (s *Session) HandleGameObjectQuery(e *etc.Buffer) {
 	entry := e.ReadUint32()
 
-	var tpl wdb.GameObjectTemplate
-
-	found, err := s.DB().Where("entry = ?", entry).Get(&tpl)
-	if !found {
-		if err != nil {
-			panic(err)
-		}
-
-		yo.Warn("entry not found", entry)
+	tpl, err := s.DB().GetGameObjectTemplateByEntry(entry)
+	if tpl == nil {
+		yo.Warn("entry not found", entry, err)
 
 		resp := packet.NewWorldPacket(packet.SMSG_GAMEOBJECT_QUERY_RESPONSE)
 		resp.WriteUint32(entry | 0x80000000)
@@ -134,11 +144,11 @@ func (s *Session) HandleGameObjectQuery(e *etc.Buffer) {
 }
 
 func (gobj *GameObject) GameObjectType() uint32 {
-	return gobj.GetUint32Value(update.GObjectTypeID)
+	return gobj.GetUint32("TypeID")
 }
 
 func (gobj *GameObject) Entry() uint32 {
-	return gobj.GetUint32Value(update.ObjectEntry)
+	return gobj.GetUint32("Entry")
 }
 
 func (s *Session) HandleGameObjectUse(e *etc.Buffer) {
@@ -170,4 +180,11 @@ func (s *Session) GetGameObjectTemplateByEntry(entry uint32) wdb.GameObjectTempl
 	}
 
 	return gobjTemplate
+}
+
+func (gobj *GameObject) Movement() *update.MovementBlock {
+	return &update.MovementBlock{
+		UpdateFlags: update.UpdateFlagHasPosition,
+		Position:    gobj.Position(),
+	}
 }

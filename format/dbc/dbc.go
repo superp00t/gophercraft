@@ -44,6 +44,7 @@ const (
 	Uint16
 	Uint32
 	Uint64
+	Int32
 	Float
 	String
 	Array
@@ -189,6 +190,8 @@ func (d *DBC) getType(v reflect.Type) (*_fieldType, error) {
 		rt = mt(String)
 	case reflect.Float32:
 		rt = mt(Float)
+	case reflect.Int32:
+		rt = mt(Int32)
 	case reflect.Uint8:
 		rt = mt(Uint8)
 	case reflect.Uint16:
@@ -336,6 +339,8 @@ func (d *DBC) setField(fld reflect.Value, buf *etc.Buffer, tp *_fieldType) {
 			pptr := fld.Addr().Interface().(*string)
 			d.stringRefs[id] = pptr
 		}
+	case Int32:
+		fld.SetInt(int64(buf.ReadInt32()))
 	case Float:
 		fld.SetFloat(float64(buf.ReadFloat32()))
 	case Uint8:
@@ -351,6 +356,9 @@ func (d *DBC) setField(fld reflect.Value, buf *etc.Buffer, tp *_fieldType) {
 			d.setField(fld.Index(ai), buf, tp.ArrayType)
 		}
 	case Slice:
+		if tp.Length == 0 {
+			panic("no")
+		}
 		fld.Set(reflect.MakeSlice(fld.Type(), tp.Length, tp.Length))
 		for ai := 0; ai < tp.Length; ai++ {
 			d.setField(fld.Index(ai), buf, tp.ArrayType)

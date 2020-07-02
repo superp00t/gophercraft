@@ -1,10 +1,13 @@
 package packet
 
 import (
+	"encoding/binary"
 	"fmt"
+	"io"
 
 	"github.com/superp00t/etc"
 	"github.com/superp00t/gophercraft/guid"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 //go:generate gcraft_stringer -type=Race
@@ -95,7 +98,7 @@ type Character struct {
 	Map        uint32
 	X, Y, Z    float32
 	Guild      uint32
-	Flags      uint32
+	Flags      CharacterFlags
 
 	Customization uint32
 	FirstLogin    uint8
@@ -115,7 +118,7 @@ type CharacterList struct {
 	Characters []Character
 }
 
-func (c *CharacterList) Packet(version uint32) *WorldPacket {
+func (c *CharacterList) Packet(version vsn.Build) *WorldPacket {
 	p := NewWorldPacket(SMSG_CHAR_ENUM)
 	p.WriteByte(uint8(len(c.Characters)))
 	for _, v := range c.Characters {
@@ -133,7 +136,10 @@ func (c *CharacterList) Packet(version uint32) *WorldPacket {
 		p.WriteFloat32(v.Y)
 		p.WriteFloat32(v.Z)
 		p.WriteUint32(v.Guild)
-		p.WriteUint32(v.Flags)
+		if err := EncodeCharacterFlags(version, p, v.Flags); err != nil {
+			panic(err)
+		}
+
 		if version == 12340 {
 			p.WriteUint32(v.Customization)
 		}
@@ -166,7 +172,7 @@ func (c *CharacterList) Packet(version uint32) *WorldPacket {
 	return p
 }
 
-func UnmarshalCharacterList(build uint32, input []byte) (*CharacterList, error) {
+func UnmarshalCharacterList(build vsn.Build, input []byte) (*CharacterList, error) {
 	pkt := etc.FromBytes(input)
 	count := int(pkt.ReadByte())
 	var chh CharacterList
@@ -193,7 +199,10 @@ func UnmarshalCharacterList(build uint32, input []byte) (*CharacterList, error) 
 		ch.Y = pkt.ReadFloat32()
 		ch.Z = pkt.ReadFloat32()
 		ch.Guild = pkt.ReadUint32()
-		ch.Flags = pkt.ReadUint32()
+		ch.Flags, err = DecodeCharacterFlags(build, pkt)
+		if err != nil {
+			return nil, err
+		}
 		if build >= 12340 {
 			ch.Customization = pkt.ReadUint32()
 		}
@@ -227,7 +236,7 @@ func UnmarshalCharacterList(build uint32, input []byte) (*CharacterList, error) 
 	return &chh, nil
 }
 
-func EquipLen(build uint32) int {
+func EquipLen(build vsn.Build) int {
 	switch build {
 	case 5875:
 		return 19
@@ -291,7 +300,7 @@ const (
 
 type CharacterOpDescriptor map[CharacterOp]uint8
 
-var CharacterOpDescriptors = map[uint32]CharacterOpDescriptor{
+var CharacterOpDescriptors = map[vsn.Build]CharacterOpDescriptor{
 	5875: {
 		CHAR_CREATE_IN_PROGRESS:         0x2D,
 		CHAR_CREATE_SUCCESS:             0x2E,
@@ -393,7 +402,7 @@ var CharacterOpDescriptors = map[uint32]CharacterOpDescriptor{
 	},
 }
 
-func DecodeCharacterOp(version uint32, in *etc.Buffer) (CharacterOp, error) {
+func DecodeCharacterOp(version vsn.Build, in *etc.Buffer) (CharacterOp, error) {
 	desc, ok := CharacterOpDescriptors[version]
 	if !ok {
 		return 0, fmt.Errorf("packet: no CharacterOpDescriptor for version %d", version)
@@ -410,7 +419,7 @@ func DecodeCharacterOp(version uint32, in *etc.Buffer) (CharacterOp, error) {
 	return 0, fmt.Errorf("packet: no character op found for byte 0x%02X in version %d", ib, version)
 }
 
-func EncodeCharacterOp(version uint32, out *etc.Buffer, value CharacterOp) error {
+func EncodeCharacterOp(version vsn.Build, out *etc.Buffer, value CharacterOp) error {
 	desc, ok := CharacterOpDescriptors[version]
 	if !ok {
 		return fmt.Errorf("packet: no CharacterOpDescriptor for version %d", version)
@@ -424,4 +433,97 @@ func EncodeCharacterOp(version uint32, out *etc.Buffer, value CharacterOp) error
 	out.WriteByte(opcode)
 
 	return nil
+}
+
+type CharLoginResult uint8
+
+const (
+	CharNoWorld CharLoginResult = iota
+	CharLoginDuplicateCharacter
+	CharLoginNoInstances
+	CharLoginDisabled
+	CharLoginNoCharacter
+	CharLoginLockedForTransfer
+	CharLoginLockedByBilling
+	CharLoginFailed
+)
+
+var CharLoginResultDescriptors = map[vsn.Build]map[CharLoginResult]uint8{
+	5875: {
+		CharNoWorld:                 0x01,
+		CharLoginDuplicateCharacter: 0x02,
+		CharLoginNoInstances:        0x03,
+		CharLoginDisabled:           0x04,
+		CharLoginNoCharacter:        0x05,
+		CharLoginLockedForTransfer:  0x06,
+		CharLoginLockedByBilling:    0x07,
+		CharLoginFailed:             0x08,
+	},
+}
+
+type CharacterFlags uint32
+
+const (
+	CharacterLockedForTransfer CharacterFlags = 1 << iota
+	CharacterHideHelm
+	CharacterHideCloak
+	CharacterGhost
+	CharacterRename
+	CharacterLockedByBilling
+	CharacterDeclined
+)
+
+var CharacterFlagDescriptors = map[vsn.Build]map[CharacterFlags]uint32{
+	5875: {
+		CharacterLockedForTransfer: 0x00000004,
+		CharacterHideHelm:          0x00000400,
+		CharacterHideCloak:         0x00000800,
+		CharacterGhost:             0x00002000,
+		CharacterRename:            0x00004000,
+		CharacterLockedByBilling:   0x01000000,
+		CharacterDeclined:          0x02000000,
+	},
+}
+
+func EncodeCharacterFlags(build vsn.Build, out io.Writer, flags CharacterFlags) error {
+	desc, ok := CharacterFlagDescriptors[build]
+	if !ok {
+		return fmt.Errorf("packet: unknown build in character flags %s", build)
+	}
+
+	var uflags uint32
+
+	for flag, code := range desc {
+		if flags&flag != 0 {
+			uflags |= code
+		}
+	}
+
+	var bytes [4]byte
+	binary.LittleEndian.PutUint32(bytes[:], uflags)
+	_, err := out.Write(bytes[:])
+	return err
+}
+
+func DecodeCharacterFlags(build vsn.Build, in io.Reader) (CharacterFlags, error) {
+	desc, ok := CharacterFlagDescriptors[build]
+	if !ok {
+		return 0, fmt.Errorf("packet: unknown build in character flags %s", build)
+	}
+
+	var bytes [4]byte
+	_, err := in.Read(bytes[:])
+	if err != nil {
+		return 0, err
+	}
+
+	var uflags uint32 = binary.LittleEndian.Uint32(bytes[:])
+	var outflags CharacterFlags
+	for flag, code := range desc {
+		if uflags&code != 0 {
+			outflags |= flag
+		}
+	}
+
+	return outflags, nil
 }

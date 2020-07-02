@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/fatih/color"
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/auth"
 	"github.com/superp00t/gophercraft/gcore/config"
@@ -132,12 +131,13 @@ func (c *Core) GetAccount(user string) *auth.Account {
 	}
 }
 
-func (c *Core) ListRealms(user string, build uint32) []packet.RealmListing {
-	var acc []Account
-	c.DB.Where("username = ?", user).Find(&acc)
-	if len(acc) == 0 {
-		log.Println("No user found!")
-		return nil
+func (c *Core) ListRealms(user string, build vsn.Build) []packet.RealmListing {
+	if user != "" {
+		var acc []Account
+		c.DB.Where("username = ?", user).Find(&acc)
+		if len(acc) == 0 {
+			log.Println("No user found!")
+		}
 	}
 
 	var rlmState []Realm
@@ -169,21 +169,6 @@ func (c *Core) ListRealms(user string, build uint32) []packet.RealmListing {
 	log.Println(spew.Sdump(rlm))
 
 	return rlm
-}
-
-const banner = `
- ____ ____ ___  _  _ ____ ____ ____ ____ ____ ____ ___
- |__, [__] |--' |--| |=== |--< |___ |--< |--| |---  | 
-
- The programs included with Gophercraft are free software;
-the exact distribution terms for each program are described in LICENSE.
-
-`
-
-func PrintLicense() {
-	color.Set(color.FgCyan)
-	fmt.Println(banner)
-	color.Unset()
 }
 
 func (c *Core) APIKey() string {

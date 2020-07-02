@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/superp00t/gophercraft/gcore/sys"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 type LoginTicket struct {
@@ -40,7 +41,7 @@ type SessionKey struct {
 type Realm struct {
 	ID            uint64    `xorm:"'id' pk" json:"id"`
 	Name          string    `xorm:"'name'" json:"name"`
-	Version       uint32    `json:"version"`
+	Version       vsn.Build `json:"version"`
 	Type          string    `json:"type"`
 	Address       string    `json:"address"`
 	Description   string    `json:"description"`

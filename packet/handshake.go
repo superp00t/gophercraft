@@ -5,6 +5,7 @@ import (
 
 	"github.com/superp00t/etc"
 	"github.com/superp00t/etc/yo"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 const (
@@ -20,14 +21,14 @@ type SMSGAuthPacket struct {
 	Seed2 []byte
 }
 
-func UnmarshalSMSGAuthPacket(build uint32, input []byte) (*SMSGAuthPacket, error) {
+func UnmarshalSMSGAuthPacket(build vsn.Build, input []byte) (*SMSGAuthPacket, error) {
 	in := etc.FromBytes(input)
 
 	gp := &SMSGAuthPacket{}
 	gp.Size = in.ReadBigUint16()
 	gp.Type = WorldType(in.ReadUint16())
 
-	if build == 5875 {
+	if build.RemovedIn(8606) {
 		gp.Salt = in.ReadBytes(4)
 		return gp, nil
 	}
@@ -40,26 +41,27 @@ func UnmarshalSMSGAuthPacket(build uint32, input []byte) (*SMSGAuthPacket, error
 	return gp, nil
 }
 
-func (s *SMSGAuthPacket) Encode(version uint16) []byte {
-	smsg := etc.NewBuffer()
-	if version == 5875 {
-		smsg.WriteBigUint16(6)
-		smsg.WriteUint16(uint16(SMSG_AUTH_CHALLENGE))
-		smsg.Write(s.Salt)
-		return smsg.Bytes()
+func (s *SMSGAuthPacket) Encode(version vsn.Build) []byte {
+	smsg := NewWorldPacket(SMSG_AUTH_CHALLENGE)
+	if version == vsn.Alpha {
+		smsg.Write(make([]byte, 6))
+		return smsg.ServerMessage()
 	}
 
-	smsg.WriteBigUint16(2 + 4 + 4 + 16 + 16)
-	smsg.WriteUint16(uint16(SMSG_AUTH_CHALLENGE))
+	if version.RemovedIn(8606) {
+		smsg.Write(s.Salt)
+		return smsg.ServerMessage()
+	}
+
 	smsg.WriteUint32(0x01)
 	smsg.Write(s.Salt)
 	smsg.Write(s.Seed1)
 	smsg.Write(s.Seed2)
-	return smsg.Bytes()
+	return smsg.ServerMessage()
 }
 
 type CMSGAuthSession struct {
-	Build           uint32
+	Build           vsn.Build
 	LoginServerID   uint32
 	Account         string // 0-terminated string
 	LoginServerType uint32
@@ -86,13 +88,13 @@ func UnmarshalCMSGAuthSession(input []byte) (*CMSGAuthSession, error) {
 	yo.Ok(opcode, length)
 
 	c := &CMSGAuthSession{}
-	c.Build = in.ReadUint32()
+	c.Build = vsn.Build(in.ReadUint32())
 	c.LoginServerID = in.ReadUint32()
 	c.Account = in.ReadCString()
 
 	yo.Ok("Account=", c.Account, "build=", c.Build)
 
-	if c.Build == 5875 {
+	if c.Build.RemovedIn(8606) {
 		c.Seed = in.ReadBytes(4)
 		c.Digest = in.ReadBytes(20)
 		return c, nil
@@ -117,7 +119,7 @@ func (c *CMSGAuthSession) Encode() []byte {
 	app.WriteUint32(c.LoginServerID)
 	app.WriteCString(c.Account)
 
-	if c.Build == 5875 {
+	if c.Build.RemovedIn(8606) {
 		app.Write(c.Seed)
 		app.Write(c.Digest)
 		app.Write(c.AddonData)

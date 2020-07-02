@@ -4,10 +4,13 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 var (
-	None GUID = Classic(0)
+	None      GUID      = Classic(0)
+	NewFormat vsn.Build = 19027
 )
 
 type GUID struct {
@@ -113,9 +116,9 @@ func encodeMasked64(value uint64) (uint8, []byte) {
 	return bitMask, packGUID[:size]
 }
 
-func (g GUID) EncodePacked(version uint32, w io.Writer) {
+func (g GUID) EncodePacked(version vsn.Build, w io.Writer) {
 	switch {
-	case version <= 12340:
+	case version < NewFormat:
 		mask, bytes := encodeMasked64(g.Classic())
 		w.Write([]byte{mask})
 		if mask > 0 {
@@ -135,7 +138,7 @@ func (g GUID) Classic() uint64 {
 	return (highTypeClassic << 48) | g.Lo
 }
 
-func (g GUID) EncodeUnpacked(version uint32, w io.Writer) {
+func (g GUID) EncodeUnpacked(version vsn.Build, w io.Writer) {
 	switch {
 	case version <= 12340:
 		e := make([]byte, 8)

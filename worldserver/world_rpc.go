@@ -74,7 +74,7 @@ func (ws *WorldServer) connectRPC() {
 			Type:             ws.Config.Type,
 			RealmName:        ws.Config.RealmName,
 			RealmDescription: ws.Config.RealmDescription,
-			Build:            ws.Config.Version,
+			Build:            uint32(ws.Config.Version),
 			Address:          ws.Config.PublicAddress,
 			ActivePlayers:    uint32(len(ws.PlayerList)),
 		})
