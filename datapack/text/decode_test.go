@@ -4,11 +4,23 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
 )
+
+type Something string
+
+func (some Something) DecodeWord(to reflect.Value, data string) error {
+	to.SetString("somethin:" + data)
+	return nil
+}
+
+func (some Something) EncodeWord() (string, error) {
+	return string("somethinggg:" + some), nil
+}
 
 func TestDecode(t *testing.T) {
 	type testStruct struct {
@@ -20,6 +32,7 @@ func TestDecode(t *testing.T) {
 			Data string
 		}
 		Dict      Dict
+		Some      Something
 		FloatDict map[float32]struct {
 			Test string
 		}
@@ -60,6 +73,8 @@ func TestDecode(t *testing.T) {
 			"Something" "else"
 			EvenHave.Periods too
 		}
+
+		Some huh
 
 		FloatDict
 		{

@@ -101,7 +101,7 @@ type Character struct {
 	Flags      CharacterFlags
 
 	Customization uint32
-	FirstLogin    uint8
+	FirstLogin    bool
 
 	PetModel, PetLevel, PetFamily uint32
 
@@ -136,19 +136,33 @@ func (c *CharacterList) Packet(version vsn.Build) *WorldPacket {
 		p.WriteFloat32(v.Y)
 		p.WriteFloat32(v.Z)
 		p.WriteUint32(v.Guild)
-		if err := EncodeCharacterFlags(version, p, v.Flags); err != nil {
-			panic(err)
+
+		if version.AddedIn(vsn.V1_12_1) {
+			if err := EncodeCharacterFlags(version, p, v.Flags); err != nil {
+				panic(err)
+			}
 		}
 
-		if version == 12340 {
+		if version.AddedIn(vsn.V3_3_5a) {
 			p.WriteUint32(v.Customization)
 		}
-		p.WriteByte(v.FirstLogin)
+
+		if version.AddedIn(vsn.V1_12_1) {
+			p.WriteBool(v.FirstLogin)
+		}
+
 		p.WriteUint32(v.PetModel)
 		p.WriteUint32(v.PetLevel)
 		p.WriteUint32(v.PetFamily)
 
 		for i := 0; i < EquipLen(version); i++ {
+			// // Alpha doesn't support cloaks for some reason.
+			// if version.RemovedIn(vsn.V1_12_1) {
+			// 	if i == 11 || i == 16 {
+			// 		continue
+			// 	}
+			// }
+
 			var item Item
 
 			if i < len(v.Equipment) {
@@ -158,15 +172,19 @@ func (c *CharacterList) Packet(version vsn.Build) *WorldPacket {
 			p.WriteUint32(item.Model)
 			p.WriteByte(item.Type)
 
-			if version >= 12340 {
+			if version.AddedIn(vsn.V2_4_3) {
 				p.WriteUint32(item.Enchantment)
 			}
 		}
 
-		if version == 5875 {
+		if version.RemovedIn(vsn.V3_3_5a) {
 			// Bags
 			p.WriteUint32(0)
 			p.WriteByte(0)
+
+			if version.AddedIn(vsn.V2_4_3) {
+				p.WriteUint32(0)
+			}
 		}
 	}
 	return p
@@ -206,7 +224,9 @@ func UnmarshalCharacterList(build vsn.Build, input []byte) (*CharacterList, erro
 		if build >= 12340 {
 			ch.Customization = pkt.ReadUint32()
 		}
-		ch.FirstLogin = pkt.ReadByte()
+		if build.AddedIn(vsn.V1_12_1) {
+			ch.FirstLogin = pkt.ReadBool()
+		}
 		ch.PetModel = pkt.ReadUint32()
 		ch.PetLevel = pkt.ReadUint32()
 		ch.PetFamily = pkt.ReadUint32()
@@ -225,7 +245,7 @@ func UnmarshalCharacterList(build vsn.Build, input []byte) (*CharacterList, erro
 			ch.Equipment = append(ch.Equipment, item)
 		}
 
-		if build == 5875 {
+		if build.RemovedIn(vsn.V2_4_3) {
 			//bags
 			pkt.ReadUint32()
 			pkt.ReadByte()
@@ -238,7 +258,11 @@ func UnmarshalCharacterList(build vsn.Build, input []byte) (*CharacterList, erro
 
 func EquipLen(build vsn.Build) int {
 	switch build {
-	case 5875:
+	case vsn.Alpha:
+		return 19
+	case vsn.V1_12_1:
+		return 19
+	case vsn.V2_4_3:
 		return 19
 	default:
 		return 23
@@ -296,11 +320,26 @@ const (
 	CHAR_DELETE_FAILED_LOCKED_FOR_TRANSFER
 	CHAR_DELETE_FAILED_GUILD_LEADER
 	CHAR_DELETE_FAILED_ARENA_CAPTAIN
+	CHAR_CREATE_TRIAL
+	CHAR_CREATE_TIMEOUT
+	CHAR_CREATE_THROTTLE
+	CHAR_CREATE_ALLIED_RACE_ACHIEVEMENT
+	CHAR_CREATE_LEVEL_REQUIREMENT_DEMON_HUNTER
+	CHAR_CREATE_CHARACTER_IN_COMMUNITY
 )
 
 type CharacterOpDescriptor map[CharacterOp]uint8
 
 var CharacterOpDescriptors = map[vsn.Build]CharacterOpDescriptor{
+	3368: {
+		CHAR_CREATE_IN_PROGRESS: 0x27,
+		CHAR_CREATE_SUCCESS:     0x28,
+		CHAR_CREATE_ERROR:       0x29,
+		CHAR_CREATE_FAILED:      0x2A,
+		CHAR_CREATE_NAME_IN_USE: 0x2B,
+		CHAR_CREATE_DISABLED:    0x2C,
+	},
+
 	5875: {
 		CHAR_CREATE_IN_PROGRESS:         0x2D,
 		CHAR_CREATE_SUCCESS:             0x2E,
@@ -350,48 +389,71 @@ var CharacterOpDescriptors = map[vsn.Build]CharacterOpDescriptor{
 		CHAR_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME:            0x4E, /// UNSURE
 	},
 
+	8606: {
+		CHAR_CREATE_IN_PROGRESS:         0x2E,
+		CHAR_CREATE_SUCCESS:             0x2F,
+		CHAR_CREATE_ERROR:               0x30,
+		CHAR_CREATE_FAILED:              0x31,
+		CHAR_CREATE_NAME_IN_USE:         0x32,
+		CHAR_CREATE_DISABLED:            0x33,
+		CHAR_CREATE_PVP_TEAMS_VIOLATION: 0x34,
+		CHAR_CREATE_SERVER_LIMIT:        0x35,
+		CHAR_CREATE_ACCOUNT_LIMIT:       0x36,
+		CHAR_CREATE_SERVER_QUEUE:        0x37,
+		CHAR_CREATE_ONLY_EXISTING:       0x38,
+		CHAR_CREATE_EXPANSION:           0x39,
+
+		CHAR_DELETE_IN_PROGRESS:                0x3A,
+		CHAR_DELETE_SUCCESS:                    0x3B,
+		CHAR_DELETE_FAILED:                     0x3C,
+		CHAR_DELETE_FAILED_LOCKED_FOR_TRANSFER: 0x3D,
+		CHAR_DELETE_FAILED_GUILD_LEADER:        0x3E,
+		CHAR_DELETE_FAILED_ARENA_CAPTAIN:       0x3F,
+
+		CHAR_NAME_SUCCESS:                                      0x4A,
+		CHAR_NAME_FAILURE:                                      0x4B,
+		CHAR_NAME_NO_NAME:                                      0x4C,
+		CHAR_NAME_TOO_SHORT:                                    0x4D,
+		CHAR_NAME_TOO_LONG:                                     0x4E,
+		CHAR_NAME_INVALID_CHARACTER:                            0x4F,
+		CHAR_NAME_MIXED_LANGUAGES:                              0x50,
+		CHAR_NAME_PROFANE:                                      0x51,
+		CHAR_NAME_RESERVED:                                     0x52,
+		CHAR_NAME_INVALID_APOSTROPHE:                           0x53,
+		CHAR_NAME_MULTIPLE_APOSTROPHES:                         0x54,
+		CHAR_NAME_THREE_CONSECUTIVE:                            0x55,
+		CHAR_NAME_INVALID_SPACE:                                0x56,
+		CHAR_NAME_CONSECUTIVE_SPACES:                           0x57,
+		CHAR_NAME_RUSSIAN_CONSECUTIVE_SILENT_CHARACTERS:        0x58,
+		CHAR_NAME_RUSSIAN_SILENT_CHARACTER_AT_BEGINNING_OR_END: 0x59,
+		CHAR_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME:            0x5A,
+	},
+
 	12340: {
-		CHAR_CREATE_IN_PROGRESS:                                0x2E,
-		CHAR_CREATE_SUCCESS:                                    0x2F,
-		CHAR_CREATE_ERROR:                                      0x30,
-		CHAR_CREATE_FAILED:                                     0x31,
-		CHAR_CREATE_NAME_IN_USE:                                0x32,
-		CHAR_CREATE_DISABLED:                                   0x33,
-		CHAR_CREATE_PVP_TEAMS_VIOLATION:                        0x34,
-		CHAR_CREATE_SERVER_LIMIT:                               0x35,
-		CHAR_CREATE_ACCOUNT_LIMIT:                              0x36,
-		CHAR_CREATE_SERVER_QUEUE:                               0x37,
-		CHAR_CREATE_ONLY_EXISTING:                              0x38,
-		CHAR_CREATE_EXPANSION:                                  0x39,
-		CHAR_CREATE_EXPANSION_CLASS:                            0x3A,
-		CHAR_CREATE_LEVEL_REQUIREMENT:                          0x3B,
-		CHAR_CREATE_UNIQUE_CLASS_LIMIT:                         0x3C,
-		CHAR_CREATE_CHARACTER_IN_GUILD:                         0x3D,
-		CHAR_CREATE_RESTRICTED_RACECLASS:                       0x3E,
-		CHAR_CREATE_CHARACTER_CHOOSE_RACE:                      0x3F,
-		CHAR_CREATE_CHARACTER_ARENA_LEADER:                     0x40,
-		CHAR_CREATE_CHARACTER_DELETE_MAIL:                      0x41,
-		CHAR_CREATE_CHARACTER_SWAP_FACTION:                     0x42,
-		CHAR_CREATE_CHARACTER_RACE_ONLY:                        0x43,
-		CHAR_CREATE_CHARACTER_GOLD_LIMIT:                       0x44,
-		CHAR_CREATE_FORCE_LOGIN:                                0x45,
-		CHAR_NAME_SUCCESS:                                      0x57,
-		CHAR_NAME_FAILURE:                                      0x58,
-		CHAR_NAME_NO_NAME:                                      0x59,
-		CHAR_NAME_TOO_SHORT:                                    0x5A,
-		CHAR_NAME_TOO_LONG:                                     0x5B,
-		CHAR_NAME_INVALID_CHARACTER:                            0x5C,
-		CHAR_NAME_MIXED_LANGUAGES:                              0x5D,
-		CHAR_NAME_PROFANE:                                      0x5E,
-		CHAR_NAME_RESERVED:                                     0x5F,
-		CHAR_NAME_INVALID_APOSTROPHE:                           0x60,
-		CHAR_NAME_MULTIPLE_APOSTROPHES:                         0x61,
-		CHAR_NAME_THREE_CONSECUTIVE:                            0x62,
-		CHAR_NAME_INVALID_SPACE:                                0x63,
-		CHAR_NAME_CONSECUTIVE_SPACES:                           0x64,
-		CHAR_NAME_RUSSIAN_CONSECUTIVE_SILENT_CHARACTERS:        0x65,
-		CHAR_NAME_RUSSIAN_SILENT_CHARACTER_AT_BEGINNING_OR_END: 0x66,
-		CHAR_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME:            0x67,
+		CHAR_CREATE_IN_PROGRESS:            46,
+		CHAR_CREATE_SUCCESS:                47,
+		CHAR_CREATE_ERROR:                  48,
+		CHAR_CREATE_FAILED:                 49,
+		CHAR_CREATE_NAME_IN_USE:            50,
+		CHAR_CREATE_DISABLED:               51,
+		CHAR_CREATE_PVP_TEAMS_VIOLATION:    52,
+		CHAR_CREATE_SERVER_LIMIT:           53,
+		CHAR_CREATE_ACCOUNT_LIMIT:          54,
+		CHAR_CREATE_SERVER_QUEUE:           55,
+		CHAR_CREATE_ONLY_EXISTING:          56,
+		CHAR_CREATE_EXPANSION:              57,
+		CHAR_CREATE_EXPANSION_CLASS:        58,
+		CHAR_CREATE_LEVEL_REQUIREMENT:      59,
+		CHAR_CREATE_UNIQUE_CLASS_LIMIT:     60,
+		CHAR_CREATE_CHARACTER_IN_GUILD:     61,
+		CHAR_CREATE_RESTRICTED_RACECLASS:   62,
+		CHAR_CREATE_CHARACTER_CHOOSE_RACE:  63,
+		CHAR_CREATE_CHARACTER_ARENA_LEADER: 64,
+		CHAR_CREATE_CHARACTER_DELETE_MAIL:  65,
+		CHAR_CREATE_CHARACTER_SWAP_FACTION: 66,
+		CHAR_CREATE_CHARACTER_RACE_ONLY:    67,
+		CHAR_CREATE_CHARACTER_GOLD_LIMIT:   68,
+		CHAR_CREATE_FORCE_LOGIN:            69,
 
 		CHAR_DELETE_IN_PROGRESS:                70,
 		CHAR_DELETE_SUCCESS:                    71,
@@ -399,6 +461,24 @@ var CharacterOpDescriptors = map[vsn.Build]CharacterOpDescriptor{
 		CHAR_DELETE_FAILED_LOCKED_FOR_TRANSFER: 73,
 		CHAR_DELETE_FAILED_GUILD_LEADER:        74,
 		CHAR_DELETE_FAILED_ARENA_CAPTAIN:       75,
+
+		CHAR_NAME_SUCCESS:                                      87,
+		CHAR_NAME_FAILURE:                                      88,
+		CHAR_NAME_NO_NAME:                                      89,
+		CHAR_NAME_TOO_SHORT:                                    90,
+		CHAR_NAME_TOO_LONG:                                     91,
+		CHAR_NAME_INVALID_CHARACTER:                            92,
+		CHAR_NAME_MIXED_LANGUAGES:                              93,
+		CHAR_NAME_PROFANE:                                      94,
+		CHAR_NAME_RESERVED:                                     95,
+		CHAR_NAME_INVALID_APOSTROPHE:                           96,
+		CHAR_NAME_MULTIPLE_APOSTROPHES:                         97,
+		CHAR_NAME_THREE_CONSECUTIVE:                            98,
+		CHAR_NAME_INVALID_SPACE:                                99,
+		CHAR_NAME_CONSECUTIVE_SPACES:                           100,
+		CHAR_NAME_RUSSIAN_CONSECUTIVE_SILENT_CHARACTERS:        101,
+		CHAR_NAME_RUSSIAN_SILENT_CHARACTER_AT_BEGINNING_OR_END: 102,
+		CHAR_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME:            103,
 	},
 }
 
@@ -438,7 +518,9 @@ func EncodeCharacterOp(version vsn.Build, out *etc.Buffer, value CharacterOp) er
 type CharLoginResult uint8
 
 const (
-	CharNoWorld CharLoginResult = iota
+	CharLoginNoWorld CharLoginResult = iota
+	CharLoginSuccess
+	CharLoginInProgress
 	CharLoginDuplicateCharacter
 	CharLoginNoInstances
 	CharLoginDisabled
@@ -449,8 +531,18 @@ const (
 )
 
 var CharLoginResultDescriptors = map[vsn.Build]map[CharLoginResult]uint8{
+	3368: {
+		CharLoginInProgress:         0x30,
+		CharLoginSuccess:            0x31,
+		CharLoginNoWorld:            0x32,
+		CharLoginDuplicateCharacter: 0x33,
+		CharLoginNoInstances:        0x34,
+		CharLoginFailed:             0x35,
+		CharLoginDisabled:           0x36,
+	},
+
 	5875: {
-		CharNoWorld:                 0x01,
+		CharLoginNoWorld:            0x01,
 		CharLoginDuplicateCharacter: 0x02,
 		CharLoginNoInstances:        0x03,
 		CharLoginDisabled:           0x04,
@@ -483,6 +575,12 @@ var CharacterFlagDescriptors = map[vsn.Build]map[CharacterFlags]uint32{
 		CharacterLockedByBilling:   0x01000000,
 		CharacterDeclined:          0x02000000,
 	},
+}
+
+func init() {
+	// Same
+	CharacterFlagDescriptors[8606] = CharacterFlagDescriptors[5875]
+	CharacterFlagDescriptors[12340] = CharacterFlagDescriptors[5875]
 }
 
 func EncodeCharacterFlags(build vsn.Build, out io.Writer, flags CharacterFlags) error {

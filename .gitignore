@@ -4,5 +4,7 @@ bnet/protos/**
 cmd/gcraft_wowser_pipeline/
 cmd/gcraft_test_proxy/
 cmd/gcraft_websockify/
+cmd/gcraft_mapper/
 cmd/casc_dl/
+format/blp/testdata/results/**
 compile-protobuf.sh

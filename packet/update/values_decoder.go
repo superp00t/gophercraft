@@ -19,6 +19,7 @@ var (
 	bitPadType   = reflect.TypeOf(BitPad{})
 	bytePadType  = reflect.TypeOf(BytePad{})
 	chunkPadType = reflect.TypeOf(ChunkPad{})
+	alignPadType = reflect.TypeOf(AlignPad{})
 )
 
 type ValuesDecoder struct {
@@ -49,10 +50,12 @@ func (valdec *ValuesDecoder) FwdBytes(n uint32) {
 		panic("use Fwd instead")
 	}
 
+	inc := n * 8
+
 	if valdec.BitPos%8 != 0 {
-		valdec.BitPos += 8 - (valdec.BitPos % 8)
+		valdec.BitPos += inc - (valdec.BitPos % 8)
 	} else {
-		valdec.BitPos += 8
+		valdec.BitPos += inc
 	}
 
 	if valdec.BitPos == 32 {
@@ -110,6 +113,27 @@ func (valdec *ValuesDecoder) ReadUint32(to reflect.Value) error {
 	return nil
 }
 
+func (valdec *ValuesDecoder) ReadUint64(to reflect.Value) error {
+	var data [8]byte
+	binary.LittleEndian.PutUint64(data[:], to.Uint())
+
+	hiEnabled := valdec.CurrentBitmask.Enabled(valdec.ChunkPos)
+	loEnabled := valdec.CurrentBitmask.Enabled(valdec.ChunkPos + 1)
+
+	if hiEnabled {
+		valdec.Decoder.Reader.Read(data[0:4])
+	}
+
+	if loEnabled {
+		valdec.Decoder.Reader.Read(data[4:8])
+	}
+
+	newUint := binary.LittleEndian.Uint64(data[:])
+	to.Set(reflect.ValueOf(newUint))
+	valdec.Fwd(2)
+	return nil
+}
+
 func (valdec *ValuesDecoder) ReadInt32(to reflect.Value) error {
 	if valdec.CurrentBitmask.Enabled(valdec.ChunkPos) {
 		var chunk [4]byte
@@ -118,6 +142,16 @@ func (valdec *ValuesDecoder) ReadInt32(to reflect.Value) error {
 	}
 
 	valdec.Fwd(1)
+	return nil
+}
+
+func (valdec *ValuesDecoder) ReadUint16(to reflect.Value) error {
+	if valdec.CurrentBitmask.Enabled(valdec.ChunkPos) {
+		valdec.FillCurrentChunk()
+		u16 := binary.LittleEndian.Uint16(valdec.CurrentChunk[valdec.BytePos() : valdec.BytePos()+2])
+		to.Set(reflect.ValueOf(u16))
+	}
+	valdec.FwdBytes(2)
 	return nil
 }
 
@@ -162,7 +196,6 @@ func (valdec *ValuesDecoder) ReadBit(to reflect.Value) error {
 
 		bit8offset := valdec.BitPos % 8
 		isToggled := valdec.CurrentChunk[valdec.BytePos()]&(1<<bit8offset) != 0
-		yo.Spew(valdec.CurrentChunk)
 		to.SetBool(isToggled)
 	}
 
@@ -171,6 +204,10 @@ func (valdec *ValuesDecoder) ReadBit(to reflect.Value) error {
 }
 
 func isSubChunkType(value reflect.Value) bool {
+	if value.Kind() == reflect.Uint16 {
+		return true
+	}
+
 	if value.Kind() == reflect.Bool {
 		return true
 	}
@@ -209,8 +246,6 @@ func (decoder *Decoder) DecodeValuesBlockData(valuesBlock *ValuesBlock) error {
 		return err
 	}
 
-	fmt.Println(valuesBlock.ChangeMask)
-
 	valDec := new(ValuesDecoder)
 	valDec.Decoder = decoder
 	valDec.CurrentBitmask = valuesBlock.ChangeMask
@@ -236,7 +271,7 @@ func (decoder *Decoder) DecodeValuesBlockData(valuesBlock *ValuesBlock) error {
 		objectDescriptor := valDec.Decoder.Descriptor.ObjectDescriptors[typeMask]
 		if objectDescriptor == nil {
 			yo.Spew(objectInstance.Interface())
-			return fmt.Errorf("update: no object descriptor for the received typemask: %s", typeMask)
+			return fmt.Errorf("update: %s: no object descriptor for the received typemask: %s", decoder.Descriptor.Build, typeMask)
 		}
 
 		if name == "" {
@@ -297,6 +332,17 @@ func (valdec *ValuesDecoder) Decode(field reflect.Value, name string) error {
 		return nil
 	}
 
+	if field.Type() == alignPadType {
+		if valdec.CurrentBitmask.Enabled(valdec.ChunkPos) {
+			var discard [4]byte
+			if _, err := valdec.Decoder.Reader.Read(discard[:]); err != nil {
+				return err
+			}
+		}
+		valdec.Fwd(1)
+		return nil
+	}
+
 	// This field is simply telling us to move on to the next bit offset.
 	if field.Type() == bitPadType {
 		valdec.FillCurrentChunk()
@@ -326,6 +372,10 @@ func (valdec *ValuesDecoder) Decode(field reflect.Value, name string) error {
 	}
 
 	switch field.Kind() {
+	case reflect.Uint64:
+		return valdec.ReadUint64(field)
+	case reflect.Uint16:
+		return valdec.ReadUint16(field)
 	case reflect.Int32:
 		return valdec.ReadInt32(field)
 	case reflect.Uint32:

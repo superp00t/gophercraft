@@ -2,28 +2,25 @@ package auth
 
 import (
 	"crypto/rand"
-	"encoding/hex"
-	"fmt"
 	"net"
 	"time"
 
 	"github.com/superp00t/etc/yo"
 
-	"github.com/superp00t/gophercraft/packet"
-	"github.com/superp00t/gophercraft/srp"
+	"github.com/superp00t/gophercraft/crypto/srp"
+	"github.com/superp00t/gophercraft/gcore"
 	"github.com/superp00t/gophercraft/vsn"
 )
 
-type Backend interface {
-	GetAccount(user string) *Account
-	ListRealms(user string, buildnumber vsn.Build) []packet.RealmListing
-	StoreKey(user string, K []byte)
-	HandleSpecialConn(protocol string, conn net.Conn)
-}
+var (
+	VersionChallenge = [...]byte{0xBA, 0xA3, 0x1E, 0x99, 0xA0, 0x0B, 0x21, 0x57, 0xFC, 0x37, 0x3F, 0xB3, 0x69, 0xCD, 0xD2, 0xF1}
+)
 
-type Account struct {
-	Username     string
-	IdentityHash []byte
+type Backend interface {
+	GetAccount(user string) (*gcore.Account, []gcore.GameAccount, error)
+	ListRealms() []gcore.Realm
+	StoreKey(user, locale, platform string, K []byte)
+	HandleSpecialConn(protocol string, conn net.Conn)
 }
 
 type Server struct {
@@ -33,49 +30,21 @@ type Server struct {
 	Backend
 }
 
-// func (server *Server) handleTCP(c net.Conn) {
-// 	rdr := bufio.NewReader(c)
-
-// 	dat := string(data)
-
-// 	psk := strings.TrimRight(dat, "\r\n")
-
-// 	if psk != server.APIKey() {
-// 		c.Write([]byte("Invalid API key.\n"))
-// 		c.Close()
-// 		return
-// 	}
-
-// 	fmt.Fprintln(c, "Gophercraft Admin Shell")
-
-// 	for {
-// 		str, err := rdr.ReadString('\n')
-// 		if err != nil {
-// 			yo.Warn(err)
-// 			return
-// 		}
-
-// 		str = strings.TrimRight(str, "\r\n")
-
-// 		if _, err = c.Write([]byte{'>'}); err != nil {
-// 			yo.Warn(err)
-// 			return
-// 		}
-
-// 		fmt.Println("recv command", str)
-// 	}
-// }
-
 func (server *Server) Handle(cn net.Conn) {
 	var (
-		acc  *Account
-		g    *srp.BigNum
-		salt *srp.BigNum
-		N    *srp.BigNum
-		v    *srp.BigNum
-		b    *srp.BigNum
-		B    *srp.BigNum
-		alc  *packet.AuthLogonChallenge_C
+		acc    *gcore.Account
+		g      *srp.BigNum
+		salt   *srp.BigNum
+		N      *srp.BigNum
+		v      *srp.BigNum
+		b      *srp.BigNum
+		B      *srp.BigNum
+		alc    *AuthLogonChallenge_C
+		locale string
+		// gameAccounts []gcore.GameAccount
+		build        vsn.Build
+		platformOS   string = "Wn"
+		platformArch string = "32"
 	)
 
 	c := wrapConn(cn)
@@ -93,13 +62,14 @@ func (server *Server) Handle(cn net.Conn) {
 	// every iteration of this loop reads an opcode from the TCP socket, and associated data.
 	for {
 		if state == stateUnauthorized {
+			// Possibly we're dealing with a TLS connection, in which case pass to the GRPC server.
 			data, err := c.Peek(1)
 			if err != nil {
 				yo.Warn(err)
 				return
 			}
 
-			if packet.AuthType(data[0]) != packet.AUTH_LOGON_CHALLENGE {
+			if AuthType(data[0]) != AUTH_LOGON_CHALLENGE {
 				server.Backend.HandleSpecialConn("grpc", c)
 				return
 			}
@@ -112,25 +82,42 @@ func (server *Server) Handle(cn net.Conn) {
 			return
 		}
 
-		at := packet.AuthType(buf[0])
+		at := AuthType(buf[0])
 
-		yo.Ok("recv", at)
 		switch at {
-		case packet.AUTH_LOGON_CHALLENGE:
-			alc, err = packet.UnmarshalAuthLogonChallenge_C(buf[:rd])
+		case AUTH_LOGON_CHALLENGE:
+			alc, err = UnmarshalAuthLogonChallenge_C(buf[:rd])
 			if err != nil {
 				c.Close()
 				return
 			}
 
-			fmt.Println("Challenge buffer")
-			yo.Spew(buf[:rd])
-			yo.Spew(alc)
+			if alc.Platform == "x86" {
+				platformArch = "32"
+			}
+			if alc.Platform == "x64" {
+				platformArch = "64"
+			} else {
+				platformArch = "??"
+			}
 
-			build := alc.Build
-			validBuilds := []uint16{
-				5875,
-				12340,
+			if alc.OS == "Win" {
+				platformOS = "Wn"
+			}
+			if alc.OS == "OSX" {
+				platformOS = "Mc"
+			}
+
+			locale = alc.Country
+
+			build = vsn.Build(alc.Build)
+
+			// These builds have been tested and confirmed to function as intended.
+			// Add more if you find out they work as well.
+			validBuilds := []vsn.Build{
+				vsn.V1_12_1,
+				vsn.V2_4_3,
+				vsn.V3_3_5a,
 			}
 
 			invalid := true
@@ -146,22 +133,22 @@ func (server *Server) Handle(cn net.Conn) {
 			if invalid {
 				yo.Warn("User attempted to log in with invalid client", alc.Build)
 				c.Write([]byte{
-					uint8(packet.AUTH_LOGON_CHALLENGE),
+					uint8(AUTH_LOGON_CHALLENGE),
 					0x00,
-					uint8(packet.WOW_FAIL_VERSION_INVALID),
+					uint8(WOW_FAIL_VERSION_INVALID),
 				})
 				time.Sleep(1 * time.Second)
 				c.Close()
 				return
 			}
 
-			acc = server.GetAccount(string(alc.I))
-			if acc == nil {
+			acc, _, err = server.GetAccount(string(alc.I))
+			if err != nil {
 				// User could not be found.
 				c.Write([]byte{
-					uint8(packet.AUTH_LOGON_CHALLENGE),
+					uint8(AUTH_LOGON_CHALLENGE),
 					0x00,
-					uint8(packet.WOW_FAIL_UNKNOWN_ACCOUNT),
+					uint8(WOW_FAIL_UNKNOWN_ACCOUNT),
 				})
 				continue
 			}
@@ -173,28 +160,34 @@ func (server *Server) Handle(cn net.Conn) {
 			g = srp.Generator.Copy()
 			N = srp.Prime.Copy()
 
-			// Compute temporary variables
+			// Compute ephemeral (temporary) variables
 			_, v = srp.CalculateVerifier(acc.IdentityHash, g, N, salt)
 			b, B = srp.ServerGenerateEphemeralValues(g, N, v)
 
-			pkt := &packet.AuthLogonChallenge_S{
-				Cmd:              packet.AUTH_LOGON_CHALLENGE,
-				Error:            packet.WOW_SUCCESS,
+			pkt := &AuthLogonChallenge_S{
+				Error:            WOW_SUCCESS,
 				B:                B.ToArray(32),
 				G:                g.ToArray(1),
 				N:                N.ToArray(32),
 				S:                salt.ToArray(32),
-				VersionChallenge: srp.BigNumFromRand(16).ToArray(16),
+				VersionChallenge: VersionChallenge[:],
 			}
 
-			c.Write(pkt.Encode())
+			yo.Spew(pkt)
+
+			data := pkt.Encode(build)
+
+			i, err := c.Write(data)
+			if err != nil || i != len(data) {
+				yo.Warn("COULD NOT TRANSFER ALL", i, len(data), err)
+			}
 		// Client has posted cryptographic material to the server to complete SRP.
-		case packet.AUTH_LOGON_PROOF:
+		case AUTH_LOGON_PROOF:
 			if state != stateChallenging {
 				break
 			}
 
-			alpc, err := packet.UnmarshalAuthLogonProof_C(buf)
+			alpc, err := UnmarshalAuthLogonProof_C(buf[:rd])
 			if err != nil {
 				c.Close()
 				return
@@ -214,11 +207,11 @@ func (server *Server) Handle(cn net.Conn) {
 			if !valid {
 				yo.Println(acc.Username, "Invalid login")
 				var resp = []byte{
-					uint8(packet.AUTH_LOGON_PROOF),
-					uint8(packet.WOW_FAIL_UNKNOWN_ACCOUNT),
+					uint8(AUTH_LOGON_PROOF),
+					uint8(WOW_FAIL_UNKNOWN_ACCOUNT),
 				}
 
-				if alc.Build == 12340 {
+				if build.AddedIn(vsn.V2_4_3) {
 					resp = append(resp, 0, 0)
 				}
 
@@ -226,22 +219,18 @@ func (server *Server) Handle(cn net.Conn) {
 				continue
 			}
 
-			server.StoreKey(acc.Username, K)
+			server.StoreKey(acc.Username, locale, platformOS+platformArch, K)
 
-			yo.Println(acc.Username, "successfully authenticated")
-			yo.Println("Client A", hex.EncodeToString(alpc.A))
-			yo.Println("Client m1", hex.EncodeToString(alpc.M1))
-
-			proof := &packet.AuthLogonProof_S{
-				Cmd:          packet.AUTH_LOGON_PROOF,
-				Error:        packet.WOW_SUCCESS,
+			proof := &AuthLogonProof_S{
+				Cmd:          AUTH_LOGON_PROOF,
+				Error:        WOW_SUCCESS,
 				M2:           M2,
 				AccountFlags: 0x00800000,
 				SurveyID:     0,
 				Unk3:         0,
 			}
 
-			_, err = c.Write(proof.Encode(uint32(alc.Build)))
+			_, err = c.Write(proof.Encode(build))
 			if err != nil {
 				c.Close()
 				return
@@ -249,17 +238,23 @@ func (server *Server) Handle(cn net.Conn) {
 
 			state = stateAuthorized
 		// Client requested a list of realms from the server.
-		case packet.REALM_LIST:
+		case REALM_LIST:
 			if state != stateAuthorized {
 				break
 			}
 
-			rls := server.ListRealms(acc.Username, vsn.Build(alc.Build))
-			rlst := &packet.RealmList_S{
-				Cmd:    packet.REALM_LIST,
-				Realms: rls,
+			realms := []gcore.Realm{}
+
+			realmList := server.ListRealms()
+			for _, v := range realmList {
+				if v.Version == build {
+					realms = append(realms, v)
+				}
 			}
-			data := rlst.Encode(uint32(alc.Build))
+
+			realmListS := MakeRealmlist(realms)
+
+			data := realmListS.Encode(vsn.Build(alc.Build))
 			_, err := c.Write(data)
 			if err != nil {
 				break

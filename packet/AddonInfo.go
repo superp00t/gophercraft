@@ -1,10 +1,11 @@
 package packet
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
-	"log"
+
+	"github.com/superp00t/etc"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 var ClientAddonData = []byte{
@@ -30,22 +31,25 @@ var addonPublicKey = []byte{
 	0x0D, 0x36, 0xEA, 0x01, 0xE0, 0xAA, 0x91, 0x20, 0x54, 0xF0, 0x72, 0xD8, 0x1E, 0xC7, 0x89, 0xD2,
 }
 
-type AddonInfoList struct {
-	Info        []AddonInfo
+type AddonList struct {
+	Addons      []AddonInfo
 	CurrentTime uint32
 }
 
 type AddonInfo struct {
-	Name              string
-	Enabled           uint8
-	CRC               uint32
-	State             uint8
-	UsePublicKeyOrCRC bool
-	Unk1              uint32
+	Name    string
+	Enabled bool
+	CRC     uint32
+	Unk1    uint32
 }
 
-func ParseAddonInfo(addonData []byte) (*AddonInfoList, error) {
-	var ai []AddonInfo
+func ParseAddonList(build vsn.Build, addonData []byte) (*AddonList, error) {
+	if len(addonData) < 4 {
+		return nil, fmt.Errorf("no addon info")
+	}
+
+	aiList := &AddonList{}
+
 	size := binary.LittleEndian.Uint32(addonData[0:4])
 	if size == 0 {
 		return nil, fmt.Errorf("AddonInfo too small")
@@ -55,79 +59,62 @@ func ParseAddonInfo(addonData []byte) (*AddonInfoList, error) {
 		return nil, fmt.Errorf("AddonInfo too large")
 	}
 
-	addonInfo := Uncompress(addonData[4:])
-	addonsCount := int(binary.LittleEndian.Uint32(addonInfo[:4]))
-	log.Println("Number of addons: ", addonsCount)
-	o := 4
+	addonInfo := etc.FromBytes(Uncompress(addonData[4:]))
 
-	for i := 0; i < addonsCount; i++ {
-		addonName := new(bytes.Buffer)
-		for {
-			if addonInfo[o] == 0 {
-				break
-			}
-
-			addonName.WriteByte(addonInfo[o])
-			o++
-		}
-		o++
-		var enabled uint8
-		var crc, unk1 uint32
-		enabled = addonInfo[o]
-		o++
-		crc = binary.LittleEndian.Uint32(addonInfo[o : o+4])
-		o += 4
-		unk1 = binary.LittleEndian.Uint32(addonInfo[o : o+4])
-		o += 4
-		ai = append(ai, AddonInfo{
-			Name:              addonName.String(),
-			Enabled:           enabled,
-			CRC:               crc,
-			State:             2,
-			UsePublicKeyOrCRC: true,
-			Unk1:              unk1,
-		})
+	if build.AddedIn(vsn.V3_3_5a) {
+		// Size of buffer
+		_ = addonInfo.ReadUint32()
 	}
-	cur := binary.LittleEndian.Uint32(addonInfo[o : o+4])
-	return &AddonInfoList{
-		Info:        ai,
-		CurrentTime: cur,
-	}, nil
+
+	for addonInfo.Available() > 0 {
+		ai := AddonInfo{}
+		ai.Name = addonInfo.ReadCString()
+		ai.Enabled = addonInfo.ReadBool()
+		ai.CRC = addonInfo.ReadUint32()
+		ai.Unk1 = addonInfo.ReadUint32()
+		aiList.Addons = append(aiList.Addons, ai)
+	}
+
+	return aiList, nil
 }
 
-func SendAddonsInfo(addonData []byte) *WorldPacket {
-	pkt := NewWorldPacket(SMSG_ADDON_INFO)
-	dta, err := ParseAddonInfo(addonData)
-	if err != nil {
-		return nil
-	}
+// It is unknown why this is necessary
+func BuildServerAddonResponse(build vsn.Build, info *AddonList) *WorldPacket {
+	// var crcCheck uint32 = 0x1c776d01
+	// if build == vsn.V3_3_5a {
+	// }
 
-	for _, v := range dta.Info {
-		crcpub := uint8(0)
-		if v.UsePublicKeyOrCRC {
-			crcpub++
+	var crcCheck uint32 = 0x4c1c776d
+
+	pkt := NewWorldPacket(SMSG_ADDON_INFO)
+
+	for _, v := range info.Addons {
+		state := 1
+		if v.Enabled {
+			state = 2
 		}
 
-		pkt.Write([]byte{v.State})
-		pkt.Write([]byte{crcpub})
-		if crcpub == 1 {
-			usepk := v.CRC != 0x4c1c776d
-			_usepk := uint8(0)
-			if usepk {
-				_usepk++
-			}
-			pkt.Write([]byte{_usepk})
-			if usepk {
+		pkt.WriteByte(uint8(state))
+		pkt.WriteBool(v.Enabled)
+
+		if v.Enabled {
+			usePublicKey := v.CRC != crcCheck
+			pkt.WriteBool(usePublicKey)
+			if usePublicKey {
 				pkt.Write(addonPublicKey)
 			}
 
-			pkt.Write([]byte{0, 0, 0, 0})
+			pkt.WriteUint32(0)
 		}
 
-		pkt.Write([]byte{0})
+		pkt.WriteBool(!v.Enabled)
+		if !v.Enabled {
+			// String? I wonder if this has to do with addons being banned
+			pkt.WriteByte(0)
+		}
 	}
 
 	// zero banned addons
-	pkt.Write([]byte{0, 0, 0, 0})
+	pkt.WriteUint32(0)
 	return pkt
 }

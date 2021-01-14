@@ -14,22 +14,61 @@ type Loader struct {
 }
 
 func (ld *Loader) Exists(path string) bool {
-	seg := strings.SplitN(path, ":", 2)
-	for _, pack := range ld.Volumes {
-		if pack.Name == seg[0] {
-			return pack.Exists(seg[1])
+	colon := strings.Index(path, ":")
+	if colon == -1 {
+		for _, pack := range ld.Volumes {
+			if pack.Exists(path) {
+				fmt.Println(path, "does exist in", pack.Name)
+				return true
+			}
+			fmt.Println(path, "doesn't exist in", pack.Name)
+		}
+	} else {
+		pack := path[:colon]
+		filePath := path[colon:]
+
+		for _, dpack := range ld.Volumes {
+			if dpack.Name == pack {
+				if dpack.Exists(filePath) {
+					return true
+				}
+			}
 		}
 	}
 
 	return false
 }
 
-func (ld *Loader) Open(path string) (io.ReadCloser, error) {
-	seg := strings.SplitN(path, ":", 2)
-	for _, pack := range ld.Volumes {
-		if pack.Name == seg[0] {
-			if pack.Exists(seg[1]) {
-				return pack.ReadFile(seg[1])
+// func (ld *Loader) Open(path string) (io.ReadCloser, error) {
+// 	seg := strings.SplitN(path, ":", 2)
+// 	for _, pack := range ld.Volumes {
+// 		if pack.Name == seg[0] {
+// 			if pack.Exists(seg[1]) {
+// 				return pack.ReadFile(seg[1])
+// 			}
+// 		}
+// 	}
+
+// 	return nil, fmt.Errorf("file %s not found", path)
+// }
+
+func (ld *Loader) ReadFile(path string) (io.ReadCloser, error) {
+	colon := strings.IndexByte(path, ':')
+	if colon == -1 {
+		for _, pack := range ld.Volumes {
+			if pack.Exists(path) {
+				return pack.ReadFile(path)
+			}
+		}
+	} else {
+		pack := path[:colon]
+		filePath := path[colon:]
+
+		for _, dpack := range ld.Volumes {
+			if dpack.Name == pack {
+				if dpack.Exists(filePath) {
+					return dpack.ReadFile(filePath)
+				}
 			}
 		}
 	}
@@ -55,8 +94,8 @@ func (ld *Loader) ReadAll(path string, slicePtr interface{}) int {
 
 	elemType := valueType.Elem()
 
-	if elemType.Kind() != reflect.Struct {
-		panic("expected slice of structs")
+	if elemType.Kind() != reflect.Struct && elemType.Kind() != reflect.Map {
+		panic(fmt.Sprintf("expected slice of structs: got %s", elemType.Kind()))
 	}
 
 	for _, pack := range ld.Volumes {
@@ -101,4 +140,24 @@ func (ld *Loader) Close() {
 	}
 
 	ld.Volumes = nil
+}
+
+func (ld *Loader) List() []string {
+	var names []string
+
+	for _, volume := range ld.Volumes {
+		for _, volumeListing := range volume.List() {
+			found := false
+			for _, name := range names {
+				if name == volumeListing {
+					found = true
+				}
+			}
+			if !found {
+				names = append(names, volumeListing)
+			}
+		}
+	}
+
+	return names
 }

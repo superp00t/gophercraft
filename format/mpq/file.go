@@ -1,23 +1,21 @@
 package mpq
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/superp00t/etc/yo"
 )
 
 type File struct {
-	Name        string
-	Hash        *HashEntry
-	Block       *BlockEntry
-	Reader      io.ReadSeeker
-	Multipart   bool
-	Compression uint8
-	ReadSoFar   int64
-
-	mPtr *MPQ
+	Name      string
+	Hash      *HashEntry
+	Block     *BlockEntry
+	Reader    io.ReadSeeker
+	Multipart bool
+	Volume    *MPQ
 }
 
 func (f *File) CompressedSize() int64 {
@@ -27,7 +25,7 @@ func (f *File) CompressedSize() int64 {
 
 func (f *File) GetBlockSize() int {
 	if f.Multipart {
-		return f.mPtr.BlockSize()
+		return f.Volume.BlockSize()
 	}
 
 	return int(f.CompressedSize())
@@ -45,6 +43,9 @@ func (f *File) ReadBlock() ([]byte, error) {
 	}
 
 	bs := int(f.Block.CompressedSize)
+	if bs == 0 {
+		return nil, fmt.Errorf("mpq: file has a compressed size of 0 (size: %d)", f.Block.Size)
+	}
 
 	buf := make([]byte, bs)
 	_, err = f.Reader.Read(buf)
@@ -54,117 +55,144 @@ func (f *File) ReadBlock() ([]byte, error) {
 
 	key := hashString(f.Name, MPQ_HASH_FILE_KEY)
 
-	if f.Block.Match(MPQ_FILE_ENCRYPTED) {
-		dc := bytes.NewBuffer(buf)
-
-		if f.Block.Match(MPQ_FILE_FIX_KEY) {
-			key = (key + uint32(f.mPtr.Header.ArchiveOffset)) ^ uint32(f.Block.Size)
+	if f.Block.Match(BlockEncrypted) {
+		if f.Block.Match(BlockFixKey) {
+			key = (key + uint32(f.Block.FileOffset)) ^ uint32(f.Block.Size)
 		}
-
-		dcr := newDecryptReader(dc, key)
-		nb := new(bytes.Buffer)
-		io.Copy(nb, dcr)
-		buf = nb.Bytes()
 	}
 
-	outBuf := bytes.NewBuffer(nil)
+	// Allocate memory for decompressed file.
+	decompressed := make([]byte, f.Block.Size)
 
-	crc := f.Block.Match(MPQ_FILE_SECTOR_CRC)
+	crc := f.Block.Match(BlockSectorCRC)
 
-	if f.Block.Match(MPQ_FILE_PKZIP) {
+	if f.Block.Match(BlockPKZIP) {
 		panic("pkzip unsupported")
 	}
 
-	sectorSize := uint32(512 << f.mPtr.Header.BlockSize)
+	sectorSize := uint32(512 << f.Volume.Header.BlockSize)
 
-	if f.Multipart && f.Block.Match(MPQ_FILE_COMPRESS) && f.IsCompressed() {
-		sectors := (f.Block.Size / sectorSize) + 1
+	if f.Multipart && f.Block.Match(BlockCompress) && f.IsCompressed() {
+		// Actual block data is preceded by a uint32_t array whose length == sectors
+		sectors := int((f.Block.Size+sectorSize-1)/sectorSize) + 1
 		if crc {
 			sectors++
 		}
 
-		var p []uint32
-		for i := uint32(0); i < (sectors + 1); i++ {
-			o := i * 4
-			p = append(p, binary.LittleEndian.Uint32(buf[o:o+4]))
+		sectorBuffer := buf[:sectors*4]
+
+		if f.Block.Match(BlockEncrypted) {
+			// Awful.
+			decrypt(key-1, sectorBuffer)
 		}
+
+		var packedOffsets []uint32
+
+		for i := 0; i < sectors; i++ {
+			offset := i * 4
+			packedOffsets = append(packedOffsets, binary.LittleEndian.Uint32(sectorBuffer[offset:offset+4]))
+		}
+
 		bytesLeft := f.Block.Size
-		readableSectors := len(p) - 1
+		bytesPos := 0
+		readableSectors := sectors
 		if crc {
 			readableSectors--
-			// crcData := binary.LittleEndian.Uint32(buf[p[readableSectors-1]:p[readableSectors]])
-			// bytes := buf[p[0]:p[readableSectors-1]]
-			// actualCrc := adler32(0, bytes)
-			// yo.Fatalf("0x%x, 0x%x", p[readableSectors], actualCrc)
 		}
 
 		dwBytesInThisSector := f.Block.Size
 
-		for i := 0; i < readableSectors; i++ {
-			sector := buf[p[i]:p[i+1]]
+		for i := 0; i < readableSectors-1; i++ {
+			sectorStart, sectorEnd := packedOffsets[i], packedOffsets[i+1]
+
+			if int(sectorEnd) > len(buf) {
+				yo.Ok(f.Name)
+				panic(fmt.Errorf("sector pointed to data offset %d outside of the range (0-%d)", sectorEnd, len(buf)))
+			}
+
+			sector := buf[sectorStart:sectorEnd]
 
 			if dwBytesInThisSector > bytesLeft {
 				dwBytesInThisSector = bytesLeft
 			}
 
-			if f.Block.Match(MPQ_FILE_PKZIP) {
+			if f.Block.Match(BlockPKZIP) {
 				panic("mpq: pkzip unsupported")
 			}
 
-			if f.Block.Match(MPQ_FILE_COMPRESS) {
-				// yo.Println(i, p[i], "->", p[i+1], p[i+1]-p[i], bytesLeft, len(sector))
-				sector, err = DecompressBlock(f.mPtr.Version(), sectorSize, sector)
-				if err != nil {
-					panic(err)
+			if f.Block.Match(BlockEncrypted) {
+				// Grotesquely stupid scheme.
+				decrypt(key+(uint32(i)), sector)
+			}
+
+			if f.Block.Match(BlockCompress) {
+				sectorCompressed := true
+
+				// Last sector is not compressed in certain cases. (What the fuck?)
+				if bytesPos+len(sector) == int(f.Block.Size) {
+					sectorCompressed = false
+				}
+
+				if sectorCompressed {
+					compression := CompressionType(sector[0])
+
+					rawSector, err := DecompressBlock(f.Volume.Version(), compression, sector[1:])
+					if err != nil {
+						// Should not occur.
+						yo.Println(f.Volume.Path, f.Volume.Version(), compression, f.Block.Flags, i, "/", readableSectors-1)
+						yo.Spew(sector)
+						return nil, FileCorruptionError{f.Name, err}
+					}
+					sector = rawSector
 				}
 			}
 
 			bytesLeft -= uint32(len(sector))
-			outBuf.Write(sector)
+
+			// Copy decoded sector to pre-allocated buffer
+			copy(decompressed[bytesPos:bytesPos+len(sector)], sector)
+			bytesPos += len(sector)
+		}
+
+		if bytesPos != int(f.Block.Size) {
+			return nil, fmt.Errorf("decoded data length %d is not the same size as specified in block entry %d", bytesPos, f.Block.Size)
 		}
 	} else {
-		start := binary.LittleEndian.Uint32(buf[:4])
-		end := binary.LittleEndian.Uint32(buf[4:8])
+		data := buf
 
-		offset := 8
-		if crc {
-			offset += 4
-		}
-
-		data := buf[start:end]
-
-		if f.Block.Match(MPQ_FILE_PATCH_FILE) {
+		if f.Block.Match(BlockPatchFile) {
 			panic("cannot handle patch files")
 		}
 
-		if f.Block.Match(MPQ_FILE_COMPRESS) {
-			buf, err = DecompressBlock(f.mPtr.Version(), f.Block.Size, data)
-			if err != nil {
-				panic(err)
+		if f.Block.Match(BlockCompress) {
+			if int(f.Block.Size) == len(data) {
+				buf = data
+			} else {
+				buf, err = DecompressBlock(f.Volume.Version(), CompressionType(data[0]), data[1:])
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
-		outBuf.Write(buf)
+
+		copy(decompressed[:], buf[:f.Block.Size])
 	}
 
-	return outBuf.Bytes(), nil
-}
-
-type position struct {
-	pos uint32
+	return decompressed, nil
 }
 
 func (f *File) Close() error {
-	f.mPtr.L.Unlock()
+	f.Volume.GuardFile.Unlock()
 	return nil
 }
 
 func (f *File) GetFileOffset() int64 {
-	i := int64(f.mPtr.Header.ArchiveOffset) + int64(f.Block.FileOffset)
+	i := int64(f.Volume.Header.ArchiveOffset) + int64(f.Block.FileOffset)
 	return i
 }
 
 func (m *MPQ) OpenFile(name string) (*File, error) {
-	m.L.Lock()
+	m.GuardFile.Lock()
 	e, err := m.Query(name)
 	if err != nil {
 		return nil, err
@@ -173,16 +201,20 @@ func (m *MPQ) OpenFile(name string) (*File, error) {
 	// Instantiate File object
 	f := new(File)
 	f.Name = name
-	f.mPtr = m
+	f.Volume = m
 	f.Hash = e
 	f.Block = m.BlockTable[int(f.Hash.BlockIndex)]
 	f.Reader = m.File
 
-	if !f.Block.Match(MPQ_FILE_EXISTS) {
-		return nil, fmt.Errorf("File doesn't even exist, apparently")
+	if f.Block.Match(BlockDeleteMarker) {
+		return nil, FileWasDeletedError(name + " in " + m.Path)
 	}
 
-	f.Multipart = !f.Block.Match(MPQ_FILE_SINGLE_UNIT)
+	if !f.Block.Match(BlockExists) {
+		return nil, fmt.Errorf("file %s doesn't even exist, apparently", name)
+	}
+
+	f.Multipart = !f.Block.Match(BlockSingleUnit)
 
 	// Read raw data
 	f.Reader = m.File
@@ -196,6 +228,7 @@ func (m *MPQ) ListFiles() []string {
 		fmt.Println("no listfile", err)
 		return nil
 	}
+	defer f.Close()
 
 	buf, err := f.ReadBlock()
 	if err != nil {

@@ -1,12 +1,6 @@
 # Gophercraft Code of Conduct
 
-We like to keep things relaxed and friendly.
-
-These are not edicts but suggestions (which should be obvious to decent people).
-
-You should do your best, however, to follow them in order to avoid becoming excluded from the project.
-
-### Do's
+We like to keep things relaxed and friendly. Here are some tips to keep it that way:
 
 - Be patient and respectful.
 
@@ -20,13 +14,9 @@ We get it, you're a 10x l33t hacker. Be friendly to newcomers and people who are
 
 Adhere to the GNU General Public License. Don't break the law, and don't encourage or pressure others into breaking the law on your behalf.
 
-### Dont's
-
 - Don’t be destructive or inflammatory. 
 
 When criticizing others and/or their work, do so with the intention of building them up, not tearing them down.
-
-This includes not bashing of other server cores/project. MaNGOS-based cores like CMaNGOS and TrinityCore have been indispensible to the Gophercraft project. Don't poo-poo projects which are the basis for the projects's success. 
 
 - Don't harass people.
 

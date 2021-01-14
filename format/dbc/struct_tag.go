@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/superp00t/etc"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 type tagOptType int
@@ -13,6 +14,7 @@ const (
 	noOpt tagOptType = iota
 	lengthOpt
 	onlyOpt
+	disabledOpt
 	locOpt
 )
 
@@ -110,6 +112,8 @@ func typeKey(s string) tagOptType {
 		return onlyOpt
 	case "loc":
 		return locOpt
+	case "disabled":
+		return disabledOpt
 	default:
 		panic("unknown type key " + s)
 	}
@@ -184,29 +188,29 @@ func parseTag(s string) tag {
 	return fo
 }
 
-func versionMatch(gid int64, vsn []int64) bool {
-	if len(vsn) == 0 {
+func versionMatch(build vsn.Build, vsns []int64) bool {
+	if len(vsns) == 0 {
 		return true
 	}
 
-	if len(vsn) == 1 {
-		return vsn[0] == gid
+	if len(vsns) == 1 {
+		return vsn.Build(vsns[0]) == build
 	}
 
-	if len(vsn) == 2 {
-		if vsn[0] == -1 {
-			if gid <= vsn[1] {
+	if len(vsns) == 2 {
+		if vsns[0] == -1 {
+			if build <= vsn.Build(vsns[1]) {
 				return true
 			}
 		}
 
-		if vsn[1] == -1 {
-			if gid >= vsn[0] {
+		if vsns[1] == -1 {
+			if build >= vsn.Build(vsns[0]) {
 				return true
 			}
 		}
 
-		if gid >= vsn[0] && gid <= vsn[1] {
+		if build >= vsn.Build(vsns[0]) && build <= vsn.Build(vsns[1]) {
 			return true
 		}
 	}
@@ -214,16 +218,31 @@ func versionMatch(gid int64, vsn []int64) bool {
 	return false
 }
 
-func (f tag) getValidOpts(gid int64) []tagOpt {
-	var out []tagOpt
+func (f tag) getValidOpts(build vsn.Build) (disabled bool, out []tagOpt) {
+	// Look out for disabled fields
+	for _, ruleset := range f.rulesets {
+		for _, rule := range ruleset.Rules {
+			if rule.Type == onlyOpt {
+				if !versionMatch(build, ruleset.Versions) {
+					return true, nil
+				}
+			}
+
+			if rule.Type == disabledOpt {
+				if versionMatch(build, ruleset.Versions) {
+					return true, nil
+				}
+			}
+		}
+	}
 
 	for _, ruleset := range f.rulesets {
 		for _, rule := range ruleset.Rules {
-			if versionMatch(gid, ruleset.Versions) {
+			if versionMatch(build, ruleset.Versions) {
 				out = append(out, rule)
 			}
 		}
 	}
 
-	return out
+	return false, out
 }

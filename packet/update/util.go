@@ -5,17 +5,20 @@ import (
 	"fmt"
 	"io"
 	"math"
-
-	"github.com/superp00t/etc/yo"
 )
 
+// Bitmask stores a bit-packed list of boolean values.
 type Bitmask []uint32
 
 func (b Bitmask) String() string {
 	str := fmt.Sprintf("(len: %d)", len(b))
-	for _, block := range b {
-		str += fmt.Sprintf(" %032b", block)
+
+	for x := uint32(0); x < uint32(len(b)*32); x++ {
+		if b.Enabled(x) {
+			str += fmt.Sprintf(" 0x%04X", x)
+		}
 	}
+
 	return str
 }
 
@@ -43,7 +46,7 @@ func ReadBitmask(descriptor *Descriptor, reader io.Reader) (*Bitmask, error) {
 	var size [1]byte
 	_, err := reader.Read(size[:])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("update: error reading bitmask length: %s", err)
 	}
 
 	bmask := make(Bitmask, size[0])
@@ -116,6 +119,60 @@ func (b *Bitmask) Set(offset uint32, value bool) {
 	*b = mask
 }
 
+type Quaternion struct {
+	X, Y, Z, W float32
+}
+
+const (
+	packCoeffYZ = 1 << 20
+	packCoeffX  = 1 << 21
+)
+
+func DecodePackedQuaternion(input io.Reader) (Quaternion, error) {
+	var q Quaternion
+
+	uraw, err := readUint64(input)
+	if err != nil {
+		return q, err
+	}
+
+	raw := int64(uraw)
+
+	x := float64(raw>>4) / packCoeffX
+	y := float64(raw<<22>>43) / packCoeffYZ
+	z := float64(raw<<43>>42) / packCoeffYZ
+	w := 1 - (x*x + y*y + z*z)
+
+	w = math.Sqrt(w)
+
+	return Quaternion{
+		float32(x),
+		float32(y),
+		float32(z),
+		float32(w),
+	}, nil
+}
+
+func (q Quaternion) EncodePacked(wr io.Writer) error {
+	return writeUint64(wr, uint64(q.GetPacked()))
+}
+
+func (q Quaternion) GetPacked() int64 {
+	var wSign int32
+	if q.W >= 0 {
+		wSign = 1
+	} else {
+		wSign = -1
+	}
+
+	x := int64(int32(int32(q.X)*packCoeffX*wSign) & ((1 << 22) - 1))
+	y := int64(int32(int32(q.X)*packCoeffYZ*wSign) & ((1 << 21) - 1))
+	z := int64(int32(int32(q.X)*packCoeffYZ*wSign) & ((1 << 21) - 1))
+
+	raw := z | (y << 21) | (x << 42)
+	return raw
+}
+
 func readBool(reader io.Reader) (bool, error) {
 	var boolean [1]byte
 
@@ -140,6 +197,15 @@ func readUint8(reader io.Reader) (uint8, error) {
 	return byte[0], nil
 }
 
+func readUint16(reader io.Reader) (uint16, error) {
+	var data [2]byte
+	if _, err := reader.Read(data[:]); err != nil && err != io.EOF {
+		return 0, err
+	}
+
+	return binary.LittleEndian.Uint16(data[:]), nil
+}
+
 func readUint32(reader io.Reader) (uint32, error) {
 	var data [4]byte
 	if _, err := reader.Read(data[:]); err != nil && err != io.EOF {
@@ -147,6 +213,15 @@ func readUint32(reader io.Reader) (uint32, error) {
 	}
 
 	return binary.LittleEndian.Uint32(data[:]), nil
+}
+
+func readUint64(reader io.Reader) (uint64, error) {
+	var data [8]byte
+	if _, err := reader.Read(data[:]); err != nil && err != io.EOF {
+		return 0, err
+	}
+
+	return binary.LittleEndian.Uint64(data[:]), nil
 }
 
 func readFloat32(reader io.Reader) (float32, error) {
@@ -174,12 +249,23 @@ func writeBool(writer io.Writer, value bool) error {
 	return err
 }
 
+func writeUint16(writer io.Writer, value uint16) error {
+	var data [2]byte
+	binary.LittleEndian.PutUint16(data[:], value)
+	_, err := writer.Write(data[:])
+	return err
+}
+
 func writeUint32(writer io.Writer, value uint32) error {
 	var data [4]byte
 	binary.LittleEndian.PutUint32(data[:], value)
-	if value == 69 {
-		yo.Spew(data)
-	}
+	_, err := writer.Write(data[:])
+	return err
+}
+
+func writeUint64(writer io.Writer, value uint64) error {
+	var data [8]byte
+	binary.LittleEndian.PutUint64(data[:], value)
 	_, err := writer.Write(data[:])
 	return err
 }

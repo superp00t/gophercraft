@@ -1,19 +1,20 @@
+//Package gcore implements the main functionality of the Gophercraft Core Authserver.
 package gcore
 
 import (
 	"fmt"
-	"log"
 	"strings"
+
+	"github.com/superp00t/gophercraft/i18n"
+
+	"github.com/superp00t/gophercraft/gcore/sys"
 
 	"github.com/superp00t/etc"
 
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/superp00t/etc/yo"
-	"github.com/superp00t/gophercraft/auth"
 	"github.com/superp00t/gophercraft/gcore/config"
-	"github.com/superp00t/gophercraft/packet"
 	"github.com/superp00t/gophercraft/vsn"
 	"xorm.io/xorm"
 )
@@ -58,6 +59,12 @@ func NewCore(cfg *config.Auth) (*Core, error) {
 	_, err = core.DB.Count(new(Account))
 	if err != nil {
 		return nil, err
+	}
+
+	for user, pass := range cfg.Admin {
+		if err := core.ResetAccount(user, pass, sys.Tier_Admin); err != nil {
+			return nil, err
+		}
 	}
 
 	if core.Key == "" {
@@ -107,8 +114,19 @@ func (c *Core) AccountID(user string) uint64 {
 	return id
 }
 
-func (c *Core) StoreKey(user string, K []byte) {
+func (c *Core) StoreKey(user, locale, platform string, K []byte) {
 	id := c.AccountID(user)
+
+	loc, err := i18n.LocaleFromString(locale)
+	if err != nil {
+		// Fallback
+		loc = i18n.English
+	}
+
+	c.DB.Where("id = ?", id).Cols("locale", "platform").Update(&Account{
+		Locale:   loc,
+		Platform: platform,
+	})
 
 	c.DB.Where("id = ?", id).Delete(new(SessionKey))
 
@@ -118,57 +136,33 @@ func (c *Core) StoreKey(user string, K []byte) {
 	})
 }
 
-func (c *Core) GetAccount(user string) *auth.Account {
-	var accs []Account
-	c.DB.Where("username = ?", strings.ToUpper(user)).Find(&accs)
-	if len(accs) == 0 {
-		return nil
+func (c *Core) GetAccount(user string) (*Account, []GameAccount, error) {
+	var acc Account
+	found, err := c.DB.Where("username = ?", strings.ToUpper(user)).Get(&acc)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return &auth.Account{
-		Username:     accs[0].Username,
-		IdentityHash: accs[0].IdentityHash,
+	if !found {
+		return nil, nil, fmt.Errorf("account %s not found", user)
 	}
+
+	var gameAccs []GameAccount
+	c.DB.Where("owner = ?", acc.ID).Find(&gameAccs)
+
+	return &acc, gameAccs, nil
 }
 
-func (c *Core) ListRealms(user string, build vsn.Build) []packet.RealmListing {
-	if user != "" {
-		var acc []Account
-		c.DB.Where("username = ?", user).Find(&acc)
-		if len(acc) == 0 {
-			log.Println("No user found!")
-		}
-	}
+func (r Realm) Offline() bool {
+	return (time.Now().UnixNano() - r.LastUpdated.UnixNano()) > (time.Second * 15).Nanoseconds()
+}
 
+func (c *Core) ListRealms() []Realm {
 	var rlmState []Realm
-	c.DB.Find(&rlmState)
-
-	var rlm []packet.RealmListing
-	for _, v := range rlmState {
-		if v.Version == build {
-			pkt := packet.RealmListing{}
-			pkt.Type = packet.ConvertRealmType(v.Type)
-			pkt.Locked = false
-			pkt.Flags = 0x00
-			if (time.Now().UnixNano() - v.LastUpdated.UnixNano()) > (time.Second * 15).Nanoseconds() {
-				pkt.Flags = 0x02 // offline
-			}
-			pkt.Name = v.Name
-			pkt.Address = v.Address
-			pkt.Population = 1.0
-			pkt.Timezone = 1
-			pkt.ID = uint8(v.ID)
-			// TODO, query this info from worldserver GRPC
-
-			// c, _ := c.DB.Where("realm_id = ?", v.ID).Where("account = ?", acc[0].ID).Count(new(Character))
-			// pkt.Characters = uint8(c)
-			rlm = append(rlm, pkt)
-		}
+	if err := c.DB.Find(&rlmState); err != nil {
+		panic(err)
 	}
-
-	log.Println(spew.Sdump(rlm))
-
-	return rlm
+	return rlmState
 }
 
 func (c *Core) APIKey() string {

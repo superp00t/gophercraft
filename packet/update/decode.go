@@ -18,8 +18,9 @@ type ValuesBlock struct {
 	sync.Mutex
 
 	TypeMask guid.TypeMask
-	// Descriptor describes all the info about a particular version's SMSG_UPDATE_OBJECT.
+	// Descriptor describes the exact structure of a particular version's SMSG_UPDATE_OBJECT.
 	Descriptor *Descriptor
+	// Points to chunks that have been updated
 	ChangeMask *Bitmask
 	// StorageDescriptor is the version and type-specific structure.
 	StorageDescriptor reflect.Value
@@ -68,10 +69,28 @@ func NewDecoder(version vsn.Build, reader io.Reader) (*Decoder, error) {
 	return decoder, nil
 }
 
+// DecodeBlockType decodes the BlockType. This function tries to resolve differences between protocol revisions.
 func (decoder *Decoder) DecodeBlockType() (BlockType, error) {
 	bt, err := readUint8(decoder.Reader)
 	if err != nil {
 		return 0, err
+	}
+
+	desc, ok := BlockTypeDescriptors[decoder.Build]
+	if !ok {
+		return BlockType(bt), nil
+	}
+
+	for typeSpec, val := range desc {
+		if typeSpec == SpawnObject && val == bt {
+			if desc[CreateObject] == bt {
+				return CreateObject, nil
+			}
+		}
+
+		if val == bt {
+			return typeSpec, nil
+		}
 	}
 
 	// todo: support new format

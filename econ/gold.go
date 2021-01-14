@@ -1,11 +1,13 @@
+//Package econ provides economy-related structs and functions.
 package econ
 
 import (
 	"fmt"
 	"strconv"
-	"strings"
 )
 
+// Money represents a coinage state in the in-game economy.
+// You cannot have negative money in-game, but you can set money as negative in order to subtract from a balance by addition.
 type Money int64
 
 const (
@@ -34,7 +36,26 @@ func (m Money) String() string {
 
 func (m Money) ShortString() string {
 	c := m.Coins()
-	return fmt.Sprintf("%dg,%ds,%dc", c[0], c[1], c[2])
+
+	str := ""
+
+	if c[0] != 0 {
+		str += fmt.Sprintf("%dg", c[0])
+	}
+
+	if c[1] != 0 {
+		str += fmt.Sprintf("%ds", c[1])
+	}
+
+	if c[2] != 0 {
+		str += fmt.Sprintf("%dc", c[2])
+	}
+
+	if str == "" {
+		return "0c"
+	}
+
+	return str
 }
 
 func getCoinKey(s string) (string, string) {
@@ -45,36 +66,77 @@ func getCoinKey(s string) (string, string) {
 }
 
 func ParseShortString(input string) (Money, error) {
-	t := strings.Split(input, ",")
-	if len(t) != 3 {
-		return 0, fmt.Errorf("econ: parse error")
+	pRead := input[:]
+
+	if len(pRead) == 0 {
+		return 0, fmt.Errorf("econ: Gold string is empty")
 	}
 
-	gk, gv := getCoinKey(t[0])
-	sk, sv := getCoinKey(t[1])
-	ck, cv := getCoinKey(t[2])
+	var sign bool
+	var money Money
 
-	if gk != "g" || sk != "s" || ck != "c" {
-		return 0, fmt.Errorf("econ: invalid coin type")
+	if pRead[0] == '-' {
+		sign = true
+		pRead = pRead[1:]
 	}
 
-	gM, err := strconv.ParseInt(gv, 10, 64)
+denomination:
+	for len(pRead) > 0 {
+		var intString string
+		for len(pRead) > 0 {
+			c := pRead[0]
+			pRead = pRead[1:]
+			if c >= '0' && c <= '9' {
+				intString += string(c)
+			} else {
+				switch c {
+				case 'c':
+					i, err := strconv.ParseInt(intString, 10, 64)
+					if err != nil {
+						return 0, err
+					}
+
+					money += Money(i)
+					continue denomination
+				case 's':
+					i, err := strconv.ParseInt(intString, 10, 64)
+					if err != nil {
+						return 0, err
+					}
+
+					money += Money(i) * Silver
+					continue denomination
+				case 'g':
+					i, err := strconv.ParseInt(intString, 10, 64)
+					if err != nil {
+						return 0, err
+					}
+
+					money += Money(i) * Gold
+					continue denomination
+				default:
+					return 0, fmt.Errorf("econ: unknown denomination %s", string(c))
+				}
+			}
+		}
+	}
+
+	if sign {
+		money *= -1
+	}
+
+	return money, nil
+}
+
+func ParseMoney(in string) (Money, error) {
+	i, err := strconv.ParseInt(in, 0, 64)
 	if err != nil {
-		return 0, err
-	}
-	sM, err := strconv.ParseInt(sv, 10, 64)
-	if err != nil {
-		return 0, err
-	}
-	cM, err := strconv.ParseInt(cv, 10, 64)
-	if err != nil {
-		return 0, err
+		m, err := ParseShortString(in)
+		if err != nil {
+			return 0, err
+		}
+		return m, nil
 	}
 
-	var out Money
-	out = out + Money(cM)
-	out = out + (Money(sM) * Silver)
-	out = out + (Money(gM) * Gold)
-
-	return out, nil
+	return Money(i), nil
 }

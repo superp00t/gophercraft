@@ -5,7 +5,6 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"sync"
 )
 
 // Pool pre-loads multiple MPQ archive headers, allowing fast, concurrent access of archive files
@@ -43,7 +42,8 @@ func (p *Pool) addArchive(name string) error {
 	lf := m.ListFiles()
 
 	for _, fv := range lf {
-		if ao := p.fmap[fv]; ao == nil {
+		mappedFile := p.fmap[fv]
+		if mappedFile == nil {
 			p.fmap[fv] = ae // map filepath string to MPQ data pointer
 		}
 	}
@@ -96,18 +96,22 @@ func (p *Pool) OpenFile(name string) (*File, error) {
 	}
 
 	m := new(MPQ)
+	m.Path = ae.name
 	var err error
 	m.File, err = os.Open(ae.name)
 	if err != nil {
 		return nil, err
 	}
 
-	m.L = new(sync.Mutex)
 	m.Header = ae.header
 	m.BlockTable = ae.blockTable
 	m.HashTable = ae.hashTable
 
-	return m.OpenFile(name)
+	file, err := m.OpenFile(name)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
 }
 
 func (p *Pool) ListFiles() []string {

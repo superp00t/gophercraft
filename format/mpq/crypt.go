@@ -30,7 +30,6 @@ package mpq
 
 import (
 	"encoding/binary"
-	"io"
 	"strings"
 )
 
@@ -62,20 +61,6 @@ func generateEncryptionTable() {
 	}
 }
 
-type blockEncryptor struct {
-	key    string
-	offset uint16
-}
-
-func newBlockEncryptor(key string, offset uint16) (encryptor *blockEncryptor) {
-	encryptor = new(blockEncryptor)
-
-	encryptor.key = key
-	encryptor.offset = offset
-
-	return
-}
-
 func hashString(input string, offset uint16) (hash uint32) {
 	var seed1 uint32 = 0x7FED7FED
 	var seed2 uint32 = 0xEEEEEEEE
@@ -91,53 +76,20 @@ func hashString(input string, offset uint16) (hash uint32) {
 	return seed1
 }
 
-func (encryptor *blockEncryptor) decrypt(table *[]byte) (err error) {
-	var seed1 uint32 = hashString(encryptor.key, encryptor.offset)
+func decrypt(seed1 uint32, table []byte) (err error) {
 	var seed2 uint32 = 0xEEEEEEEE
 
-	size := len(*table)
+	size := len(table)
 	pos := 0
 	for ; size >= 4; size -= 4 {
 		seed2 += blockEncryptionTable[0x400+(seed1&0xFF)]
-		curEntry := binary.LittleEndian.Uint32((*table)[pos : pos+4])
+		curEntry := binary.LittleEndian.Uint32(table[pos : pos+4])
 		entry := curEntry ^ (seed1 + seed2)
 		seed1 = ((^seed1 << 0x15) + 0x11111111) | (seed1 >> 0x0B)
 		seed2 = uint32(entry) + seed2 + (seed2 << 5) + 3
 
-		binary.LittleEndian.PutUint32((*table)[pos:pos+4], entry)
+		binary.LittleEndian.PutUint32(table[pos:pos+4], entry)
 		pos += 4
 	}
 	return
-}
-
-// https://github.com/aarondl/mpq/blob/master/crypt.go
-type decryptReader struct {
-	reader            io.Reader
-	key1, key2, value uint32
-}
-
-func newDecryptReader(reader io.Reader, key1 uint32) *decryptReader {
-	return &decryptReader{
-		reader: reader,
-		key1:   key1,
-		key2:   0xEEEEEEEE,
-	}
-}
-
-func (d *decryptReader) Read(buf []byte) (n int, err error) {
-	n, err = d.reader.Read(buf)
-
-	length := n >> 2
-	for i := 0; i < length*4; i += 4 {
-		d.key2 += blockEncryptionTable[0x400+(d.key1&0xFF)]
-
-		value := binary.LittleEndian.Uint32(buf[i:])
-		value ^= (d.key1 + d.key2)
-		binary.LittleEndian.PutUint32(buf[i:], value)
-
-		d.key1 = ((^d.key1 << 0x15) + 0x11111111) | (d.key1 >> 0x0B)
-		d.key2 = value + d.key2 + (d.key2 << 5) + 3
-	}
-
-	return n, err
 }

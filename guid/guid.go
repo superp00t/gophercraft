@@ -1,3 +1,5 @@
+//Package guid stores the GUID or (Globally Unique Identifier), a 128-bit data type which can contain a type specifier, a server ID, and a global counter.
+// This package uses the 128-bit format, but allows lossy conversion and semi-compatibility the old 64-bit format.
 package guid
 
 import (
@@ -9,7 +11,10 @@ import (
 )
 
 var (
-	None      GUID      = Classic(0)
+	// Nil represents the zero value of a GUID.
+	Nil = GUID{0, 0}
+	// Oldest known revision, unchanged until NewFormat
+	OldFormat vsn.Build = 3368
 	NewFormat vsn.Build = 19027
 )
 
@@ -20,6 +25,33 @@ type GUID struct {
 
 func (g GUID) HighType() HighType {
 	return (HighType(g.Hi>>58) & 0x3F)
+}
+
+func (g GUID) HighTypeBuild(build vsn.Build) uint64 {
+	support := htSupport[build]
+	if support == nil {
+		if build >= NewFormat {
+			support = htSupport[NewFormat]
+		} else {
+			support = htSupport[OldFormat]
+		}
+	}
+
+	return support[g.HighType()]
+}
+
+func (g GUID) HiClassic() uint32 {
+	var data [8]byte
+	classic := g.Classic()
+	binary.LittleEndian.PutUint64(data[:], classic)
+	return binary.LittleEndian.Uint32(data[4:])
+}
+
+func (g GUID) LoClassic() uint32 {
+	var data [8]byte
+	classic := g.Classic()
+	binary.LittleEndian.PutUint64(data[:], classic)
+	return binary.LittleEndian.Uint32(data[:4])
 }
 
 func (g GUID) RealmID() uint32 {
@@ -116,9 +148,24 @@ func encodeMasked64(value uint64) (uint8, []byte) {
 	return bitMask, packGUID[:size]
 }
 
+// EncodePacked GUIDs are encoded in a couple ways. 64-bit GUIDs can be encoded plainly as an 8-byte field,
+// or in the "packed" format, a very simple compression mechanism.
+// The packed format is a 8-bit mask value, followed by up to 8 bytes.
+// If a bit n is true in the mask, it means that there is a byte that follows it at that position.
+// If bit n is false, there is no byte that follows it and its decoded byte should be zero.
+// Example (3 bytes):
+//   byte(01000010) + byte(31) + byte(36)
+// Is decoded as (8 bytes):
+//  [8]byte{0, 31, 0, 0, 0, 0, 36, 0}
+//
+// The 128-bit format uses the exact same packing scheme, just with a 16-bit mask and up to 16 bytes following it.
 func (g GUID) EncodePacked(version vsn.Build, w io.Writer) {
 	switch {
+	// Packing is not enabled in alpha
+	case version.RemovedIn(vsn.V1_12_1):
+		g.EncodeUnpacked(version, w)
 	case version < NewFormat:
+		// Resolve to earlier format
 		mask, bytes := encodeMasked64(g.Classic())
 		w.Write([]byte{mask})
 		if mask > 0 {
@@ -127,6 +174,7 @@ func (g GUID) EncodePacked(version vsn.Build, w io.Writer) {
 	default:
 		loMask, loBytes := encodeMasked64(g.Lo)
 		hiMask, hiBytes := encodeMasked64(g.Hi)
+		// 16-bit mask
 		w.Write([]byte{loMask, hiMask})
 		w.Write(loBytes)
 		w.Write(hiBytes)
@@ -134,18 +182,18 @@ func (g GUID) EncodePacked(version vsn.Build, w io.Writer) {
 }
 
 func (g GUID) Classic() uint64 {
-	highTypeClassic := htSupport[12340][g.HighType()]
+	highTypeClassic := htSupport[OldFormat][g.HighType()]
 	return (highTypeClassic << 48) | g.Lo
 }
 
 func (g GUID) EncodeUnpacked(version vsn.Build, w io.Writer) {
 	switch {
-	case version <= 12340:
+	case version < NewFormat:
 		e := make([]byte, 8)
 		binary.LittleEndian.PutUint64(e, g.Classic())
 		w.Write(e)
 	default:
-		panic(fmt.Errorf("update: can't encode this as packed in version %d", version))
+		panic(fmt.Errorf("update: can't encode GUID in unpacked format in version %d", version))
 	}
 }
 

@@ -8,9 +8,9 @@ import (
 	chalv1 "github.com/superp00t/gophercraft/bnet/bgs/protocol/challenge/v1"
 )
 
-func (s *Listener) DoVerifyWebCredentials(conn *Conn, token uint32, args *v1.VerifyWebCredentialsRequest) {
+// func (s *Listener) DoVerifyWebCredentials(conn *Conn, token uint32, args *v1.VerifyWebCredentialsRequest) {
 
-}
+// }
 
 func (s *Listener) Logon(conn *Conn, token uint32, args *v1.LogonRequest) {
 	if args.GetProgram() != "WoW" {
@@ -24,6 +24,9 @@ func (s *Listener) Logon(conn *Conn, token uint32, args *v1.LogonRequest) {
 		})
 		return
 	}
+
+	conn.locale = args.GetLocale()
+	conn.platform = args.GetPlatform()
 
 	go func() {
 		t := "web_auth_url"
@@ -79,6 +82,8 @@ func (s *Listener) VerifyWebCredentials(conn *Conn, token uint32, args *v1.Verif
 		})
 
 		conn.SendResponseCode(token, ERROR_OK)
+		conn.Close() // We want to show the invalid code, however NOT closing the connection causes the Login button to be greyed out.
+		// "you have been disconnected"
 		return
 	}
 
@@ -86,18 +91,32 @@ func (s *Listener) VerifyWebCredentials(conn *Conn, token uint32, args *v1.Verif
 
 	sessionKey := etc.NewBuffer().WriteRandom(64).Bytes()
 
-	accID := s.Backend.AccountID(us)
+	acc, gameAccounts, err := s.Backend.GetAccount(us)
+	if err != nil {
+		panic(err)
+	}
 
 	lr := &v1.LogonResult{
 		ErrorCode: u32p(0),
 		AccountId: &protocol.EntityId{
-			Low:  u64p(uint64(accID)),
+			Low:  u64p(uint64(acc.ID)),
 			High: u64p(uint64(0x100000000000000)),
 		},
 		SessionKey: sessionKey,
-		GameAccountId: []*protocol.EntityId{
-			{Low: u64p(1), High: u64p(0x200000200576F57)},
-		},
+	}
+
+	highEntityID := uint64(0x200000200576F57)
+
+	for _, v := range gameAccounts {
+		lr.GameAccountId = append(lr.GameAccountId, &protocol.EntityId{
+			Low:  &v.ID,
+			High: &highEntityID,
+		})
+	}
+
+	// Default to zero. TODO: figure out how to trigger the game account selection menu
+	if len(gameAccounts) > 0 {
+		conn.gameAccountName = gameAccounts[0].Name
 	}
 
 	conn.authed = true

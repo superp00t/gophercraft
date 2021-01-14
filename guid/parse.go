@@ -10,7 +10,9 @@ import (
 	"github.com/superp00t/gophercraft/vsn"
 )
 
-var Nil = GUID{0, 0}
+func isRealmID(hiBits uint64) bool {
+	return (hiBits>>4)&0xF == 0 && hiBits != 0x4000
+}
 
 func Classic(u64 uint64) GUID {
 	if u64 == 0 {
@@ -21,11 +23,21 @@ func Classic(u64 uint64) GUID {
 
 	realHt := Null
 
-	for ht, mask := range htSupport[12340] {
+	for ht, mask := range htSupport[OldFormat] {
 		if hiBits == mask {
 			realHt = ht
 		}
 	}
+
+	// Some servers use the server ID as a GUID high type.
+	// This code is included for compatibility, this convention should not be used in Gophercraft.
+	if realHt == Null {
+		if isRealmID(hiBits) {
+			return RealmSpecific(Player, uint64(hiBits>>8)&0xFF, u64&0xFFFFFFFFFFFF)
+		}
+	}
+
+	// Todo: extract entry information from old formats
 
 	g := GUID{}
 	g.Hi = uint64(realHt) << 58
@@ -35,7 +47,7 @@ func Classic(u64 uint64) GUID {
 
 func DecodePacked(version vsn.Build, reader io.Reader) (GUID, error) {
 	switch {
-	case version <= 12340:
+	case version < NewFormat:
 		u64 := DecodePacked64(reader)
 		fixed := Classic(u64)
 		return fixed, nil
@@ -47,7 +59,7 @@ func DecodePacked(version vsn.Build, reader io.Reader) (GUID, error) {
 
 func DecodeUnpacked(version vsn.Build, reader io.Reader) (GUID, error) {
 	switch {
-	case version <= 12340:
+	case version < NewFormat:
 		var bytes [8]byte
 		reader.Read(bytes[:])
 		u := binary.LittleEndian.Uint64(bytes[:])

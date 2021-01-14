@@ -54,7 +54,7 @@ const (
 	Cast             HighType = 47
 	ClientConnection HighType = 48
 	// virtual gophercraft codes for back compatibility
-	Mo_Transport HighType = 0x5000
-
-	Count HighType = 49
+	Mo_Transport HighType = 60
+	Instance     HighType = 61
+	Group        HighType = 62
 )

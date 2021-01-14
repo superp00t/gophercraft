@@ -9,7 +9,7 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/bnet/login"
-	"github.com/superp00t/gophercraft/srp"
+	"github.com/superp00t/gophercraft/crypto/srp"
 )
 
 func formInput(inputID, aType, label string, maxLength uint32) *login.FormInput {
@@ -82,8 +82,8 @@ func (lst *Listener) HandleLoginPost(rw http.ResponseWriter, r *http.Request) {
 		LoginTicket: &fakeTicket,
 	}
 
-	acc := lst.Backend.GetAccount(username)
-	if acc == nil {
+	acc, _, err := lst.Backend.GetAccount(username)
+	if err != nil {
 		sendResult(rw, invalidResult)
 		return
 	}

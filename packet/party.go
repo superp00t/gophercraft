@@ -65,15 +65,32 @@ const (
 	PartyOK PartyResult = iota
 	PartyBadPlayerName
 	PartyTargetNotInGroup
+	PartyTargetNotInInstance
 	PartyGroupFull
 	PartyAlreadyInGroup
 	PartyNotInGroup
 	PartyNotLeader
 	PartyWrongFaction
 	PartyIgnoringYou
+	PartyInviteRestricted
+	PartyLFGPending
 )
 
 var PartyResultDescriptors = map[vsn.Build]map[PartyResult]uint32{
+	3368: {
+		PartyOK:                  0,
+		PartyBadPlayerName:       1,
+		PartyTargetNotInGroup:    2,
+		PartyTargetNotInInstance: 3,
+		PartyGroupFull:           4,
+		PartyAlreadyInGroup:      5,
+		PartyNotInGroup:          6,
+		PartyNotLeader:           7,
+		PartyWrongFaction:        8,
+		PartyIgnoringYou:         9,
+		PartyInviteRestricted:    13,
+	},
+
 	5875: {
 		PartyOK:               0,
 		PartyBadPlayerName:    1,
@@ -84,6 +101,21 @@ var PartyResultDescriptors = map[vsn.Build]map[PartyResult]uint32{
 		PartyNotLeader:        6,
 		PartyWrongFaction:     7,
 		PartyIgnoringYou:      8,
+	},
+
+	8606: {
+		PartyOK:                  0,
+		PartyBadPlayerName:       1,
+		PartyTargetNotInGroup:    2,
+		PartyTargetNotInInstance: 3,
+		PartyGroupFull:           4,
+		PartyAlreadyInGroup:      5,
+		PartyNotInGroup:          6,
+		PartyNotLeader:           7,
+		PartyWrongFaction:        8,
+		PartyIgnoringYou:         9,
+		PartyLFGPending:          12,
+		PartyInviteRestricted:    13,
 	},
 }
 

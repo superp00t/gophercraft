@@ -1,0 +1,2341 @@
+(*update.CreateBlock)(0xc000005f80)({
+ BlockType: (update.BlockType) SpawnObject,
+ ObjectType: (guid.TypeID) TypePlayer,
+ MovementBlock: (*update.MovementBlock)(0xc000164700)({
+  ID: (guid.GUID) Nil,
+  UpdateFlags: (update.UpdateFlags) UpdateFlagSelf|UpdateFlagHighGUID|UpdateFlagLiving|UpdateFlagHasPosition,
+  Info: (*update.MovementInfo)(0xc0001113b0)({
+   Flags: (update.MoveFlags) MoveFlagNone,
+   Time: (uint32) 509977491,
+   Position: (update.Position) {
+    Point3: (update.Point3) {
+     X: (float32) -2352.01,
+     Y: (float32) -1659.67,
+     Z: (float32) 82.65
+    },
+    O: (float32) 4.68486
+   },
+   TransportGUID: (guid.GUID) Nil,
+   TransportPosition: (update.Position) {
+    Point3: (update.Point3) {
+     X: (float32) 0,
+     Y: (float32) 0,
+     Z: (float32) 0
+    },
+    O: (float32) 0
+   },
+   TransportTime: (uint32) 0,
+   TransportSeat: (int8) 0,
+   TransportInterpolateTime: (uint32) 0,
+   Pitch: (float32) 0,
+   FallTime: (uint32) 0,
+   FallVelocity: (float32) 0,
+   FallSin: (float32) 0,
+   FallCos: (float32) 0,
+   FallXYSpeed: (float32) 0,
+   SplineElevation: (float32) 0
+  }),
+  Speeds: (update.Speeds) (len=8) {
+   (update.SpeedType) Walk: (float32) 2.5,
+   (update.SpeedType) Run: (float32) 14,
+   (update.SpeedType) RunBackward: (float32) 4.5,
+   (update.SpeedType) Swim: (float32) 4.722222,
+   (update.SpeedType) SwimBackward: (float32) 2.5,
+   (update.SpeedType) Flight: (float32) 7,
+   (update.SpeedType) FlightBackward: (float32) 4.5,
+   (update.SpeedType) Turn: (float32) 3.141594
+  },
+  Spline: (*update.MoveSpline)(<nil>),
+  Position: (update.Position) {
+   Point3: (update.Point3) {
+    X: (float32) 0,
+    Y: (float32) 0,
+    Z: (float32) 0
+   },
+   O: (float32) 0
+  },
+  All: (uint32) 0,
+  LowGUID: (uint32) 0,
+  HighGUID: (uint32) 0,
+  Victim: (guid.GUID) Nil,
+  WorldTime: (uint32) 0,
+  VehicleID: (uint32) 0,
+  VehicleRotation: (float32) 0,
+  Rotation: (update.Quaternion) {
+   X: (float32) 0,
+   Y: (float32) 0,
+   Z: (float32) 0,
+   W: (float32) 0
+  }
+ }),
+ ValuesBlock: (*update.ValuesBlock)(0xc0000c9cc0)({
+  Mutex: (sync.Mutex) {
+   state: (int32) 0,
+   sema: (uint32) 0
+  },
+  TypeMask: (guid.TypeMask) Nil,
+  Descriptor: (*update.Descriptor)(<nil>),
+  ChangeMask: (*update.Bitmask)(0xc000005fe0)((len=50 cap=50) (len: 50) 0x0000 0x0002 0x0004 0x0016 0x001A 0x001C 0x001E 0x0020 0x0022 0x0023 0x0024 0x002E 0x0030 0x0031 0x0068 0x0076 0x0093 0x0094 0x0095 0x0098 0x0099 0x009A 0x009B 0x009C 0x00A6 0x00AB 0x00AC 0x00AD 0x00AE 0x00AF 0x00BA 0x00BD 0x00C4 0x00D0 0x00D1 0x00D2 0x00D5 0x00D8 0x00D9 0x00EF 0x00F0 0x00F1 0x02B0 0x02B1 0x02B2 0x02B3 0x02B4 0x02B5 0x02B6 0x02B7 0x02B8 0x02B9 0x02BA 0x02BB 0x039F 0x03A0 0x03A1 0x03A3 0x03A4 0x03A6 0x03A7 0x03A9 0x03AA 0x03AC 0x03AD 0x03AF 0x03B0 0x03B2 0x03B3 0x03B5 0x03B6 0x03B8 0x03B9 0x03BB 0x03BC 0x03BE 0x03BF 0x03C1 0x03C2 0x03C4 0x03C5 0x03C7 0x03C8 0x03CA 0x03CB 0x03CD 0x03CE 0x03D0 0x03D1 0x03D3 0x03D4 0x03D6 0x03D7 0x03D9 0x03DA 0x03DC 0x03DD 0x03DF 0x03E0 0x03E2 0x03E3 0x03E5 0x03E6 0x03E8 0x03E9 0x03EB 0x03EC 0x0520 0x0521 0x0524 0x0525 0x0526 0x0529 0x0533 0x0534 0x0535 0x0536 0x0537 0x0538 0x0539 0x053A 0x053B 0x053C 0x053D 0x053E 0x053F 0x0540 0x0541 0x0542 0x0543 0x0544 0x0545 0x0546 0x0547 0x0548 0x0549 0x054A 0x054B 0x054C 0x054D 0x054E 0x054F 0x0550 0x0551 0x0552 0x0553 0x0554 0x0555 0x0556 0x0557 0x0558 0x0559 0x055A 0x055B 0x055C 0x055D 0x055E 0x055F 0x0560 0x0561 0x0562 0x0563 0x0564 0x0565 0x0566 0x0567 0x0568 0x0569 0x056A 0x056B 0x056C 0x056D 0x056E 0x056F 0x0570 0x0571 0x0572 0x0573 0x05B5 0x05C4 0x05C5 0x05C6 0x05C7 0x05C8 0x05C9 0x05CA 0x05EF 0x061E),
+  StorageDescriptor: (reflect.Value) <*d8606.PlayerDescriptor Value>
+ })
+})
+
+
+(*d8606.PlayerDescriptor)(0xc000242000)({
+ ObjectData: (d8606.ObjectData) {
+  GUID: (guid.GUID) Player-0-00284F3F,
+  Type: (uint32) 25,
+  Entry: (uint32) 0,
+  ScaleX: (float32) 1,
+  ChunkPad: (update.ChunkPad) {
+  }
+ },
+ UnitData: (d8606.UnitData) {
+  Charm: (guid.GUID) Nil,
+  Summon: (guid.GUID) Nil,
+  CharmedBy: (guid.GUID) Nil,
+  SummonedBy: (guid.GUID) Nil,
+  CreatedBy: (guid.GUID) Nil,
+  Target: (guid.GUID) Nil,
+  Persuaded: (guid.GUID) Nil,
+  ChannelObject: (guid.GUID) Nil,
+  Health: (uint32) 5894,
+  Mana: (uint32) 0,
+  Rage: (uint32) 0,
+  Focus: (uint32) 0,
+  Energy: (uint32) 100,
+  Happiness: (uint32) 0,
+  MaxHealth: (uint32) 5894,
+  MaxMana: (uint32) 0,
+  MaxRage: (uint32) 1000,
+  MaxFocus: (uint32) 0,
+  MaxEnergy: (uint32) 100,
+  MaxHappiness: (uint32) 0,
+  Level: (uint32) 70,
+  FactionTemplate: (uint32) 6,
+  Race: (uint8) 6,
+  Class: (uint8) 1,
+  Gender: (uint8) 1,
+  Power: (uint8) 1,
+  VirtualItemSlotIDs: ([3]uint32) (len=3 cap=3) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  VirtualItemInfos: ([6]uint32) (len=6 cap=6) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  ServerControlled: (bool) false,
+  NonAttackable: (bool) false,
+  RemoveClientControl: (bool) false,
+  PlayerControlled: (bool) true,
+  Rename: (bool) false,
+  PetAbandon: (bool) false,
+  Unk6: (bool) false,
+  Unk7: (bool) false,
+  OOCNotAttackable: (bool) false,
+  Passive: (bool) false,
+  Unk10: (bool) false,
+  Unk11: (bool) false,
+  PVP: (bool) false,
+  IsSilenced: (bool) false,
+  IsPersuaded: (bool) false,
+  Swimming: (bool) false,
+  RemoveAttackIcon: (bool) false,
+  IsPacified: (bool) false,
+  IsStunned: (bool) false,
+  InCombat: (bool) false,
+  InTaxiFlight: (bool) false,
+  Disarmed: (bool) false,
+  Confused: (bool) false,
+  Fleeing: (bool) false,
+  Possessed: (bool) false,
+  NotSelectable: (bool) false,
+  Skinnable: (bool) false,
+  AurasVisible: (bool) true,
+  Unk28: (bool) false,
+  Unk29: (bool) false,
+  Sheathe: (bool) false,
+  NoKillReward: (bool) false,
+  FeignDeath: (bool) false,
+  HideBodyArmor: (bool) false,
+  IgnoreReputation: (bool) false,
+  ComprehendLanguage: (bool) false,
+  Cloned: (bool) false,
+  UnitFlagUnk5: (bool) false,
+  ForceMove: (bool) false,
+  DisarmOffhand: (bool) false,
+  UnitFlagUnk8: (bool) false,
+  UnitFlagUnk9: (bool) false,
+  DisarmRanged: (bool) false,
+  RegeneratePower: (bool) false,
+  SpellClickInGroup: (bool) false,
+  SpellClickDisabled: (bool) false,
+  InteractAnyReaction: (bool) false,
+  PadUnitFlags2: (update.ChunkPad) {
+  },
+  Auras: ([56]uint32) (len=56 cap=56) {
+   (uint32) 23251,
+   (uint32) 2457,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  AuraFlags: ([56]uint8) (len=56 cap=56) {
+   00000000  1f 1f 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+   00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+   00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+   00000030  00 00 00 00 00 00 00 00                           |........|
+  },
+  AuraLevels: ([56]uint8) (len=56 cap=56) {
+   00000000  46 46 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |FF..............|
+   00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+   00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+   00000030  00 00 00 00 00 00 00 00                           |........|
+  },
+  AuraApplications: ([56]uint8) (len=56 cap=56) {
+   00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+   00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+   00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+   00000030  00 00 00 00 00 00 00 00                           |........|
+  },
+  AuraState: (uint32) 0,
+  BaseAttackTime: (uint32) 2000,
+  OffhandAttackTime: (uint32) 2000,
+  RangedAttackTime: (uint32) 2000,
+  BoundingRadius: (float32) 0,
+  CombatReach: (float32) 0,
+  DisplayID: (uint32) 60,
+  NativeDisplayID: (uint32) 60,
+  MountDisplayID: (uint32) 14575,
+  MinDamage: (float32) 71,
+  MaxDamage: (float32) 72,
+  MinOffhandDamage: (uint32) 0,
+  MaxOffhandDamage: (uint32) 0,
+  StandState: (uint8) 0,
+  LoyaltyLevel: (uint8) 0,
+  ShapeshiftForm: (uint8) 0,
+  StandMiscFlags: (uint8) 0,
+  PetNumber: (uint32) 0,
+  PetNameTimestamp: (uint32) 0,
+  PetExperience: (uint32) 0,
+  PetNextLevelExp: (uint32) 0,
+  Lootable: (bool) false,
+  TrackUnit: (bool) false,
+  Tapped: (bool) false,
+  TappedByPlayer: (bool) false,
+  SpecialInfo: (bool) false,
+  VisuallyDead: (bool) false,
+  ReferAFriend: (bool) false,
+  TappedByAllThreatList: (bool) false,
+  EndUnitDynamicFlags: (update.ChunkPad) {
+  },
+  ChannelSpell: (uint32) 0,
+  ModCastSpeed: (float32) 1,
+  CreatedBySpell: (uint32) 0,
+  Gossip: (bool) false,
+  QuestGiver: (bool) false,
+  Vendor: (bool) false,
+  FlightMaster: (bool) false,
+  Trainer: (bool) false,
+  SpiritHealer: (bool) false,
+  SpiritGuide: (bool) false,
+  Innkeeper: (bool) false,
+  Banker: (bool) false,
+  Petitioner: (bool) false,
+  TabardDesigner: (bool) false,
+  BattleMaster: (bool) false,
+  Auctioneer: (bool) false,
+  StableMaster: (bool) false,
+  Repairer: (bool) false,
+  EndNPCFlags: (update.ChunkPad) {
+  },
+  NPCEmoteState: (uint32) 0,
+  TrainingPoints: (uint32) 0,
+  Stats: ([5]uint32) (len=5 cap=5) {
+   (uint32) 150,
+   (uint32) 91,
+   (uint32) 135,
+   (uint32) 28,
+   (uint32) 53
+  },
+  UnitPosStats: ([5]uint32) (len=5 cap=5) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  UnitNegStats: ([5]uint32) (len=5 cap=5) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  Resistances: ([7]uint32) (len=7 cap=7) {
+   (uint32) 182,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 10,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  UnitResistanceBuffModsPositive: ([7]uint32) (len=7 cap=7) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 10,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  UnitResistanceBuffModsNegative: ([7]uint32) (len=7 cap=7) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  BaseMana: (uint32) 0,
+  BaseHealth: (uint32) 4444,
+  SheathState: (uint8) 0,
+  AuraByteFlags: (uint8) 40,
+  PetRename: (uint8) 0,
+  PetShapeshiftForm: (uint8) 17,
+  AttackPower: (int32) 490,
+  AttackPowerMods: (int32) 0,
+  AttackPowerMultiplier: (float32) 0,
+  RangedAttackPower: (int32) 151,
+  RangedAttackPowerMods: (int32) 0,
+  RangedAttackPowerMultiplier: (float32) 0,
+  MinRangedDamage: (float32) 22.571428,
+  MaxRangedDamage: (float32) 23.571428,
+  PowerCostModifier: ([7]uint32) (len=7 cap=7) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  PowerCostMultiplier: ([7]float32) (len=7 cap=7) {
+   (float32) 0,
+   (float32) 0,
+   (float32) 0,
+   (float32) 0,
+   (float32) 0,
+   (float32) 0,
+   (float32) 0
+  },
+  MaxHealthModifier: (float32) 0,
+  ChunkPad: (update.ChunkPad) {
+  }
+ },
+ PlayerData: (d8606.PlayerData) {
+  DuelArbiter: (guid.GUID) Nil,
+  GroupLeader: (bool) false,
+  AFK: (bool) false,
+  DND: (bool) false,
+  GM: (bool) false,
+  Ghost: (bool) false,
+  Resting: (bool) false,
+  VoiceChat: (bool) false,
+  FFAPVP: (bool) false,
+  ContestedPVP: (bool) false,
+  PVPDesired: (bool) false,
+  HideHelm: (bool) false,
+  HideCloak: (bool) false,
+  PlayedLongTime: (bool) false,
+  PlayedTooLong: (bool) false,
+  OutOfBounds: (bool) false,
+  GhostEffect: (bool) false,
+  Sanctuary: (bool) false,
+  TaxiBenchmark: (bool) false,
+  PVPTimer: (bool) false,
+  PadPlayerFlags: (update.ChunkPad) {
+  },
+  GuildID: (uint32) 0,
+  GuildRank: (uint32) 0,
+  Skin: (uint8) 2,
+  Face: (uint8) 3,
+  HairStyle: (uint8) 6,
+  HairColor: (uint8) 1,
+  FacialHair: (uint8) 4,
+  RestBits: (uint8) 0,
+  BankBagSlotCount: (uint8) 7,
+  RestState: (uint8) 2,
+  PlayerGender: (uint8) 1,
+  GenderUnk: (uint8) 0,
+  Drunkness: (uint8) 0,
+  PVPRank: (uint8) 0,
+  DuelTeam: (uint32) 0,
+  GuildTimestamp: (uint32) 0,
+  QuestLog: ([25]struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) (len=25 cap=25) {
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   },
+   (struct { QuestID uint32; CountState uint32; QuestUnk uint32; Time uint32 }) {
+    QuestID: (uint32) 0,
+    CountState: (uint32) 0,
+    QuestUnk: (uint32) 0,
+    Time: (uint32) 0
+   }
+  },
+  VisibleItems: ([19]struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) (len=19 cap=19) {
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   },
+   (struct { Creator guid.GUID; Entry uint32; Enchantments [11]uint32; Properties uint32; update.ChunkPad }) {
+    Creator: (guid.GUID) Nil,
+    Entry: (uint32) 0,
+    Enchantments: ([11]uint32) (len=11 cap=11) {
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0,
+     (uint32) 0
+    },
+    Properties: (uint32) 0,
+    ChunkPad: (update.ChunkPad) {
+    }
+   }
+  },
+  ChosenTitle: (uint32) 0,
+  StartSlotPad: (update.ChunkPad) {
+  },
+  InventorySlots: ([39]guid.GUID) (len=39 cap=39) {
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Item-0-11B416F2,
+   (guid.GUID) Item-0-11B416F4,
+   (guid.GUID) Item-0-11B416F6,
+   (guid.GUID) Item-0-11B416F8,
+   (guid.GUID) Item-0-11B41B3F,
+   (guid.GUID) Item-0-11B41B48,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil
+  },
+  BankSlots: ([28]guid.GUID) (len=28 cap=28) {
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil
+  },
+  BankBagSlots: ([7]guid.GUID) (len=7 cap=7) {
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil
+  },
+  VendorBuybackSlots: ([12]guid.GUID) (len=12 cap=12) {
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil
+  },
+  KeyringSlots: ([32]guid.GUID) (len=32 cap=32) {
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil
+  },
+  VanityPetSlots: ([18]guid.GUID) (len=18 cap=18) {
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil,
+   (guid.GUID) Nil
+  },
+  FarSight: (guid.GUID) Nil,
+  KnownTitles: ([2]uint32) (len=2 cap=2) {
+   (uint32) 0,
+   (uint32) 0
+  },
+  XP: (uint32) 0,
+  NextLevelXP: (uint32) 779700,
+  SkillInfos: ([128]struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) (len=128 cap=128) {
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 26,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 1,
+    SkillCap: (uint16) 1,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 44,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 45,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 46,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 54,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 55,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 95,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 109,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 300,
+    SkillCap: (uint16) 300,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 115,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 300,
+    SkillCap: (uint16) 300,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 118,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 129,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 375,
+    SkillCap: (uint16) 375,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 136,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 160,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 162,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 172,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 173,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 176,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 226,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 229,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 350,
+    SkillCap: (uint16) 350,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 293,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 1,
+    SkillCap: (uint16) 1,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 413,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 1,
+    SkillCap: (uint16) 1,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 414,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 1,
+    SkillCap: (uint16) 1,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 415,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 1,
+    SkillCap: (uint16) 1,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 433,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 1,
+    SkillCap: (uint16) 1,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 473,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 1,
+    SkillCap: (uint16) 1,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 762,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 300,
+    SkillCap: (uint16) 300,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   },
+   (struct { ID uint16; Step uint16; SkillLevel uint16; SkillCap uint16; Bonus uint32 }) {
+    ID: (uint16) 0,
+    Step: (uint16) 0,
+    SkillLevel: (uint16) 0,
+    SkillCap: (uint16) 0,
+    Bonus: (uint32) 0
+   }
+  },
+  CharacterPoints: ([2]uint32) (len=2 cap=2) {
+   (uint32) 61,
+   (uint32) 2
+  },
+  TrackCreatures: (uint32) 0,
+  TrackResources: (uint32) 0,
+  BlockPercentage: (float32) 5,
+  DodgePercentage: (float32) 3.7534573,
+  ParryPercentage: (float32) 5,
+  Expertise: (uint32) 0,
+  OffhandExpertise: (uint32) 0,
+  CritPercentage: (float32) 3.8973,
+  RangedCritPercentage: (float32) 0,
+  OffhandCritPercentage: (float32) 0,
+  SpellCritPercentage: ([7]float32) (len=7 cap=7) {
+   (float32) 0,
+   (float32) 0,
+   (float32) 0,
+   (float32) 0,
+   (float32) 0,
+   (float32) 0,
+   (float32) 0
+  },
+  ShieldBlock: (uint32) 6,
+  ExploredZones: ([128]uint32) (len=128 cap=128) {
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 4294967295,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  RestStateExperience: (uint32) 0,
+  Coinage: (int32) 1000000000,
+  ModDamageDonePositive: ([7]uint32) (len=7 cap=7) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  ModDamageDoneNegative: ([7]uint32) (len=7 cap=7) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  ModDamageDonePercentage: ([7]float32) (len=7 cap=7) {
+   (float32) 1,
+   (float32) 1,
+   (float32) 1,
+   (float32) 1,
+   (float32) 1,
+   (float32) 1,
+   (float32) 1
+  },
+  ModHealingDonePos: (uint32) 0,
+  ModTargetResistance: (uint32) 0,
+  ModTargetPhysicalResistance: (uint32) 0,
+  PlayerFieldBytes0UnkBit0: (update.BitPad) {
+  },
+  TrackStealthed: (bool) false,
+  DisplaySpiritAutoReleaseTimer: (bool) false,
+  HideSpiritReleaseWindow: (bool) false,
+  RAFGrantableLevel: (uint8) 0,
+  ActionBarToggles: (uint8) 0,
+  LifetimeMaxPVPRank: (uint8) 0,
+  AmmoID: (uint32) 0,
+  SelfResSpell: (uint32) 0,
+  PVPMedals: (uint32) 0,
+  BuybackPrices: ([12]uint32) (len=12 cap=12) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  BuybackTimestamps: ([12]uint32) (len=12 cap=12) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  Kills: (uint32) 0,
+  TodayKills: (uint32) 0,
+  YesterdayKills: (uint32) 0,
+  LifetimeHonorableKills: (uint32) 0,
+  HonorRankPoints: (uint8) 0,
+  DetectionFlagUnk: (bool) false,
+  DetectAmore0: (bool) false,
+  DetectAmore1: (bool) false,
+  DetectAmore2: (bool) false,
+  DetectAmore3: (bool) false,
+  DetectStealth: (bool) false,
+  DetectInvisibilityGlow: (bool) false,
+  WatchedFactionIndex: (int32) -1,
+  CombatRatings: ([24]uint32) (len=24 cap=24) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  ArenaTeamInfo: ([18]uint32) (len=18 cap=18) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  HonorCurrency: (uint32) 0,
+  ArenaCurrency: (uint32) 0,
+  ModManaRegen: (float32) 0,
+  ModManaRegenInterrupt: (float32) 0,
+  MaxLevel: (uint32) 70,
+  DailyQuests: ([25]uint32) (len=25 cap=25) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  }
+ }
+})

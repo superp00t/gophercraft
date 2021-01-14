@@ -126,7 +126,6 @@ h1, h2 {
 }
 
 .realmlist {
-  width: 393px;
   margin: auto;
   margin-top: 15px;
   text-align: left;
@@ -165,7 +164,6 @@ h1, h2 {
   display: block;
   box-shadow: inset 0 0 1px rgb(255, 219, 179);
   margin: auto;
-  width: 393px;
   margin-top: 10px;
 }
 

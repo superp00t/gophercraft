@@ -57,25 +57,28 @@ func _() {
 	_ = x[ClientSession-46]
 	_ = x[Cast-47]
 	_ = x[ClientConnection-48]
-	_ = x[Mo_Transport-20480]
-	_ = x[Count-49]
+	_ = x[Mo_Transport-60]
+	_ = x[Instance-61]
+	_ = x[Group-62]
 }
 
 const (
-	_HighType_name_0 = "NullUniqPlayerItemWorldTransactionStaticDoorTransportConversationCreatureVehiclePetGameObjectDynamicObjectAreaTriggerCorpseLootObjectSceneObjectScenarioAIGroupDynamicDoorClientActorVignetteCallForHelpAIResourceAILockAILockTicketChatChannelPartyGuildWowAccountBNetAccountGMTaskMobileSessionRaidGroupSpellMailWebObjLFGObjectLFGListUserRouterPVPQueueGroupUserClientPetBattleUniqUserClientBattlePetCommerceObjClientSessionCastClientConnectionCount"
-	_HighType_name_1 = "Mo_Transport"
+	_HighType_name_0 = "NullUniqPlayerItemWorldTransactionStaticDoorTransportConversationCreatureVehiclePetGameObjectDynamicObjectAreaTriggerCorpseLootObjectSceneObjectScenarioAIGroupDynamicDoorClientActorVignetteCallForHelpAIResourceAILockAILockTicketChatChannelPartyGuildWowAccountBNetAccountGMTaskMobileSessionRaidGroupSpellMailWebObjLFGObjectLFGListUserRouterPVPQueueGroupUserClientPetBattleUniqUserClientBattlePetCommerceObjClientSessionCastClientConnection"
+	_HighType_name_1 = "Mo_TransportInstanceGroup"
 )
 
 var (
-	_HighType_index_0 = [...]uint16{0, 4, 8, 14, 18, 34, 44, 53, 65, 73, 80, 83, 93, 106, 117, 123, 133, 144, 152, 159, 170, 181, 189, 200, 210, 216, 228, 239, 244, 249, 259, 270, 276, 289, 298, 303, 307, 313, 322, 329, 339, 352, 362, 371, 385, 394, 405, 418, 422, 438, 443}
+	_HighType_index_0 = [...]uint16{0, 4, 8, 14, 18, 34, 44, 53, 65, 73, 80, 83, 93, 106, 117, 123, 133, 144, 152, 159, 170, 181, 189, 200, 210, 216, 228, 239, 244, 249, 259, 270, 276, 289, 298, 303, 307, 313, 322, 329, 339, 352, 362, 371, 385, 394, 405, 418, 422, 438}
+	_HighType_index_1 = [...]uint8{0, 12, 20, 25}
 )
 
 func (i HighType) String() string {
 	switch {
-	case 0 <= i && i <= 49:
+	case 0 <= i && i <= 48:
 		return _HighType_name_0[_HighType_index_0[i]:_HighType_index_0[i+1]]
-	case i == 20480:
-		return _HighType_name_1
+	case 60 <= i && i <= 62:
+		i -= 60
+		return _HighType_name_1[_HighType_index_1[i]:_HighType_index_1[i+1]]
 	default:
 		return "HighType(" + strconv.FormatInt(int64(i), 10) + ")"
 	}

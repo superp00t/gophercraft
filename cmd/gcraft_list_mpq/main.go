@@ -6,6 +6,7 @@ import (
 
 	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/format/mpq"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 func main() {
@@ -15,6 +16,13 @@ func main() {
 	}
 
 	var fp = os.Args[1]
+
+	build, err := vsn.DetectGame(fp)
+	if err != nil {
+		yo.Fatal(err)
+	}
+
+	yo.Ok(build, "detected")
 
 	s, err := mpq.GetFiles(fp)
 	if err != nil {

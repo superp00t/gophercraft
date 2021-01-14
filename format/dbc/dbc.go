@@ -58,7 +58,6 @@ type FieldStruct struct {
 
 // DBC contains DBC/DB2 file metadata.
 type DBC struct {
-	Version         vsn.Build
 	Magic           MagicType
 	RecordCount     uint32
 	FieldCount      uint32
@@ -67,7 +66,7 @@ type DBC struct {
 
 	// DB2 only
 	TableHash            uint32
-	Build                uint32
+	Build                vsn.Build
 	TimestampLastWritten uint32
 	MinID, MaxID         uint32
 	Locale               uint32
@@ -104,7 +103,6 @@ func Open(game vsn.Build, path string) (*DBC, error) {
 func Decode(game vsn.Build, i *etc.Buffer) (*DBC, error) {
 	d := new(DBC)
 
-	d.Version = game
 	d.buf = i
 
 	d.Magic = magicMap[i.ReadFixedString(4)]
@@ -118,13 +116,14 @@ func Decode(game vsn.Build, i *etc.Buffer) (*DBC, error) {
 		d.FieldCount = i.ReadUint32()
 		d.RecordSize = i.ReadUint32()
 		d.StringBlockSize = i.ReadUint32()
+		d.Build = game
 	case WDB2:
 		d.RecordCount = i.ReadUint32()
 		d.FieldCount = i.ReadUint32()
 		d.RecordSize = i.ReadUint32()
 		d.StringBlockSize = i.ReadUint32()
 		d.TableHash = i.ReadUint32()
-		d.Build = i.ReadUint32()
+		d.Build = vsn.Build(i.ReadUint32())
 		d.TimestampLastWritten = i.ReadUint32()
 		d.MinID = i.ReadUint32()
 		d.MaxID = i.ReadUint32()
@@ -242,8 +241,10 @@ func (d *DBC) ParseRecords(out interface{}) error {
 		tp.tag = str
 		if ok {
 			tg := parseTag(str)
-			opts := tg.getValidOpts(int64(d.Version))
-			tp.opts = opts
+			tp.disabled, tp.opts = tg.getValidOpts(d.Build)
+			if tp.disabled {
+				fmt.Println(structType.Field(i).Name, "is disabled in", d.Build)
+			}
 
 			if tp.Type == Slice && tp.Length == 0 {
 				for _, v := range tp.opts {
@@ -254,7 +255,7 @@ func (d *DBC) ParseRecords(out interface{}) error {
 			}
 		} else {
 			if tp.Type == Slice {
-				return fmt.Errorf("dbc: supply (len:X) parameter to field tag if you want to use Go slices.")
+				return fmt.Errorf("dbc: %s: supply (len:X) parameter to field tag if you want to use Go slices.", dummyValue.Type().Field(i).Name)
 			}
 		}
 		recTypes[i] = tp
@@ -316,11 +317,11 @@ func (d *DBC) setField(fld reflect.Value, buf *etc.Buffer, tp *_fieldType) {
 	case String:
 		if tp.isLoc() {
 			ln := 0
-			if d.Version < 13164 {
+			if d.Build.RemovedIn(13164) {
 				ln = 9
 			}
 
-			if d.Version >= 6692 {
+			if d.Build.AddedIn(6692) {
 				ln = 17
 			}
 
@@ -356,12 +357,19 @@ func (d *DBC) setField(fld reflect.Value, buf *etc.Buffer, tp *_fieldType) {
 			d.setField(fld.Index(ai), buf, tp.ArrayType)
 		}
 	case Slice:
-		if tp.Length == 0 {
-			panic("no")
-		}
-		fld.Set(reflect.MakeSlice(fld.Type(), tp.Length, tp.Length))
+		slice := reflect.MakeSlice(fld.Type(), tp.Length, tp.Length)
 		for ai := 0; ai < tp.Length; ai++ {
-			d.setField(fld.Index(ai), buf, tp.ArrayType)
+			d.setField(slice.Index(ai), buf, tp.ArrayType)
+		}
+		any := false
+		for x := 0; x < slice.Len(); x++ {
+			val := slice.Index(x)
+			if !val.IsZero() {
+				any = true
+			}
+		}
+		if any {
+			fld.Set(slice)
 		}
 	}
 }

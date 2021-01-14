@@ -19,7 +19,6 @@ const AccountServiceHash = 0x62DA0891
 
 type AccountService interface {
 	ResolveAccount(*Conn, uint32, *v1.ResolveAccountRequest)
-	IsIgrAddress(*Conn, uint32, *v1.IsIgrAddressRequest)
 	Subscribe(*Conn, uint32, *v1.SubscriptionUpdateRequest)
 	Unsubscribe(*Conn, uint32, *v1.SubscriptionUpdateRequest)
 	GetAccountState(*Conn, uint32, *v1.GetAccountStateRequest)
@@ -41,13 +40,6 @@ func DispatchAccountService(conn *Conn, svc AccountService, token uint32, method
 			return err
 		}
 		svc.ResolveAccount(conn, token, &args)
-	case 15:
-		var args v1.IsIgrAddressRequest
-		err := proto.Unmarshal(data, &args)
-		if err != nil {
-			return err
-		}
-		svc.IsIgrAddress(conn, token, &args)
 	case 25:
 		var args v1.SubscriptionUpdateRequest
 		err := proto.Unmarshal(data, &args)
@@ -127,9 +119,6 @@ type EmptyAccountService struct{}
 func (e EmptyAccountService) ResolveAccount(conn *Conn, token uint32, args *v1.ResolveAccountRequest) {
 	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
 }
-func (e EmptyAccountService) IsIgrAddress(conn *Conn, token uint32, args *v1.IsIgrAddressRequest) {
-	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
-}
 func (e EmptyAccountService) Subscribe(conn *Conn, token uint32, args *v1.SubscriptionUpdateRequest) {
 	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
 }
@@ -175,17 +164,6 @@ func (c *Conn) AccountService_Request_ResolveAccount(args *v1.ResolveAccountRequ
 		return nil, err
 	}
 	return &out, nil
-}
-
-func (c *Conn) AccountService_Request_IsIgrAddress(args *v1.IsIgrAddressRequest) error {
-	header, _, err := c.Request(AccountServiceHash, 15, args)
-	if err != nil {
-		return err
-	}
-	if Status(header.GetStatus()) != ERROR_OK {
-		return fmt.Errorf("bnet: non-ok status 0x%08X", header.GetStatus())
-	}
-	return nil
 }
 
 func (c *Conn) AccountService_Request_Subscribe(args *v1.SubscriptionUpdateRequest) (*v1.SubscriptionUpdateResponse, error) {

@@ -31,7 +31,7 @@ type TypeMaskDescriptor map[TypeMask]uint32
 
 var (
 	TypeMaskDescriptors = map[vsn.Build]TypeMaskDescriptor{
-		5875: {
+		vsn.Alpha: {
 			TypeMaskObject:        0x0001,
 			TypeMaskItem:          0x0002,
 			TypeMaskContainer:     0x0004,
@@ -43,6 +43,12 @@ var (
 		},
 	}
 )
+
+func init() {
+	TypeMaskDescriptors[vsn.V1_12_1] = TypeMaskDescriptors[vsn.Alpha]
+	TypeMaskDescriptors[vsn.V2_4_3] = TypeMaskDescriptors[vsn.Alpha]
+	TypeMaskDescriptors[vsn.V3_3_5a] = TypeMaskDescriptors[vsn.Alpha]
+}
 
 func ResolveTypeMask(version vsn.Build, unresolvedTypeMask uint32) (TypeMask, error) {
 	td, ok := TypeMaskDescriptors[version]
@@ -79,6 +85,10 @@ func (t TypeMask) Resolve(version vsn.Build) (uint32, error) {
 }
 
 func (t TypeMask) String() string {
+	if t == 0 {
+		return "Nil"
+	}
+
 	var s []string
 	if t&TypeMaskObject != 0 {
 		s = append(s, "Object")

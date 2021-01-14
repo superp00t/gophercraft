@@ -25,13 +25,15 @@ const (
 	TypeAreaTrigger
 	TypeSceneObject
 	TypeConversation
+
+	TypeNPCText TypeID = 100
 )
 
 type TypeIDDescriptor map[TypeID]uint8
 
 var (
 	TypeIDDescriptors = map[vsn.Build]TypeIDDescriptor{
-		5875: {
+		vsn.Alpha: {
 			TypeObject:    0,
 			TypeItem:      1,
 			TypeContainer: 2,
@@ -44,6 +46,12 @@ var (
 		},
 	}
 )
+
+func init() {
+	TypeIDDescriptors[vsn.V1_12_1] = TypeIDDescriptors[vsn.Alpha]
+	TypeIDDescriptors[vsn.V2_4_3] = TypeIDDescriptors[vsn.Alpha]
+	TypeIDDescriptors[vsn.V3_3_5a] = TypeIDDescriptors[vsn.Alpha]
+}
 
 func DecodeTypeID(version vsn.Build, in io.Reader) (TypeID, error) {
 	desc, ok := TypeIDDescriptors[version]

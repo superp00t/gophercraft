@@ -1,6 +1,9 @@
 package update
 
-import "strings"
+import (
+	"reflect"
+	"strings"
+)
 
 type GameObjectFlags uint32
 
@@ -15,6 +18,19 @@ const (
 	GODamaged
 	GODestroyed
 )
+
+func (gof GameObjectFlags) EncodeWord() (string, error) {
+	return gof.String(), nil
+}
+
+func (gof GameObjectFlags) DecodeWord(out reflect.Value, word string) error {
+	flags, err := ParseGameObjectFlags(word)
+	if err != nil {
+		return err
+	}
+	out.Set(reflect.ValueOf(flags))
+	return nil
+}
 
 func (gof GameObjectFlags) String() string {
 	var s []string

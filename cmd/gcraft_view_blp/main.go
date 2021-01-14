@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"image/png"
-	"io/ioutil"
 	"os"
 	"os/exec"
 
@@ -13,16 +12,16 @@ import (
 )
 
 func viewBLP(path string) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
-	texture, err := blp.DecodeBLP(data)
+	defer data.Close()
+	img, err := blp.Decode(data)
 	if err != nil {
 		panic(err)
 	}
 
-	img := texture.Mipmap(0)
 	out := new(bytes.Buffer)
 	png.Encode(out, img)
 

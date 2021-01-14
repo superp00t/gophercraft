@@ -1,19 +1,16 @@
-- Implement raid/party groups
-- implement whisper
-- Implement guilds chat
+- Implement raid groups
+- Implement guilds 
 - NPC
 - gossip
 - creature combat
 - dueling
 - compile-time plugins
 - better object tracking
-- h
 - Mail system
 - Spell system
 - Admin imprisonment spells/commands
 - Party/Raid system
 - Trading system
-- Hardcode against impersonation attempts of the Gophercraft addon chat channel (no player should be able to impersonate the playername "GC")
 - Terrain validation and boundary checks
 - Zone exploration
 - Implement High Sea fatigue syndrome
@@ -23,5 +20,6 @@
 - AI system
 - Full support for All-GM Roleplay gamemode
 - Item/NPC forge
-- Helper AddOn + bidirectional RPC system through AddOn channel
 - Rich web application utilizing the Gophercraft JSON API, browsing players, stats, items and clans
+- Battlegrounds
+- Recording/replay system

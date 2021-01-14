@@ -1,3 +1,4 @@
+// Descriptor module for protocol 5875 1.12.1 (Vanilla)
 package d5875
 
 import (
@@ -5,6 +6,7 @@ import (
 
 	"github.com/superp00t/gophercraft/guid"
 	"github.com/superp00t/gophercraft/packet/update"
+	"github.com/superp00t/gophercraft/vsn"
 )
 
 type ObjectData struct {
@@ -104,36 +106,61 @@ type UnitData struct {
 
 	// PadUnitFlags update.ChunkPad
 
-	Auras                       [48]uint32
-	AuraFlags                   [6]uint32
-	AuraLevels                  [12]uint32
-	AuraApplications            [12]uint32
-	AuraState                   uint32
-	BaseAttackTime              uint32
-	OffhandAttackTime           uint32
-	RangedAttackTime            uint32
-	BoundingRadius              float32
-	CombatReach                 float32
-	DisplayID                   uint32
-	NativeDisplayID             uint32
-	MountDisplayID              uint32
-	MinDamage                   float32
-	MaxDamage                   float32
-	MinOffhandDamage            uint32
-	MaxOffhandDamage            uint32
-	StandState                  uint8
-	LoyaltyLevel                uint8
-	ShapeshiftForm              uint8
-	StandMiscFlags              uint8
-	PetNumber                   uint32
-	PetNameTimestamp            uint32
-	PetExperience               uint32
-	PetNextLevelExp             uint32
-	DynamicFlags                uint32
+	Auras             [48]uint32
+	AuraFlags         [24]byte
+	AuraLevels        [48]byte
+	AuraApplications  [48]byte
+	AuraState         uint32
+	BaseAttackTime    uint32
+	OffhandAttackTime uint32
+	RangedAttackTime  uint32
+	BoundingRadius    float32
+	CombatReach       float32
+	DisplayID         uint32
+	NativeDisplayID   uint32
+	MountDisplayID    uint32
+	MinDamage         float32
+	MaxDamage         float32
+	MinOffhandDamage  uint32
+	MaxOffhandDamage  uint32
+	StandState        uint8
+	LoyaltyLevel      uint8
+	ShapeshiftForm    uint8
+	StandMiscFlags    uint8
+	PetNumber         uint32
+	PetNameTimestamp  uint32
+	PetExperience     uint32
+	PetNextLevelExp   uint32
+
+	Lootable              bool
+	TrackUnit             bool
+	Tapped                bool
+	TappedByPlayer        bool
+	SpecialInfo           bool
+	VisuallyDead          bool
+	ReferAFriend          bool
+	TappedByAllThreatList bool
+	EndUnitDynamicFlags   update.ChunkPad
+
 	ChannelSpell                uint32
 	ModCastSpeed                float32
 	CreatedBySpell              uint32
-	NPCFlags                    uint32
+	Gossip                      bool
+	QuestGiver                  bool
+	Vendor                      bool
+	FlightMaster                bool
+	Trainer                     bool
+	SpiritHealer                bool
+	SpiritGuide                 bool
+	Innkeeper                   bool
+	Banker                      bool
+	Petitioner                  bool
+	TabardDesigner              bool
+	BattleMaster                bool
+	Auctioneer                  bool
+	StableMaster                bool
+	Repairer                    bool
+	EndNPCFlags                 update.ChunkPad
 	NPCEmoteState               uint32
 	TrainingPoints              uint32
 	Stats                       [5]uint32
@@ -190,7 +217,7 @@ type PlayerData struct {
 	RestBits         uint8
 	BankBagSlotCount uint8
 	RestState        uint8
-	Gender           uint8
+	PlayerGender     uint8
 	GenderUnk        uint8
 	Drunkness        uint8
 	PVPRank          uint8
@@ -210,19 +237,25 @@ type PlayerData struct {
 		update.ChunkPad
 	}
 
-	InventorySlots                 [39]guid.GUID `update:"private"`
-	BankSlots                      [24]guid.GUID `update:"private"`
-	BankBagSlots                   [6]guid.GUID  `update:"private"`
-	VendorBuybackSlots             [12]guid.GUID `update:"private"`
-	KeyringSlots                   [32]guid.GUID `update:"private"`
-	FarSight                       guid.GUID
-	FieldComboTarget               guid.GUID
-	XP                             uint32
-	NextLevelXP                    uint32
-	SkillInfos                     [384]uint32 `update:"private"`
-	CharacterPoints                [2]uint32   `update:"private"`
-	TrackCreatures                 uint32      `update:"private"`
-	TrackResources                 uint32      `update:"private"`
+	InventorySlots     [39]guid.GUID `update:"private"`
+	BankSlots          [24]guid.GUID `update:"private"`
+	BankBagSlots       [6]guid.GUID  `update:"private"`
+	VendorBuybackSlots [12]guid.GUID `update:"private"`
+	KeyringSlots       [32]guid.GUID `update:"private"`
+	FarSight           guid.GUID
+	FieldComboTarget   guid.GUID
+	XP                 uint32
+	NextLevelXP        uint32
+	SkillInfos         [128]struct {
+		ID         uint16
+		Step       uint16
+		SkillLevel uint16
+		SkillCap   uint16
+		Bonus      uint32
+	} `update:"private"`
+	CharacterPoints                [2]uint32 `update:"private"`
+	TrackCreatures                 uint32    `update:"private"`
+	TrackResources                 uint32    `update:"private"`
 	BlockPercentage                float32
 	DodgePercentage                float32
 	ParryPercentage                float32
@@ -366,7 +399,8 @@ type CorpseDescriptor struct {
 }
 
 func init() {
-	update.Descriptors[5875] = &update.Descriptor{
+	update.Descriptors[vsn.V1_12_1] = &update.Descriptor{
+		vsn.V1_12_1,
 		update.DescriptorOptionClassicGUIDs | update.DescriptorOptionHasHasTransport,
 		map[guid.TypeMask]reflect.Type{
 			guid.TypeMaskObject: reflect.TypeOf(ObjectData{}),

@@ -11,6 +11,13 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
+type Word interface {
+	EncodeWord() (string, error)
+	DecodeWord(out reflect.Value, data string) error
+}
+
+var _word = reflect.TypeOf((*Word)(nil)).Elem()
+
 type Dict map[string]string
 
 type Decoder struct {
@@ -47,6 +54,17 @@ func bitSize(t reflect.Kind) int {
 }
 
 func (decoder *Decoder) decodeValue(value reflect.Value) error {
+	if value.Type().Implements(_word) {
+		word := value.Interface().(Word)
+
+		tok, err := decoder.nextWord()
+		if err != nil {
+			return err
+		}
+
+		return word.DecodeWord(value, tok.data)
+	}
+
 	switch value.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		tok, err := decoder.nextWord()
@@ -238,7 +256,7 @@ func (decoder *Decoder) decodeValue(value reflect.Value) error {
 		}
 
 		if openToken.tType != tokOpen {
-			return fmt.Errorf("invalid token at start of Map: %d", openToken.tType)
+			return fmt.Errorf("invalid token at start of Map: %d: %s", openToken.tType, openToken.data)
 		}
 
 		value.Set(reflect.MakeMap(value.Type()))

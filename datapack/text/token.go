@@ -1,6 +1,8 @@
 package text
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type tokenType uint8
 
@@ -50,6 +52,8 @@ func (decoder *Decoder) getQuotedWord() (*token, error) {
 				nextChar = '\r'
 			case 't':
 				nextChar = '\t'
+			case '\\':
+				nextChar = '\\'
 			case '"':
 				nextChar = '"'
 			default:
@@ -102,15 +106,17 @@ func (decoder *Decoder) getWord() (*token, error) {
 	}
 }
 
-func (decoder *Decoder) nextToken() (*token, error) {
+func (decoder *Decoder) nextToken() (tok *token, err error) {
 	if len(decoder.tokens) > 0 {
-		tok := decoder.tokens[0]
+		tok = decoder.tokens[0]
 		decoder.tokens = decoder.tokens[1:]
-		return tok, nil
+		return
 	}
 
+	var b []byte
+
 	for {
-		b, err := decoder.input.Peek(1)
+		b, err = decoder.input.Peek(1)
 		if err != nil {
 			return nil, err
 		}
@@ -145,13 +151,16 @@ func (decoder *Decoder) nextToken() (*token, error) {
 		case '{':
 			decoder.input.ReadByte()
 			decoder.column++
-			return &token{tType: tokOpen}, nil
+			tok = &token{tType: tokOpen}
+			return
 		case '}':
 			decoder.input.ReadByte()
 			decoder.column++
-			return &token{tType: tokClose}, nil
+			tok = &token{tType: tokClose}
+			return
 		default:
-			return decoder.getWord()
+			tok, err = decoder.getWord()
+			return
 		}
 	}
 }

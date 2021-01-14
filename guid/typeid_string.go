@@ -22,15 +22,25 @@ func _() {
 	_ = x[TypeAreaTrigger-11]
 	_ = x[TypeSceneObject-12]
 	_ = x[TypeConversation-13]
+	_ = x[TypeNPCText-100]
 }
 
-const _TypeID_name = "TypeObjectTypeItemTypeContainerTypeAzeriteEmpoweredItemTypeAzeriteItemTypeUnitTypePlayerTypeActivePlayerTypeGameObjectTypeDynamicObjectTypeCorpseTypeAreaTriggerTypeSceneObjectTypeConversation"
+const (
+	_TypeID_name_0 = "TypeObjectTypeItemTypeContainerTypeAzeriteEmpoweredItemTypeAzeriteItemTypeUnitTypePlayerTypeActivePlayerTypeGameObjectTypeDynamicObjectTypeCorpseTypeAreaTriggerTypeSceneObjectTypeConversation"
+	_TypeID_name_1 = "TypeNPCText"
+)
 
-var _TypeID_index = [...]uint8{0, 10, 18, 31, 55, 70, 78, 88, 104, 118, 135, 145, 160, 175, 191}
+var (
+	_TypeID_index_0 = [...]uint8{0, 10, 18, 31, 55, 70, 78, 88, 104, 118, 135, 145, 160, 175, 191}
+)
 
 func (i TypeID) String() string {
-	if i >= TypeID(len(_TypeID_index)-1) {
+	switch {
+	case 0 <= i && i <= 13:
+		return _TypeID_name_0[_TypeID_index_0[i]:_TypeID_index_0[i+1]]
+	case i == 100:
+		return _TypeID_name_1
+	default:
 		return "TypeID(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _TypeID_name[_TypeID_index[i]:_TypeID_index[i+1]]
 }

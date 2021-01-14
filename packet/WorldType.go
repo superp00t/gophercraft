@@ -2,3079 +2,2928 @@ package packet
 
 import "strings"
 
-type WorldType uint32
+type WorldType uint16
 
 //go:generate gcraft_stringer -type=WorldType -fromString
 
 const (
-	CMSG_BOOTME                                                      WorldType = 0x001
-	CMSG_DBLOOKUP                                                    WorldType = 0x002
-	SMSG_DBLOOKUP                                                    WorldType = 0x003
-	CMSG_QUERY_OBJECT_POSITION                                       WorldType = 0x004
-	SMSG_QUERY_OBJECT_POSITION                                       WorldType = 0x005
-	CMSG_QUERY_OBJECT_ROTATION                                       WorldType = 0x006
-	SMSG_QUERY_OBJECT_ROTATION                                       WorldType = 0x007
-	CMSG_WORLD_TELEPORT                                              WorldType = 0x008
-	CMSG_TELEPORT_TO_UNIT                                            WorldType = 0x009
-	CMSG_ZONE_MAP                                                    WorldType = 0x00A
-	SMSG_ZONE_MAP                                                    WorldType = 0x00B
-	CMSG_DEBUG_CHANGECELLZONE                                        WorldType = 0x00C
-	CMSG_MOVE_CHARACTER_CHEAT                                        WorldType = 0x00D
-	SMSG_MOVE_CHARACTER_CHEAT                                        WorldType = 0x00E
-	CMSG_RECHARGE                                                    WorldType = 0x00F
-	CMSG_LEARN_SPELL                                                 WorldType = 0x010
-	CMSG_CREATEMONSTER                                               WorldType = 0x011
-	CMSG_DESTROYMONSTER                                              WorldType = 0x012
-	CMSG_CREATEITEM                                                  WorldType = 0x013
-	CMSG_CREATEGAMEOBJECT                                            WorldType = 0x014
-	SMSG_CHECK_FOR_BOTS                                              WorldType = 0x015
-	CMSG_MAKEMONSTERATTACKGUID                                       WorldType = 0x016
-	CMSG_BOT_DETECTED2                                               WorldType = 0x017
-	CMSG_FORCEACTION                                                 WorldType = 0x018
-	CMSG_FORCEACTIONONOTHER                                          WorldType = 0x019
-	CMSG_FORCEACTIONSHOW                                             WorldType = 0x01A
-	SMSG_FORCEACTIONSHOW                                             WorldType = 0x01B
-	CMSG_PETGODMODE                                                  WorldType = 0x01C
-	SMSG_PETGODMODE                                                  WorldType = 0x01D
-	SMSG_REFER_A_FRIEND_EXPIRED                                      WorldType = 0x01E
-	CMSG_WEATHER_SPEED_CHEAT                                         WorldType = 0x01F
-	CMSG_UNDRESSPLAYER                                               WorldType = 0x020
-	CMSG_BEASTMASTER                                                 WorldType = 0x021
-	CMSG_GODMODE                                                     WorldType = 0x022
-	SMSG_GODMODE                                                     WorldType = 0x023
-	CMSG_CHEAT_SETMONEY                                              WorldType = 0x024
-	CMSG_LEVEL_CHEAT                                                 WorldType = 0x025
-	CMSG_PET_LEVEL_CHEAT                                             WorldType = 0x026
-	CMSG_SET_WORLDSTATE                                              WorldType = 0x027
-	CMSG_COOLDOWN_CHEAT                                              WorldType = 0x028
-	CMSG_USE_SKILL_CHEAT                                             WorldType = 0x029
-	CMSG_FLAG_QUEST                                                  WorldType = 0x02A
-	CMSG_FLAG_QUEST_FINISH                                           WorldType = 0x02B
-	CMSG_CLEAR_QUEST                                                 WorldType = 0x02C
-	CMSG_SEND_EVENT                                                  WorldType = 0x02D
-	CMSG_DEBUG_AISTATE                                               WorldType = 0x02E
-	SMSG_DEBUG_AISTATE                                               WorldType = 0x02F
-	CMSG_DISABLE_PVP_CHEAT                                           WorldType = 0x030
-	CMSG_ADVANCE_SPAWN_TIME                                          WorldType = 0x031
-	SMSG_DESTRUCTIBLE_BUILDING_DAMAGE                                WorldType = 0x032
-	CMSG_AUTH_SRP6_BEGIN                                             WorldType = 0x033
-	CMSG_AUTH_SRP6_PROOF                                             WorldType = 0x034
-	CMSG_AUTH_SRP6_RECODE                                            WorldType = 0x035
-	CMSG_CHAR_CREATE                                                 WorldType = 0x036
-	CMSG_CHAR_ENUM                                                   WorldType = 0x037
-	CMSG_CHAR_DELETE                                                 WorldType = 0x038
-	SMSG_AUTH_SRP6_RESPONSE                                          WorldType = 0x039
-	SMSG_CHAR_CREATE                                                 WorldType = 0x03A
-	SMSG_CHAR_ENUM                                                   WorldType = 0x03B
-	SMSG_CHAR_DELETE                                                 WorldType = 0x03C
-	CMSG_PLAYER_LOGIN                                                WorldType = 0x03D
-	SMSG_NEW_WORLD                                                   WorldType = 0x03E
-	SMSG_TRANSFER_PENDING                                            WorldType = 0x03F
-	SMSG_TRANSFER_ABORTED                                            WorldType = 0x040
-	SMSG_CHARACTER_LOGIN_FAILED                                      WorldType = 0x041
-	SMSG_LOGIN_SETTIMESPEED                                          WorldType = 0x042
-	SMSG_GAMETIME_UPDATE                                             WorldType = 0x043
-	CMSG_GAMETIME_SET                                                WorldType = 0x044
-	SMSG_GAMETIME_SET                                                WorldType = 0x045
-	CMSG_GAMESPEED_SET                                               WorldType = 0x046
-	SMSG_GAMESPEED_SET                                               WorldType = 0x047
-	CMSG_SERVERTIME                                                  WorldType = 0x048
-	SMSG_SERVERTIME                                                  WorldType = 0x049
-	CMSG_PLAYER_LOGOUT                                               WorldType = 0x04A
-	CMSG_LOGOUT_REQUEST                                              WorldType = 0x04B
-	SMSG_LOGOUT_RESPONSE                                             WorldType = 0x04C
-	SMSG_LOGOUT_COMPLETE                                             WorldType = 0x04D
-	CMSG_LOGOUT_CANCEL                                               WorldType = 0x04E
-	SMSG_LOGOUT_CANCEL_ACK                                           WorldType = 0x04F
-	CMSG_NAME_QUERY                                                  WorldType = 0x050
-	SMSG_NAME_QUERY_RESPONSE                                         WorldType = 0x051
-	CMSG_PET_NAME_QUERY                                              WorldType = 0x052
-	SMSG_PET_NAME_QUERY_RESPONSE                                     WorldType = 0x053
-	CMSG_GUILD_QUERY                                                 WorldType = 0x054
-	SMSG_GUILD_QUERY_RESPONSE                                        WorldType = 0x055
-	CMSG_ITEM_QUERY_SINGLE                                           WorldType = 0x056
-	CMSG_ITEM_QUERY_MULTIPLE                                         WorldType = 0x057
-	SMSG_ITEM_QUERY_SINGLE_RESPONSE                                  WorldType = 0x058
-	SMSG_ITEM_QUERY_MULTIPLE_RESPONSE                                WorldType = 0x059
-	CMSG_PAGE_TEXT_QUERY                                             WorldType = 0x05A
-	SMSG_PAGE_TEXT_QUERY_RESPONSE                                    WorldType = 0x05B
-	CMSG_QUEST_QUERY                                                 WorldType = 0x05C
-	SMSG_QUEST_QUERY_RESPONSE                                        WorldType = 0x05D
-	CMSG_GAMEOBJECT_QUERY                                            WorldType = 0x05E
-	SMSG_GAMEOBJECT_QUERY_RESPONSE                                   WorldType = 0x05F
-	CMSG_CREATURE_QUERY                                              WorldType = 0x060
-	SMSG_CREATURE_QUERY_RESPONSE                                     WorldType = 0x061
-	CMSG_WHO                                                         WorldType = 0x062
-	SMSG_WHO                                                         WorldType = 0x063
-	CMSG_WHOIS                                                       WorldType = 0x064
-	SMSG_WHOIS                                                       WorldType = 0x065
-	CMSG_CONTACT_LIST                                                WorldType = 0x066
-	SMSG_CONTACT_LIST                                                WorldType = 0x067
-	SMSG_FRIEND_STATUS                                               WorldType = 0x068
-	CMSG_ADD_FRIEND                                                  WorldType = 0x069
-	CMSG_DEL_FRIEND                                                  WorldType = 0x06A
-	CMSG_SET_CONTACT_NOTES                                           WorldType = 0x06B
-	CMSG_ADD_IGNORE                                                  WorldType = 0x06C
-	CMSG_DEL_IGNORE                                                  WorldType = 0x06D
-	CMSG_GROUP_INVITE                                                WorldType = 0x06E
-	SMSG_GROUP_INVITE                                                WorldType = 0x06F
-	CMSG_GROUP_CANCEL                                                WorldType = 0x070
-	SMSG_GROUP_CANCEL                                                WorldType = 0x071
-	CMSG_GROUP_ACCEPT                                                WorldType = 0x072
-	CMSG_GROUP_DECLINE                                               WorldType = 0x073
-	SMSG_GROUP_DECLINE                                               WorldType = 0x074
-	CMSG_GROUP_UNINVITE                                              WorldType = 0x075
-	CMSG_GROUP_UNINVITE_GUID                                         WorldType = 0x076
-	SMSG_GROUP_UNINVITE                                              WorldType = 0x077
-	CMSG_GROUP_SET_LEADER                                            WorldType = 0x078
-	SMSG_GROUP_SET_LEADER                                            WorldType = 0x079
-	CMSG_LOOT_METHOD                                                 WorldType = 0x07A
-	CMSG_GROUP_DISBAND                                               WorldType = 0x07B
-	SMSG_GROUP_DESTROYED                                             WorldType = 0x07C
-	SMSG_GROUP_LIST                                                  WorldType = 0x07D
-	SMSG_PARTY_MEMBER_STATS                                          WorldType = 0x07E
-	SMSG_PARTY_COMMAND_RESULT                                        WorldType = 0x07F
-	UMSG_UPDATE_GROUP_MEMBERS                                        WorldType = 0x080
-	CMSG_GUILD_CREATE                                                WorldType = 0x081
-	CMSG_GUILD_INVITE                                                WorldType = 0x082
-	SMSG_GUILD_INVITE                                                WorldType = 0x083
-	CMSG_GUILD_ACCEPT                                                WorldType = 0x084
-	CMSG_GUILD_DECLINE                                               WorldType = 0x085
-	SMSG_GUILD_DECLINE                                               WorldType = 0x086
-	CMSG_GUILD_INFO                                                  WorldType = 0x087
-	SMSG_GUILD_INFO                                                  WorldType = 0x088
-	CMSG_GUILD_ROSTER                                                WorldType = 0x089
-	SMSG_GUILD_ROSTER                                                WorldType = 0x08A
-	CMSG_GUILD_PROMOTE                                               WorldType = 0x08B
-	CMSG_GUILD_DEMOTE                                                WorldType = 0x08C
-	CMSG_GUILD_LEAVE                                                 WorldType = 0x08D
-	CMSG_GUILD_REMOVE                                                WorldType = 0x08E
-	CMSG_GUILD_DISBAND                                               WorldType = 0x08F
-	CMSG_GUILD_LEADER                                                WorldType = 0x090
-	CMSG_GUILD_MOTD                                                  WorldType = 0x091
-	SMSG_GUILD_EVENT                                                 WorldType = 0x092
-	SMSG_GUILD_COMMAND_RESULT                                        WorldType = 0x093
-	UMSG_UPDATE_GUILD                                                WorldType = 0x094
-	CMSG_MESSAGECHAT                                                 WorldType = 0x095
-	SMSG_MESSAGECHAT                                                 WorldType = 0x096
-	CMSG_JOIN_CHANNEL                                                WorldType = 0x097
-	CMSG_LEAVE_CHANNEL                                               WorldType = 0x098
-	SMSG_CHANNEL_NOTIFY                                              WorldType = 0x099
-	CMSG_CHANNEL_LIST                                                WorldType = 0x09A
-	SMSG_CHANNEL_LIST                                                WorldType = 0x09B
-	CMSG_CHANNEL_PASSWORD                                            WorldType = 0x09C
-	CMSG_CHANNEL_SET_OWNER                                           WorldType = 0x09D
-	CMSG_CHANNEL_OWNER                                               WorldType = 0x09E
-	CMSG_CHANNEL_MODERATOR                                           WorldType = 0x09F
-	CMSG_CHANNEL_UNMODERATOR                                         WorldType = 0x0A0
-	CMSG_CHANNEL_MUTE                                                WorldType = 0x0A1
-	CMSG_CHANNEL_UNMUTE                                              WorldType = 0x0A2
-	CMSG_CHANNEL_INVITE                                              WorldType = 0x0A3
-	CMSG_CHANNEL_KICK                                                WorldType = 0x0A4
-	CMSG_CHANNEL_BAN                                                 WorldType = 0x0A5
-	CMSG_CHANNEL_UNBAN                                               WorldType = 0x0A6
-	CMSG_CHANNEL_ANNOUNCEMENTS                                       WorldType = 0x0A7
-	CMSG_CHANNEL_MODERATE                                            WorldType = 0x0A8
-	SMSG_UPDATE_OBJECT                                               WorldType = 0x0A9
-	SMSG_DESTROY_OBJECT                                              WorldType = 0x0AA
-	CMSG_USE_ITEM                                                    WorldType = 0x0AB
-	CMSG_OPEN_ITEM                                                   WorldType = 0x0AC
-	CMSG_READ_ITEM                                                   WorldType = 0x0AD
-	SMSG_READ_ITEM_OK                                                WorldType = 0x0AE
-	SMSG_READ_ITEM_FAILED                                            WorldType = 0x0AF
-	SMSG_ITEM_COOLDOWN                                               WorldType = 0x0B0
-	CMSG_GAMEOBJ_USE                                                 WorldType = 0x0B1
-	CMSG_DESTROY_ITEMS                                               WorldType = 0x0B2
-	SMSG_GAMEOBJECT_CUSTOM_ANIM                                      WorldType = 0x0B3
-	CMSG_AREATRIGGER                                                 WorldType = 0x0B4
-	MSG_MOVE_START_FORWARD                                           WorldType = 0x0B5
-	MSG_MOVE_START_BACKWARD                                          WorldType = 0x0B6
-	MSG_MOVE_STOP                                                    WorldType = 0x0B7
-	MSG_MOVE_START_STRAFE_LEFT                                       WorldType = 0x0B8
-	MSG_MOVE_START_STRAFE_RIGHT                                      WorldType = 0x0B9
-	MSG_MOVE_STOP_STRAFE                                             WorldType = 0x0BA
-	MSG_MOVE_JUMP                                                    WorldType = 0x0BB
-	MSG_MOVE_START_TURN_LEFT                                         WorldType = 0x0BC
-	MSG_MOVE_START_TURN_RIGHT                                        WorldType = 0x0BD
-	MSG_MOVE_STOP_TURN                                               WorldType = 0x0BE
-	MSG_MOVE_START_PITCH_UP                                          WorldType = 0x0BF
-	MSG_MOVE_START_PITCH_DOWN                                        WorldType = 0x0C0
-	MSG_MOVE_STOP_PITCH                                              WorldType = 0x0C1
-	MSG_MOVE_SET_RUN_MODE                                            WorldType = 0x0C2
-	MSG_MOVE_SET_WALK_MODE                                           WorldType = 0x0C3
-	MSG_MOVE_TOGGLE_LOGGING                                          WorldType = 0x0C4
-	MSG_MOVE_TELEPORT                                                WorldType = 0x0C5
-	MSG_MOVE_TELEPORT_CHEAT                                          WorldType = 0x0C6
-	MSG_MOVE_TELEPORT_ACK                                            WorldType = 0x0C7
-	MSG_MOVE_TOGGLE_FALL_LOGGING                                     WorldType = 0x0C8
-	MSG_MOVE_FALL_LAND                                               WorldType = 0x0C9
-	MSG_MOVE_START_SWIM                                              WorldType = 0x0CA
-	MSG_MOVE_STOP_SWIM                                               WorldType = 0x0CB
-	MSG_MOVE_SET_RUN_SPEED_CHEAT                                     WorldType = 0x0CC
-	MSG_MOVE_SET_RUN_SPEED                                           WorldType = 0x0CD
-	MSG_MOVE_SET_RUN_BACK_SPEED_CHEAT                                WorldType = 0x0CE
-	MSG_MOVE_SET_RUN_BACK_SPEED                                      WorldType = 0x0CF
-	MSG_MOVE_SET_WALK_SPEED_CHEAT                                    WorldType = 0x0D0
-	MSG_MOVE_SET_WALK_SPEED                                          WorldType = 0x0D1
-	MSG_MOVE_SET_SWIM_SPEED_CHEAT                                    WorldType = 0x0D2
-	MSG_MOVE_SET_SWIM_SPEED                                          WorldType = 0x0D3
-	MSG_MOVE_SET_SWIM_BACK_SPEED_CHEAT                               WorldType = 0x0D4
-	MSG_MOVE_SET_SWIM_BACK_SPEED                                     WorldType = 0x0D5
-	MSG_MOVE_SET_ALL_SPEED_CHEAT                                     WorldType = 0x0D6
-	MSG_MOVE_SET_TURN_RATE_CHEAT                                     WorldType = 0x0D7
-	MSG_MOVE_SET_TURN_RATE                                           WorldType = 0x0D8
-	MSG_MOVE_TOGGLE_COLLISION_CHEAT                                  WorldType = 0x0D9
-	MSG_MOVE_SET_FACING                                              WorldType = 0x0DA
-	MSG_MOVE_SET_PITCH                                               WorldType = 0x0DB
-	MSG_MOVE_WORLDPORT_ACK                                           WorldType = 0x0DC
-	SMSG_MONSTER_MOVE                                                WorldType = 0x0DD
-	SMSG_MOVE_WATER_WALK                                             WorldType = 0x0DE
-	SMSG_MOVE_LAND_WALK                                              WorldType = 0x0DF
-	CMSG_MOVE_CHARM_PORT_CHEAT                                       WorldType = 0x0E0
-	CMSG_MOVE_SET_RAW_POSITION                                       WorldType = 0x0E1
-	SMSG_FORCE_RUN_SPEED_CHANGE                                      WorldType = 0x0E2
-	CMSG_FORCE_RUN_SPEED_CHANGE_ACK                                  WorldType = 0x0E3
-	SMSG_FORCE_RUN_BACK_SPEED_CHANGE                                 WorldType = 0x0E4
-	CMSG_FORCE_RUN_BACK_SPEED_CHANGE_ACK                             WorldType = 0x0E5
-	SMSG_FORCE_SWIM_SPEED_CHANGE                                     WorldType = 0x0E6
-	CMSG_FORCE_SWIM_SPEED_CHANGE_ACK                                 WorldType = 0x0E7
-	SMSG_FORCE_MOVE_ROOT                                             WorldType = 0x0E8
-	CMSG_FORCE_MOVE_ROOT_ACK                                         WorldType = 0x0E9
-	SMSG_FORCE_MOVE_UNROOT                                           WorldType = 0x0EA
-	CMSG_FORCE_MOVE_UNROOT_ACK                                       WorldType = 0x0EB
-	MSG_MOVE_ROOT                                                    WorldType = 0x0EC
-	MSG_MOVE_UNROOT                                                  WorldType = 0x0ED
-	MSG_MOVE_HEARTBEAT                                               WorldType = 0x0EE
-	SMSG_MOVE_KNOCK_BACK                                             WorldType = 0x0EF
-	CMSG_MOVE_KNOCK_BACK_ACK                                         WorldType = 0x0F0
-	MSG_MOVE_KNOCK_BACK                                              WorldType = 0x0F1
-	SMSG_MOVE_FEATHER_FALL                                           WorldType = 0x0F2
-	SMSG_MOVE_NORMAL_FALL                                            WorldType = 0x0F3
-	SMSG_MOVE_SET_HOVER                                              WorldType = 0x0F4
-	SMSG_MOVE_UNSET_HOVER                                            WorldType = 0x0F5
-	CMSG_MOVE_HOVER_ACK                                              WorldType = 0x0F6
-	MSG_MOVE_HOVER                                                   WorldType = 0x0F7
-	CMSG_TRIGGER_CINEMATIC_CHEAT                                     WorldType = 0x0F8
-	CMSG_OPENING_CINEMATIC                                           WorldType = 0x0F9
-	SMSG_TRIGGER_CINEMATIC                                           WorldType = 0x0FA
-	CMSG_NEXT_CINEMATIC_CAMERA                                       WorldType = 0x0FB
-	CMSG_COMPLETE_CINEMATIC                                          WorldType = 0x0FC
-	SMSG_TUTORIAL_FLAGS                                              WorldType = 0x0FD
-	CMSG_TUTORIAL_FLAG                                               WorldType = 0x0FE
-	CMSG_TUTORIAL_CLEAR                                              WorldType = 0x0FF
-	CMSG_TUTORIAL_RESET                                              WorldType = 0x100
-	CMSG_STANDSTATECHANGE                                            WorldType = 0x101
-	CMSG_EMOTE                                                       WorldType = 0x102
-	SMSG_EMOTE                                                       WorldType = 0x103
-	CMSG_TEXT_EMOTE                                                  WorldType = 0x104
-	SMSG_TEXT_EMOTE                                                  WorldType = 0x105
-	CMSG_AUTOEQUIP_GROUND_ITEM                                       WorldType = 0x106
-	CMSG_AUTOSTORE_GROUND_ITEM                                       WorldType = 0x107
-	CMSG_AUTOSTORE_LOOT_ITEM                                         WorldType = 0x108
-	CMSG_STORE_LOOT_IN_SLOT                                          WorldType = 0x109
-	CMSG_AUTOEQUIP_ITEM                                              WorldType = 0x10A
-	CMSG_AUTOSTORE_BAG_ITEM                                          WorldType = 0x10B
-	CMSG_SWAP_ITEM                                                   WorldType = 0x10C
-	CMSG_SWAP_INV_ITEM                                               WorldType = 0x10D
-	CMSG_SPLIT_ITEM                                                  WorldType = 0x10E
-	CMSG_AUTOEQUIP_ITEM_SLOT                                         WorldType = 0x10F
-	CMSG_UNCLAIM_LICENSE                                             WorldType = 0x110
-	CMSG_DESTROYITEM                                                 WorldType = 0x111
-	SMSG_INVENTORY_CHANGE_FAILURE                                    WorldType = 0x112
-	SMSG_OPEN_CONTAINER                                              WorldType = 0x113
-	CMSG_INSPECT                                                     WorldType = 0x114
-	SMSG_INSPECT_RESULTS_UPDATE                                      WorldType = 0x115
-	CMSG_INITIATE_TRADE                                              WorldType = 0x116
-	CMSG_BEGIN_TRADE                                                 WorldType = 0x117
-	CMSG_BUSY_TRADE                                                  WorldType = 0x118
-	CMSG_IGNORE_TRADE                                                WorldType = 0x119
-	CMSG_ACCEPT_TRADE                                                WorldType = 0x11A
-	CMSG_UNACCEPT_TRADE                                              WorldType = 0x11B
-	CMSG_CANCEL_TRADE                                                WorldType = 0x11C
-	CMSG_SET_TRADE_ITEM                                              WorldType = 0x11D
-	CMSG_CLEAR_TRADE_ITEM                                            WorldType = 0x11E
-	CMSG_SET_TRADE_GOLD                                              WorldType = 0x11F
-	SMSG_TRADE_STATUS                                                WorldType = 0x120
-	SMSG_TRADE_STATUS_EXTENDED                                       WorldType = 0x121
-	SMSG_INITIALIZE_FACTIONS                                         WorldType = 0x122
-	SMSG_SET_FACTION_VISIBLE                                         WorldType = 0x123
-	SMSG_SET_FACTION_STANDING                                        WorldType = 0x124
-	CMSG_SET_FACTION_ATWAR                                           WorldType = 0x125
-	CMSG_SET_FACTION_CHEAT                                           WorldType = 0x126
-	SMSG_SET_PROFICIENCY                                             WorldType = 0x127
-	CMSG_SET_ACTION_BUTTON                                           WorldType = 0x128
-	SMSG_ACTION_BUTTONS                                              WorldType = 0x129
-	SMSG_INITIAL_SPELLS                                              WorldType = 0x12A
-	SMSG_LEARNED_SPELL                                               WorldType = 0x12B
-	SMSG_SUPERCEDED_SPELL                                            WorldType = 0x12C
-	CMSG_NEW_SPELL_SLOT                                              WorldType = 0x12D
-	CMSG_CAST_SPELL                                                  WorldType = 0x12E
-	CMSG_CANCEL_CAST                                                 WorldType = 0x12F
-	SMSG_CAST_FAILED                                                 WorldType = 0x130
-	SMSG_SPELL_START                                                 WorldType = 0x131
-	SMSG_SPELL_GO                                                    WorldType = 0x132
-	SMSG_SPELL_FAILURE                                               WorldType = 0x133
-	SMSG_SPELL_COOLDOWN                                              WorldType = 0x134
-	SMSG_COOLDOWN_EVENT                                              WorldType = 0x135
-	CMSG_CANCEL_AURA                                                 WorldType = 0x136
-	SMSG_EQUIPMENT_SET_SAVED                                         WorldType = 0x137
-	SMSG_PET_CAST_FAILED                                             WorldType = 0x138
-	MSG_CHANNEL_START                                                WorldType = 0x139
-	MSG_CHANNEL_UPDATE                                               WorldType = 0x13A
-	CMSG_CANCEL_CHANNELLING                                          WorldType = 0x13B
-	SMSG_AI_REACTION                                                 WorldType = 0x13C
-	CMSG_SET_SELECTION                                               WorldType = 0x13D
-	CMSG_DELETEEQUIPMENT_SET                                         WorldType = 0x13E
-	CMSG_INSTANCE_LOCK_RESPONSE                                      WorldType = 0x13F
-	CMSG_DEBUG_PASSIVE_AURA                                          WorldType = 0x140
-	CMSG_ATTACKSWING                                                 WorldType = 0x141
-	CMSG_ATTACKSTOP                                                  WorldType = 0x142
-	SMSG_ATTACKSTART                                                 WorldType = 0x143
-	SMSG_ATTACKSTOP                                                  WorldType = 0x144
-	SMSG_ATTACKSWING_NOTINRANGE                                      WorldType = 0x145
-	SMSG_ATTACKSWING_BADFACING                                       WorldType = 0x146
-	SMSG_INSTANCE_LOCK_WARNING_QUERY                                 WorldType = 0x147
-	SMSG_ATTACKSWING_DEADTARGET                                      WorldType = 0x148
-	SMSG_ATTACKSWING_CANT_ATTACK                                     WorldType = 0x149
-	SMSG_ATTACKERSTATEUPDATE                                         WorldType = 0x14A
-	SMSG_BATTLEFIELD_PORT_DENIED                                     WorldType = 0x14B
-	CMSG_PERFORM_ACTION_SET                                          WorldType = 0x14C
-	SMSG_RESUME_CAST_BAR                                             WorldType = 0x14D
-	SMSG_CANCEL_COMBAT                                               WorldType = 0x14E
-	SMSG_SPELLBREAKLOG                                               WorldType = 0x14F
-	SMSG_SPELLHEALLOG                                                WorldType = 0x150
-	SMSG_SPELLENERGIZELOG                                            WorldType = 0x151
-	SMSG_BREAK_TARGET                                                WorldType = 0x152
-	CMSG_SAVE_PLAYER                                                 WorldType = 0x153
-	CMSG_SETDEATHBINDPOINT                                           WorldType = 0x154
-	SMSG_BINDPOINTUPDATE                                             WorldType = 0x155
-	CMSG_GETDEATHBINDZONE                                            WorldType = 0x156
-	SMSG_BINDZONEREPLY                                               WorldType = 0x157
-	SMSG_PLAYERBOUND                                                 WorldType = 0x158
-	SMSG_CLIENT_CONTROL_UPDATE                                       WorldType = 0x159
-	CMSG_REPOP_REQUEST                                               WorldType = 0x15A
-	SMSG_RESURRECT_REQUEST                                           WorldType = 0x15B
-	CMSG_RESURRECT_RESPONSE                                          WorldType = 0x15C
-	CMSG_LOOT                                                        WorldType = 0x15D
-	CMSG_LOOT_MONEY                                                  WorldType = 0x15E
-	CMSG_LOOT_RELEASE                                                WorldType = 0x15F
-	SMSG_LOOT_RESPONSE                                               WorldType = 0x160
-	SMSG_LOOT_RELEASE_RESPONSE                                       WorldType = 0x161
-	SMSG_LOOT_REMOVED                                                WorldType = 0x162
-	SMSG_LOOT_MONEY_NOTIFY                                           WorldType = 0x163
-	SMSG_LOOT_ITEM_NOTIFY                                            WorldType = 0x164
-	SMSG_LOOT_CLEAR_MONEY                                            WorldType = 0x165
-	SMSG_ITEM_PUSH_RESULT                                            WorldType = 0x166
-	SMSG_DUEL_REQUESTED                                              WorldType = 0x167
-	SMSG_DUEL_OUTOFBOUNDS                                            WorldType = 0x168
-	SMSG_DUEL_INBOUNDS                                               WorldType = 0x169
-	SMSG_DUEL_COMPLETE                                               WorldType = 0x16A
-	SMSG_DUEL_WINNER                                                 WorldType = 0x16B
-	CMSG_DUEL_ACCEPTED                                               WorldType = 0x16C
-	CMSG_DUEL_CANCELLED                                              WorldType = 0x16D
-	SMSG_MOUNTRESULT                                                 WorldType = 0x16E
-	SMSG_DISMOUNTRESULT                                              WorldType = 0x16F
-	SMSG_REMOVED_FROM_PVP_QUEUE                                      WorldType = 0x170
-	CMSG_MOUNTSPECIAL_ANIM                                           WorldType = 0x171
-	SMSG_MOUNTSPECIAL_ANIM                                           WorldType = 0x172
-	SMSG_PET_TAME_FAILURE                                            WorldType = 0x173
-	CMSG_PET_SET_ACTION                                              WorldType = 0x174
-	CMSG_PET_ACTION                                                  WorldType = 0x175
-	CMSG_PET_ABANDON                                                 WorldType = 0x176
-	CMSG_PET_RENAME                                                  WorldType = 0x177
-	SMSG_PET_NAME_INVALID                                            WorldType = 0x178
-	SMSG_PET_SPELLS                                                  WorldType = 0x179
-	SMSG_PET_MODE                                                    WorldType = 0x17A
-	CMSG_GOSSIP_HELLO                                                WorldType = 0x17B
-	CMSG_GOSSIP_SELECT_OPTION                                        WorldType = 0x17C
-	SMSG_GOSSIP_MESSAGE                                              WorldType = 0x17D
-	SMSG_GOSSIP_COMPLETE                                             WorldType = 0x17E
-	CMSG_NPC_TEXT_QUERY                                              WorldType = 0x17F
-	SMSG_NPC_TEXT_UPDATE                                             WorldType = 0x180
-	SMSG_NPC_WONT_TALK                                               WorldType = 0x181
-	CMSG_QUESTGIVER_STATUS_QUERY                                     WorldType = 0x182
-	SMSG_QUESTGIVER_STATUS                                           WorldType = 0x183
-	CMSG_QUESTGIVER_HELLO                                            WorldType = 0x184
-	SMSG_QUESTGIVER_QUEST_LIST                                       WorldType = 0x185
-	CMSG_QUESTGIVER_QUERY_QUEST                                      WorldType = 0x186
-	CMSG_QUESTGIVER_QUEST_AUTOLAUNCH                                 WorldType = 0x187
-	SMSG_QUESTGIVER_QUEST_DETAILS                                    WorldType = 0x188
-	CMSG_QUESTGIVER_ACCEPT_QUEST                                     WorldType = 0x189
-	CMSG_QUESTGIVER_COMPLETE_QUEST                                   WorldType = 0x18A
-	SMSG_QUESTGIVER_REQUEST_ITEMS                                    WorldType = 0x18B
-	CMSG_QUESTGIVER_REQUEST_REWARD                                   WorldType = 0x18C
-	SMSG_QUESTGIVER_OFFER_REWARD                                     WorldType = 0x18D
-	CMSG_QUESTGIVER_CHOOSE_REWARD                                    WorldType = 0x18E
-	SMSG_QUESTGIVER_QUEST_INVALID                                    WorldType = 0x18F
-	CMSG_QUESTGIVER_CANCEL                                           WorldType = 0x190
-	SMSG_QUESTGIVER_QUEST_COMPLETE                                   WorldType = 0x191
-	SMSG_QUESTGIVER_QUEST_FAILED                                     WorldType = 0x192
-	CMSG_QUESTLOG_SWAP_QUEST                                         WorldType = 0x193
-	CMSG_QUESTLOG_REMOVE_QUEST                                       WorldType = 0x194
-	SMSG_QUESTLOG_FULL                                               WorldType = 0x195
-	SMSG_QUESTUPDATE_FAILED                                          WorldType = 0x196
-	SMSG_QUESTUPDATE_FAILEDTIMER                                     WorldType = 0x197
-	SMSG_QUESTUPDATE_COMPLETE                                        WorldType = 0x198
-	SMSG_QUESTUPDATE_ADD_KILL                                        WorldType = 0x199
-	SMSG_QUESTUPDATE_ADD_ITEM                                        WorldType = 0x19A
-	CMSG_QUEST_CONFIRM_ACCEPT                                        WorldType = 0x19B
-	SMSG_QUEST_CONFIRM_ACCEPT                                        WorldType = 0x19C
-	CMSG_PUSHQUESTTOPARTY                                            WorldType = 0x19D
-	CMSG_LIST_INVENTORY                                              WorldType = 0x19E
-	SMSG_LIST_INVENTORY                                              WorldType = 0x19F
-	CMSG_SELL_ITEM                                                   WorldType = 0x1A0
-	SMSG_SELL_ITEM                                                   WorldType = 0x1A1
-	CMSG_BUY_ITEM                                                    WorldType = 0x1A2
-	CMSG_BUY_ITEM_IN_SLOT                                            WorldType = 0x1A3
-	SMSG_BUY_ITEM                                                    WorldType = 0x1A4
-	SMSG_BUY_FAILED                                                  WorldType = 0x1A5
-	CMSG_TAXICLEARALLNODES                                           WorldType = 0x1A6
-	CMSG_TAXIENABLEALLNODES                                          WorldType = 0x1A7
-	CMSG_TAXISHOWNODES                                               WorldType = 0x1A8
-	SMSG_SHOWTAXINODES                                               WorldType = 0x1A9
-	CMSG_TAXINODE_STATUS_QUERY                                       WorldType = 0x1AA
-	SMSG_TAXINODE_STATUS                                             WorldType = 0x1AB
-	CMSG_TAXIQUERYAVAILABLENODES                                     WorldType = 0x1AC
-	CMSG_ACTIVATETAXI                                                WorldType = 0x1AD
-	SMSG_ACTIVATETAXIREPLY                                           WorldType = 0x1AE
-	SMSG_NEW_TAXI_PATH                                               WorldType = 0x1AF
-	CMSG_TRAINER_LIST                                                WorldType = 0x1B0
-	SMSG_TRAINER_LIST                                                WorldType = 0x1B1
-	CMSG_TRAINER_BUY_SPELL                                           WorldType = 0x1B2
-	SMSG_TRAINER_BUY_SUCCEEDED                                       WorldType = 0x1B3
-	SMSG_TRAINER_BUY_FAILED                                          WorldType = 0x1B4
-	CMSG_BINDER_ACTIVATE                                             WorldType = 0x1B5
-	SMSG_PLAYERBINDERROR                                             WorldType = 0x1B6
-	CMSG_BANKER_ACTIVATE                                             WorldType = 0x1B7
-	SMSG_SHOW_BANK                                                   WorldType = 0x1B8
-	CMSG_BUY_BANK_SLOT                                               WorldType = 0x1B9
-	SMSG_BUY_BANK_SLOT_RESULT                                        WorldType = 0x1BA
-	CMSG_PETITION_SHOWLIST                                           WorldType = 0x1BB
-	SMSG_PETITION_SHOWLIST                                           WorldType = 0x1BC
-	CMSG_PETITION_BUY                                                WorldType = 0x1BD
-	CMSG_PETITION_SHOW_SIGNATURES                                    WorldType = 0x1BE
-	SMSG_PETITION_SHOW_SIGNATURES                                    WorldType = 0x1BF
-	CMSG_PETITION_SIGN                                               WorldType = 0x1C0
-	SMSG_PETITION_SIGN_RESULTS                                       WorldType = 0x1C1
-	MSG_PETITION_DECLINE                                             WorldType = 0x1C2
-	CMSG_OFFER_PETITION                                              WorldType = 0x1C3
-	CMSG_TURN_IN_PETITION                                            WorldType = 0x1C4
-	SMSG_TURN_IN_PETITION_RESULTS                                    WorldType = 0x1C5
-	CMSG_PETITION_QUERY                                              WorldType = 0x1C6
-	SMSG_PETITION_QUERY_RESPONSE                                     WorldType = 0x1C7
-	SMSG_FISH_NOT_HOOKED                                             WorldType = 0x1C8
-	SMSG_FISH_ESCAPED                                                WorldType = 0x1C9
-	CMSG_BUG                                                         WorldType = 0x1CA
-	SMSG_NOTIFICATION                                                WorldType = 0x1CB
-	CMSG_PLAYED_TIME                                                 WorldType = 0x1CC
-	SMSG_PLAYED_TIME                                                 WorldType = 0x1CD
-	CMSG_QUERY_TIME                                                  WorldType = 0x1CE
-	SMSG_QUERY_TIME_RESPONSE                                         WorldType = 0x1CF
-	SMSG_LOG_XPGAIN                                                  WorldType = 0x1D0
-	SMSG_AURACASTLOG                                                 WorldType = 0x1D1
-	CMSG_RECLAIM_CORPSE                                              WorldType = 0x1D2
-	CMSG_WRAP_ITEM                                                   WorldType = 0x1D3
-	SMSG_LEVELUP_INFO                                                WorldType = 0x1D4
-	MSG_MINIMAP_PING                                                 WorldType = 0x1D5
-	SMSG_RESISTLOG                                                   WorldType = 0x1D6
-	SMSG_ENCHANTMENTLOG                                              WorldType = 0x1D7
-	CMSG_SET_SKILL_CHEAT                                             WorldType = 0x1D8
-	SMSG_START_MIRROR_TIMER                                          WorldType = 0x1D9
-	SMSG_PAUSE_MIRROR_TIMER                                          WorldType = 0x1DA
-	SMSG_STOP_MIRROR_TIMER                                           WorldType = 0x1DB
-	CMSG_PING                                                        WorldType = 0x1DC
-	SMSG_PONG                                                        WorldType = 0x1DD
-	SMSG_CLEAR_COOLDOWN                                              WorldType = 0x1DE
-	SMSG_GAMEOBJECT_PAGETEXT                                         WorldType = 0x1DF
-	CMSG_SETSHEATHED                                                 WorldType = 0x1E0
-	SMSG_COOLDOWN_CHEAT                                              WorldType = 0x1E1
-	SMSG_SPELL_DELAYED                                               WorldType = 0x1E2
-	CMSG_QUEST_POI_QUERY                                             WorldType = 0x1E3
-	SMSG_QUEST_POI_QUERY_RESPONSE                                    WorldType = 0x1E4
-	CMSG_GHOST                                                       WorldType = 0x1E5
-	CMSG_GM_INVIS                                                    WorldType = 0x1E6
-	SMSG_INVALID_PROMOTION_CODE                                      WorldType = 0x1E7
-	MSG_GM_BIND_OTHER                                                WorldType = 0x1E8
-	MSG_GM_SUMMON                                                    WorldType = 0x1E9
-	SMSG_ITEM_TIME_UPDATE                                            WorldType = 0x1EA
-	SMSG_ITEM_ENCHANT_TIME_UPDATE                                    WorldType = 0x1EB
-	SMSG_AUTH_CHALLENGE                                              WorldType = 0x1EC
-	CMSG_AUTH_SESSION                                                WorldType = 0x1ED
-	SMSG_AUTH_RESPONSE                                               WorldType = 0x1EE
-	MSG_GM_SHOWLABEL                                                 WorldType = 0x1EF
-	CMSG_PET_CAST_SPELL                                              WorldType = 0x1F0
-	MSG_SAVE_GUILD_EMBLEM                                            WorldType = 0x1F1
-	MSG_TABARDVENDOR_ACTIVATE                                        WorldType = 0x1F2
-	SMSG_PLAY_SPELL_VISUAL                                           WorldType = 0x1F3
-	CMSG_ZONEUPDATE                                                  WorldType = 0x1F4
-	SMSG_PARTYKILLLOG                                                WorldType = 0x1F5
-	SMSG_COMPRESSED_UPDATE_OBJECT                                    WorldType = 0x1F6
-	SMSG_PLAY_SPELL_IMPACT                                           WorldType = 0x1F7
-	SMSG_EXPLORATION_EXPERIENCE                                      WorldType = 0x1F8
-	CMSG_GM_SET_SECURITY_GROUP                                       WorldType = 0x1F9
-	CMSG_GM_NUKE                                                     WorldType = 0x1FA
-	MSG_RANDOM_ROLL                                                  WorldType = 0x1FB
-	SMSG_ENVIRONMENTALDAMAGELOG                                      WorldType = 0x1FC
-	CMSG_CHANGEPLAYER_DIFFICULTY                                     WorldType = 0x1FD
-	SMSG_RWHOIS                                                      WorldType = 0x1FE
-	SMSG_LFG_PLAYER_REWARD                                           WorldType = 0x1FF // uint32 uint8 uint32 uint32 uint32 uint32 uint32 uint8 for (uint8) {uint32 uint32 uint32}
-	SMSG_LFG_TELEPORT_DENIED                                         WorldType = 0x200 // uint32 (1 2 4 6;0 5 7)
-	CMSG_UNLEARN_SPELL                                               WorldType = 0x201
-	CMSG_UNLEARN_SKILL                                               WorldType = 0x202
-	SMSG_REMOVED_SPELL                                               WorldType = 0x203
-	CMSG_DECHARGE                                                    WorldType = 0x204
-	CMSG_GMTICKET_CREATE                                             WorldType = 0x205
-	SMSG_GMTICKET_CREATE                                             WorldType = 0x206
-	CMSG_GMTICKET_UPDATETEXT                                         WorldType = 0x207
-	SMSG_GMTICKET_UPDATETEXT                                         WorldType = 0x208
-	SMSG_ACCOUNT_DATA_TIMES                                          WorldType = 0x209
-	CMSG_REQUEST_ACCOUNT_DATA                                        WorldType = 0x20A
-	CMSG_UPDATE_ACCOUNT_DATA                                         WorldType = 0x20B
-	SMSG_UPDATE_ACCOUNT_DATA                                         WorldType = 0x20C
-	SMSG_CLEAR_FAR_SIGHT_IMMEDIATE                                   WorldType = 0x20D
-	SMSG_CHANGEPLAYER_DIFFICULTY_RESULT                              WorldType = 0x20E
-	CMSG_GM_TEACH                                                    WorldType = 0x20F
-	CMSG_GM_CREATE_ITEM_TARGET                                       WorldType = 0x210
-	CMSG_GMTICKET_GETTICKET                                          WorldType = 0x211
-	SMSG_GMTICKET_GETTICKET                                          WorldType = 0x212
-	CMSG_UNLEARN_TALENTS                                             WorldType = 0x213
-	SMSG_UPDATE_INSTANCE_ENCOUNTER_UNIT                              WorldType = 0x214
-	SMSG_GAMEOBJECT_DESPAWN_ANIM                                     WorldType = 0x215
-	MSG_CORPSE_QUERY                                                 WorldType = 0x216
-	CMSG_GMTICKET_DELETETICKET                                       WorldType = 0x217
-	SMSG_GMTICKET_DELETETICKET                                       WorldType = 0x218
-	SMSG_CHAT_WRONG_FACTION                                          WorldType = 0x219
-	CMSG_GMTICKET_SYSTEMSTATUS                                       WorldType = 0x21A
-	SMSG_GMTICKET_SYSTEMSTATUS                                       WorldType = 0x21B
-	CMSG_SPIRIT_HEALER_ACTIVATE                                      WorldType = 0x21C
-	CMSG_SET_STAT_CHEAT                                              WorldType = 0x21D
-	SMSG_QUEST_FORCE_REMOVE                                          WorldType = 0x21E // uint32 questid
-	CMSG_SKILL_BUY_STEP                                              WorldType = 0x21F
-	CMSG_SKILL_BUY_RANK                                              WorldType = 0x220
-	CMSG_XP_CHEAT                                                    WorldType = 0x221
-	SMSG_SPIRIT_HEALER_CONFIRM                                       WorldType = 0x222
-	CMSG_CHARACTER_POINT_CHEAT                                       WorldType = 0x223
-	SMSG_GOSSIP_POI                                                  WorldType = 0x224
-	CMSG_CHAT_IGNORED                                                WorldType = 0x225
-	CMSG_GM_VISION                                                   WorldType = 0x226
-	CMSG_SERVER_COMMAND                                              WorldType = 0x227
-	CMSG_GM_SILENCE                                                  WorldType = 0x228
-	CMSG_GM_REVEALTO                                                 WorldType = 0x229
-	CMSG_GM_RESURRECT                                                WorldType = 0x22A
-	CMSG_GM_SUMMONMOB                                                WorldType = 0x22B
-	CMSG_GM_MOVECORPSE                                               WorldType = 0x22C
-	CMSG_GM_FREEZE                                                   WorldType = 0x22D
-	CMSG_GM_UBERINVIS                                                WorldType = 0x22E
-	CMSG_GM_REQUEST_PLAYER_INFO                                      WorldType = 0x22F
-	SMSG_GM_PLAYER_INFO                                              WorldType = 0x230
-	CMSG_GUILD_RANK                                                  WorldType = 0x231
-	CMSG_GUILD_ADD_RANK                                              WorldType = 0x232
-	CMSG_GUILD_DEL_RANK                                              WorldType = 0x233
-	CMSG_GUILD_SET_PUBLIC_NOTE                                       WorldType = 0x234
-	CMSG_GUILD_SET_OFFICER_NOTE                                      WorldType = 0x235
-	SMSG_LOGIN_VERIFY_WORLD                                          WorldType = 0x236
-	CMSG_CLEAR_EXPLORATION                                           WorldType = 0x237
-	CMSG_SEND_MAIL                                                   WorldType = 0x238
-	SMSG_SEND_MAIL_RESULT                                            WorldType = 0x239
-	CMSG_GET_MAIL_LIST                                               WorldType = 0x23A
-	SMSG_MAIL_LIST_RESULT                                            WorldType = 0x23B
-	CMSG_BATTLEFIELD_LIST                                            WorldType = 0x23C
-	SMSG_BATTLEFIELD_LIST                                            WorldType = 0x23D
-	CMSG_BATTLEFIELD_JOIN                                            WorldType = 0x23E
-	SMSG_FORCE_SET_VEHICLE_REC_ID                                    WorldType = 0x23F
-	CMSG_SET_VEHICLE_REC_ID_ACK                                      WorldType = 0x240
-	CMSG_TAXICLEARNODE                                               WorldType = 0x241
-	CMSG_TAXIENABLENODE                                              WorldType = 0x242
-	CMSG_ITEM_TEXT_QUERY                                             WorldType = 0x243
-	SMSG_ITEM_TEXT_QUERY_RESPONSE                                    WorldType = 0x244
-	CMSG_MAIL_TAKE_MONEY                                             WorldType = 0x245
-	CMSG_MAIL_TAKE_ITEM                                              WorldType = 0x246
-	CMSG_MAIL_MARK_AS_READ                                           WorldType = 0x247
-	CMSG_MAIL_RETURN_TO_SENDER                                       WorldType = 0x248
-	CMSG_MAIL_DELETE                                                 WorldType = 0x249
-	CMSG_MAIL_CREATE_TEXT_ITEM                                       WorldType = 0x24A
-	SMSG_SPELLLOGMISS                                                WorldType = 0x24B
-	SMSG_SPELLLOGEXECUTE                                             WorldType = 0x24C
-	SMSG_DEBUGAURAPROC                                               WorldType = 0x24D
-	SMSG_PERIODICAURALOG                                             WorldType = 0x24E
-	SMSG_SPELLDAMAGESHIELD                                           WorldType = 0x24F
-	SMSG_SPELLNONMELEEDAMAGELOG                                      WorldType = 0x250
-	CMSG_LEARN_TALENT                                                WorldType = 0x251
-	SMSG_RESURRECT_FAILED                                            WorldType = 0x252
-	CMSG_TOGGLE_PVP                                                  WorldType = 0x253
-	SMSG_ZONE_UNDER_ATTACK                                           WorldType = 0x254
-	MSG_AUCTION_HELLO                                                WorldType = 0x255
-	CMSG_AUCTION_SELL_ITEM                                           WorldType = 0x256
-	CMSG_AUCTION_REMOVE_ITEM                                         WorldType = 0x257
-	CMSG_AUCTION_LIST_ITEMS                                          WorldType = 0x258
-	CMSG_AUCTION_LIST_OWNER_ITEMS                                    WorldType = 0x259
-	CMSG_AUCTION_PLACE_BID                                           WorldType = 0x25A
-	SMSG_AUCTION_COMMAND_RESULT                                      WorldType = 0x25B
-	SMSG_AUCTION_LIST_RESULT                                         WorldType = 0x25C
-	SMSG_AUCTION_OWNER_LIST_RESULT                                   WorldType = 0x25D
-	SMSG_AUCTION_BIDDER_NOTIFICATION                                 WorldType = 0x25E
-	SMSG_AUCTION_OWNER_NOTIFICATION                                  WorldType = 0x25F
-	SMSG_PROCRESIST                                                  WorldType = 0x260
-	SMSG_COMBAT_EVENT_FAILED                                         WorldType = 0x261
-	SMSG_DISPEL_FAILED                                               WorldType = 0x262
-	SMSG_SPELLORDAMAGE_IMMUNE                                        WorldType = 0x263
-	CMSG_AUCTION_LIST_BIDDER_ITEMS                                   WorldType = 0x264
-	SMSG_AUCTION_BIDDER_LIST_RESULT                                  WorldType = 0x265
-	SMSG_SET_FLAT_SPELL_MODIFIER                                     WorldType = 0x266
-	SMSG_SET_PCT_SPELL_MODIFIER                                      WorldType = 0x267
-	CMSG_SET_AMMO                                                    WorldType = 0x268
-	SMSG_CORPSE_RECLAIM_DELAY                                        WorldType = 0x269
-	CMSG_SET_ACTIVE_MOVER                                            WorldType = 0x26A
-	CMSG_PET_CANCEL_AURA                                             WorldType = 0x26B
-	CMSG_PLAYER_AI_CHEAT                                             WorldType = 0x26C
-	CMSG_CANCEL_AUTO_REPEAT_SPELL                                    WorldType = 0x26D
-	MSG_GM_ACCOUNT_ONLINE                                            WorldType = 0x26E
-	MSG_LIST_STABLED_PETS                                            WorldType = 0x26F
-	CMSG_STABLE_PET                                                  WorldType = 0x270
-	CMSG_UNSTABLE_PET                                                WorldType = 0x271
-	CMSG_BUY_STABLE_SLOT                                             WorldType = 0x272
-	SMSG_STABLE_RESULT                                               WorldType = 0x273
-	CMSG_STABLE_REVIVE_PET                                           WorldType = 0x274
-	CMSG_STABLE_SWAP_PET                                             WorldType = 0x275
-	MSG_QUEST_PUSH_RESULT                                            WorldType = 0x276
-	SMSG_PLAY_MUSIC                                                  WorldType = 0x277
-	SMSG_PLAY_OBJECT_SOUND                                           WorldType = 0x278
-	CMSG_REQUEST_PET_INFO                                            WorldType = 0x279
-	CMSG_FAR_SIGHT                                                   WorldType = 0x27A
-	SMSG_SPELLDISPELLOG                                              WorldType = 0x27B
-	SMSG_DAMAGE_CALC_LOG                                             WorldType = 0x27C
-	CMSG_ENABLE_DAMAGE_LOG                                           WorldType = 0x27D
-	CMSG_GROUP_CHANGE_SUB_GROUP                                      WorldType = 0x27E
-	CMSG_REQUEST_PARTY_MEMBER_STATS                                  WorldType = 0x27F
-	CMSG_GROUP_SWAP_SUB_GROUP                                        WorldType = 0x280
-	CMSG_RESET_FACTION_CHEAT                                         WorldType = 0x281
-	CMSG_AUTOSTORE_BANK_ITEM                                         WorldType = 0x282
-	CMSG_AUTOBANK_ITEM                                               WorldType = 0x283
-	MSG_QUERY_NEXT_MAIL_TIME                                         WorldType = 0x284
-	SMSG_RECEIVED_MAIL                                               WorldType = 0x285
-	SMSG_RAID_GROUP_ONLY                                             WorldType = 0x286
-	CMSG_SET_DURABILITY_CHEAT                                        WorldType = 0x287
-	CMSG_SET_PVP_RANK_CHEAT                                          WorldType = 0x288
-	CMSG_ADD_PVP_MEDAL_CHEAT                                         WorldType = 0x289
-	CMSG_DEL_PVP_MEDAL_CHEAT                                         WorldType = 0x28A
-	CMSG_SET_PVP_TITLE                                               WorldType = 0x28B
-	SMSG_PVP_CREDIT                                                  WorldType = 0x28C
-	SMSG_AUCTION_REMOVED_NOTIFICATION                                WorldType = 0x28D
-	CMSG_GROUP_RAID_CONVERT                                          WorldType = 0x28E
-	CMSG_GROUP_ASSISTANT_LEADER                                      WorldType = 0x28F
-	CMSG_BUYBACK_ITEM                                                WorldType = 0x290
-	SMSG_SERVER_MESSAGE                                              WorldType = 0x291
-	CMSG_SET_SAVED_INSTANCE_EXTEND                                   WorldType = 0x292
-	SMSG_LFG_OFFER_CONTINUE                                          WorldType = 0x293
-	CMSG_TEST_DROP_RATE                                              WorldType = 0x294
-	SMSG_TEST_DROP_RATE_RESULT                                       WorldType = 0x295
-	CMSG_LFG_GET_STATUS                                              WorldType = 0x296
-	SMSG_SHOW_MAILBOX                                                WorldType = 0x297
-	SMSG_RESET_RANGED_COMBAT_TIMER                                   WorldType = 0x298
-	SMSG_CHAT_NOT_IN_PARTY                                           WorldType = 0x299 // uint32 errors: ERR_NOT_IN_GROUP (2 51) and ERR_NOT_IN_RAID (3 39 40)
-	CMSG_GMTICKETSYSTEM_TOGGLE                                       WorldType = 0x29A
-	CMSG_CANCEL_GROWTH_AURA                                          WorldType = 0x29B
-	SMSG_CANCEL_AUTO_REPEAT                                          WorldType = 0x29C
-	SMSG_STANDSTATE_UPDATE                                           WorldType = 0x29D
-	SMSG_LOOT_ALL_PASSED                                             WorldType = 0x29E
-	SMSG_LOOT_ROLL_WON                                               WorldType = 0x29F
-	CMSG_LOOT_ROLL                                                   WorldType = 0x2A0
-	SMSG_LOOT_START_ROLL                                             WorldType = 0x2A1
-	SMSG_LOOT_ROLL                                                   WorldType = 0x2A2
-	CMSG_LOOT_MASTER_GIVE                                            WorldType = 0x2A3
-	SMSG_LOOT_MASTER_LIST                                            WorldType = 0x2A4
-	SMSG_SET_FORCED_REACTIONS                                        WorldType = 0x2A5
-	SMSG_SPELL_FAILED_OTHER                                          WorldType = 0x2A6
-	SMSG_GAMEOBJECT_RESET_STATE                                      WorldType = 0x2A7
-	CMSG_REPAIR_ITEM                                                 WorldType = 0x2A8
-	SMSG_CHAT_PLAYER_NOT_FOUND                                       WorldType = 0x2A9
-	MSG_TALENT_WIPE_CONFIRM                                          WorldType = 0x2AA
-	SMSG_SUMMON_REQUEST                                              WorldType = 0x2AB
-	CMSG_SUMMON_RESPONSE                                             WorldType = 0x2AC
-	MSG_DEV_SHOWLABEL                                                WorldType = 0x2AD
-	SMSG_MONSTER_MOVE_TRANSPORT                                      WorldType = 0x2AE
-	SMSG_PET_BROKEN                                                  WorldType = 0x2AF
-	MSG_MOVE_FEATHER_FALL                                            WorldType = 0x2B0
-	MSG_MOVE_WATER_WALK                                              WorldType = 0x2B1
-	CMSG_SERVER_BROADCAST                                            WorldType = 0x2B2
-	CMSG_SELF_RES                                                    WorldType = 0x2B3
-	SMSG_FEIGN_DEATH_RESISTED                                        WorldType = 0x2B4
-	CMSG_RUN_SCRIPT                                                  WorldType = 0x2B5
-	SMSG_SCRIPT_MESSAGE                                              WorldType = 0x2B6
-	SMSG_DUEL_COUNTDOWN                                              WorldType = 0x2B7
-	SMSG_AREA_TRIGGER_MESSAGE                                        WorldType = 0x2B8
-	CMSG_SHOWING_HELM                                                WorldType = 0x2B9
-	CMSG_SHOWING_CLOAK                                               WorldType = 0x2BA
-	SMSG_LFG_ROLE_CHOSEN                                             WorldType = 0x2BB
-	SMSG_PLAYER_SKINNED                                              WorldType = 0x2BC
-	SMSG_DURABILITY_DAMAGE_DEATH                                     WorldType = 0x2BD
-	CMSG_SET_EXPLORATION                                             WorldType = 0x2BE
-	CMSG_SET_ACTIONBAR_TOGGLES                                       WorldType = 0x2BF
-	UMSG_DELETE_GUILD_CHARTER                                        WorldType = 0x2C0
-	MSG_PETITION_RENAME                                              WorldType = 0x2C1
-	SMSG_INIT_WORLD_STATES                                           WorldType = 0x2C2
-	SMSG_UPDATE_WORLD_STATE                                          WorldType = 0x2C3
-	CMSG_ITEM_NAME_QUERY                                             WorldType = 0x2C4
-	SMSG_ITEM_NAME_QUERY_RESPONSE                                    WorldType = 0x2C5
-	SMSG_PET_ACTION_FEEDBACK                                         WorldType = 0x2C6
-	CMSG_CHAR_RENAME                                                 WorldType = 0x2C7
-	SMSG_CHAR_RENAME                                                 WorldType = 0x2C8
-	CMSG_MOVE_SPLINE_DONE                                            WorldType = 0x2C9
-	CMSG_MOVE_FALL_RESET                                             WorldType = 0x2CA
-	SMSG_INSTANCE_SAVE_CREATED                                       WorldType = 0x2CB
-	SMSG_RAID_INSTANCE_INFO                                          WorldType = 0x2CC
-	CMSG_REQUEST_RAID_INFO                                           WorldType = 0x2CD
-	CMSG_MOVE_TIME_SKIPPED                                           WorldType = 0x2CE
-	CMSG_MOVE_FEATHER_FALL_ACK                                       WorldType = 0x2CF
-	CMSG_MOVE_WATER_WALK_ACK                                         WorldType = 0x2D0
-	CMSG_MOVE_NOT_ACTIVE_MOVER                                       WorldType = 0x2D1
-	SMSG_PLAY_SOUND                                                  WorldType = 0x2D2
-	CMSG_BATTLEFIELD_STATUS                                          WorldType = 0x2D3
-	SMSG_BATTLEFIELD_STATUS                                          WorldType = 0x2D4
-	CMSG_BATTLEFIELD_PORT                                            WorldType = 0x2D5
-	MSG_INSPECT_HONOR_STATS                                          WorldType = 0x2D6
-	CMSG_BATTLEMASTER_HELLO                                          WorldType = 0x2D7
-	CMSG_MOVE_START_SWIM_CHEAT                                       WorldType = 0x2D8
-	CMSG_MOVE_STOP_SWIM_CHEAT                                        WorldType = 0x2D9
-	SMSG_FORCE_WALK_SPEED_CHANGE                                     WorldType = 0x2DA
-	CMSG_FORCE_WALK_SPEED_CHANGE_ACK                                 WorldType = 0x2DB
-	SMSG_FORCE_SWIM_BACK_SPEED_CHANGE                                WorldType = 0x2DC
-	CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK                            WorldType = 0x2DD
-	SMSG_FORCE_TURN_RATE_CHANGE                                      WorldType = 0x2DE
-	CMSG_FORCE_TURN_RATE_CHANGE_ACK                                  WorldType = 0x2DF
-	MSG_PVP_LOG_DATA                                                 WorldType = 0x2E0
-	CMSG_LEAVE_BATTLEFIELD                                           WorldType = 0x2E1
-	CMSG_AREA_SPIRIT_HEALER_QUERY                                    WorldType = 0x2E2
-	CMSG_AREA_SPIRIT_HEALER_QUEUE                                    WorldType = 0x2E3
-	SMSG_AREA_SPIRIT_HEALER_TIME                                     WorldType = 0x2E4
-	CMSG_GM_UNTEACH                                                  WorldType = 0x2E5
-	SMSG_WARDEN_DATA                                                 WorldType = 0x2E6
-	CMSG_WARDEN_DATA                                                 WorldType = 0x2E7
-	SMSG_GROUP_JOINED_BATTLEGROUND                                   WorldType = 0x2E8
-	MSG_BATTLEGROUND_PLAYER_POSITIONS                                WorldType = 0x2E9
-	CMSG_PET_STOP_ATTACK                                             WorldType = 0x2EA
-	SMSG_BINDER_CONFIRM                                              WorldType = 0x2EB
-	SMSG_BATTLEGROUND_PLAYER_JOINED                                  WorldType = 0x2EC
-	SMSG_BATTLEGROUND_PLAYER_LEFT                                    WorldType = 0x2ED
-	CMSG_BATTLEMASTER_JOIN                                           WorldType = 0x2EE
-	SMSG_ADDON_INFO                                                  WorldType = 0x2EF
-	CMSG_PET_UNLEARN                                                 WorldType = 0x2F0 // Deprecated 3.x
-	SMSG_PET_UNLEARN_CONFIRM                                         WorldType = 0x2F1 // Deprecated 3.x
-	SMSG_PARTY_MEMBER_STATS_FULL                                     WorldType = 0x2F2
-	CMSG_PET_SPELL_AUTOCAST                                          WorldType = 0x2F3
-	SMSG_WEATHER                                                     WorldType = 0x2F4
-	SMSG_PLAY_TIME_WARNING                                           WorldType = 0x2F5
-	SMSG_MINIGAME_SETUP                                              WorldType = 0x2F6
-	SMSG_MINIGAME_STATE                                              WorldType = 0x2F7
-	CMSG_MINIGAME_MOVE                                               WorldType = 0x2F8
-	SMSG_MINIGAME_MOVE_FAILED                                        WorldType = 0x2F9
-	SMSG_RAID_INSTANCE_MESSAGE                                       WorldType = 0x2FA
-	SMSG_COMPRESSED_MOVES                                            WorldType = 0x2FB
-	CMSG_GUILD_INFO_TEXT                                             WorldType = 0x2FC
-	SMSG_CHAT_RESTRICTED                                             WorldType = 0x2FD
-	SMSG_SPLINE_SET_RUN_SPEED                                        WorldType = 0x2FE
-	SMSG_SPLINE_SET_RUN_BACK_SPEED                                   WorldType = 0x2FF
-	SMSG_SPLINE_SET_SWIM_SPEED                                       WorldType = 0x300
-	SMSG_SPLINE_SET_WALK_SPEED                                       WorldType = 0x301
-	SMSG_SPLINE_SET_SWIM_BACK_SPEED                                  WorldType = 0x302
-	SMSG_SPLINE_SET_TURN_RATE                                        WorldType = 0x303
-	SMSG_SPLINE_MOVE_UNROOT                                          WorldType = 0x304
-	SMSG_SPLINE_MOVE_FEATHER_FALL                                    WorldType = 0x305
-	SMSG_SPLINE_MOVE_NORMAL_FALL                                     WorldType = 0x306
-	SMSG_SPLINE_MOVE_SET_HOVER                                       WorldType = 0x307
-	SMSG_SPLINE_MOVE_UNSET_HOVER                                     WorldType = 0x308
-	SMSG_SPLINE_MOVE_WATER_WALK                                      WorldType = 0x309
-	SMSG_SPLINE_MOVE_LAND_WALK                                       WorldType = 0x30A
-	SMSG_SPLINE_MOVE_START_SWIM                                      WorldType = 0x30B
-	SMSG_SPLINE_MOVE_STOP_SWIM                                       WorldType = 0x30C
-	SMSG_SPLINE_MOVE_SET_RUN_MODE                                    WorldType = 0x30D
-	SMSG_SPLINE_MOVE_SET_WALK_MODE                                   WorldType = 0x30E
-	CMSG_GM_NUKE_ACCOUNT                                             WorldType = 0x30F
-	MSG_GM_DESTROY_CORPSE                                            WorldType = 0x310
-	CMSG_GM_DESTROY_ONLINE_CORPSE                                    WorldType = 0x311
-	CMSG_ACTIVATETAXIEXPRESS                                         WorldType = 0x312
-	SMSG_SET_FACTION_ATWAR                                           WorldType = 0x313
-	SMSG_GAMETIMEBIAS_SET                                            WorldType = 0x314
-	CMSG_DEBUG_ACTIONS_START                                         WorldType = 0x315
-	CMSG_DEBUG_ACTIONS_STOP                                          WorldType = 0x316
-	CMSG_SET_FACTION_INACTIVE                                        WorldType = 0x317
-	CMSG_SET_WATCHED_FACTION                                         WorldType = 0x318
-	MSG_MOVE_TIME_SKIPPED                                            WorldType = 0x319
-	SMSG_SPLINE_MOVE_ROOT                                            WorldType = 0x31A
-	CMSG_SET_EXPLORATION_ALL                                         WorldType = 0x31B
-	SMSG_INVALIDATE_PLAYER                                           WorldType = 0x31C
-	CMSG_RESET_INSTANCES                                             WorldType = 0x31D
-	SMSG_INSTANCE_RESET                                              WorldType = 0x31E
-	SMSG_INSTANCE_RESET_FAILED                                       WorldType = 0x31F
-	SMSG_UPDATE_LAST_INSTANCE                                        WorldType = 0x320
-	MSG_RAID_TARGET_UPDATE                                           WorldType = 0x321
-	MSG_RAID_READY_CHECK                                             WorldType = 0x322
-	CMSG_LUA_USAGE                                                   WorldType = 0x323
-	SMSG_PET_ACTION_SOUND                                            WorldType = 0x324
-	SMSG_PET_DISMISS_SOUND                                           WorldType = 0x325
-	SMSG_GHOSTEE_GONE                                                WorldType = 0x326
-	CMSG_GM_UPDATE_TICKET_STATUS                                     WorldType = 0x327
-	SMSG_GM_TICKET_STATUS_UPDATE                                     WorldType = 0x328
-	MSG_SET_DUNGEON_DIFFICULTY                                       WorldType = 0x329
-	CMSG_GMSURVEY_SUBMIT                                             WorldType = 0x32A
-	SMSG_UPDATE_INSTANCE_OWNERSHIP                                   WorldType = 0x32B
-	CMSG_IGNORE_KNOCKBACK_CHEAT                                      WorldType = 0x32C
-	SMSG_CHAT_PLAYER_AMBIGUOUS                                       WorldType = 0x32D
-	MSG_DELAY_GHOST_TELEPORT                                         WorldType = 0x32E
-	SMSG_SPELLINSTAKILLLOG                                           WorldType = 0x32F
-	SMSG_SPELL_UPDATE_CHAIN_TARGETS                                  WorldType = 0x330
-	CMSG_CHAT_FILTERED                                               WorldType = 0x331
-	SMSG_EXPECTED_SPAM_RECORDS                                       WorldType = 0x332
-	SMSG_SPELLSTEALLOG                                               WorldType = 0x333
-	CMSG_LOTTERY_QUERY_OBSOLETE                                      WorldType = 0x334
-	SMSG_LOTTERY_QUERY_RESULT_OBSOLETE                               WorldType = 0x335
-	CMSG_BUY_LOTTERY_TICKET_OBSOLETE                                 WorldType = 0x336
-	SMSG_LOTTERY_RESULT_OBSOLETE                                     WorldType = 0x337
-	SMSG_CHARACTER_PROFILE                                           WorldType = 0x338
-	SMSG_CHARACTER_PROFILE_REALM_CONNECTED                           WorldType = 0x339
-	SMSG_DEFENSE_MESSAGE                                             WorldType = 0x33A
-	SMSG_INSTANCE_DIFFICULTY                                         WorldType = 0x33B
-	MSG_GM_RESETINSTANCELIMIT                                        WorldType = 0x33C
-	SMSG_MOTD                                                        WorldType = 0x33D
-	SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY                WorldType = 0x33E
-	SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY              WorldType = 0x33F
-	CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK            WorldType = 0x340
-	MSG_MOVE_START_SWIM_CHEAT                                        WorldType = 0x341
-	MSG_MOVE_STOP_SWIM_CHEAT                                         WorldType = 0x342
-	SMSG_MOVE_SET_CAN_FLY                                            WorldType = 0x343
-	SMSG_MOVE_UNSET_CAN_FLY                                          WorldType = 0x344
-	CMSG_MOVE_SET_CAN_FLY_ACK                                        WorldType = 0x345
-	CMSG_MOVE_SET_FLY                                                WorldType = 0x346
-	CMSG_SOCKET_GEMS                                                 WorldType = 0x347
-	CMSG_ARENA_TEAM_CREATE                                           WorldType = 0x348
-	SMSG_ARENA_TEAM_COMMAND_RESULT                                   WorldType = 0x349
-	MSG_MOVE_UPDATE_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY              WorldType = 0x34A
-	CMSG_ARENA_TEAM_QUERY                                            WorldType = 0x34B
-	SMSG_ARENA_TEAM_QUERY_RESPONSE                                   WorldType = 0x34C
-	CMSG_ARENA_TEAM_ROSTER                                           WorldType = 0x34D
-	SMSG_ARENA_TEAM_ROSTER                                           WorldType = 0x34E
-	CMSG_ARENA_TEAM_INVITE                                           WorldType = 0x34F
-	SMSG_ARENA_TEAM_INVITE                                           WorldType = 0x350
-	CMSG_ARENA_TEAM_ACCEPT                                           WorldType = 0x351
-	CMSG_ARENA_TEAM_DECLINE                                          WorldType = 0x352
-	CMSG_ARENA_TEAM_LEAVE                                            WorldType = 0x353
-	CMSG_ARENA_TEAM_REMOVE                                           WorldType = 0x354
-	CMSG_ARENA_TEAM_DISBAND                                          WorldType = 0x355
-	CMSG_ARENA_TEAM_LEADER                                           WorldType = 0x356
-	SMSG_ARENA_TEAM_EVENT                                            WorldType = 0x357
-	CMSG_BATTLEMASTER_JOIN_ARENA                                     WorldType = 0x358
-	MSG_MOVE_START_ASCEND                                            WorldType = 0x359
-	MSG_MOVE_STOP_ASCEND                                             WorldType = 0x35A
-	SMSG_ARENA_TEAM_STATS                                            WorldType = 0x35B
-	CMSG_LFG_JOIN                                                    WorldType = 0x35C
-	CMSG_LFG_LEAVE                                                   WorldType = 0x35D
-	CMSG_SEARCH_LFG_JOIN                                             WorldType = 0x35E
-	CMSG_SEARCH_LFG_LEAVE                                            WorldType = 0x35F
-	SMSG_UPDATE_LFG_LIST                                             WorldType = 0x360 // uint32 uint32 if (uint8) { uint32 count for (count) { uint64} } uint32 count2 uint32 for (count2) { uint64 uint32 flags if (flags & 0x2) {string} if (flags & 0x10) {for (3) uint8} if (flags & 0x80) {uint64 uint32}} uint32 count3 uint32 for (count3) {uint64 uint32 flags if (flags & 0x1) {uint8 uint8 uint8 for (3) uint8 uint32 uint32 uint32 uint32 uint32 uint32 float float uint32 uint32 uint32 uint32 uint32 float uint32 uint32 uint32 uint32 uint32 uint32} if (flags&0x2) string if (flags&0x4) uint8 if (flags&0x8) uint64 if (flags&0x10) uint8 if (flags&0x20) uint32 if (flags&0x40) uint8 if (flags& 0x80) {uint64 uint32}}
-	SMSG_LFG_PROPOSAL_UPDATE                                         WorldType = 0x361 // uint32 uint8 uint32 uint32 uint8 for (uint8) {uint32 uint8 uint8 uint8 uint8}
-	CMSG_LFG_PROPOSAL_RESULT                                         WorldType = 0x362
-	SMSG_LFG_ROLE_CHECK_UPDATE                                       WorldType = 0x363 // uint32 uint8 for (uint8) uint32 uint8 for (uint8) { uint64 uint8 uint32 uint8 }
-	SMSG_LFG_JOIN_RESULT                                             WorldType = 0x364 // uint32 unk uint32 if (unk WorldType =WorldType = 6) { uint8 count for (count) uint64 }
-	SMSG_LFG_QUEUE_STATUS                                            WorldType = 0x365 // uint32 dungeon uint32 lfgtype uint32 uint32 uint32 uint32 uint8 uint8 uint8 uint8
-	CMSG_SET_LFG_COMMENT                                             WorldType = 0x366
-	SMSG_LFG_UPDATE_PLAYER                                           WorldType = 0x367 // uint8 if (uint8) { uint8 uint8 uint8 uint8 if (uint8) for (uint8) uint32 string}
-	SMSG_LFG_UPDATE_PARTY                                            WorldType = 0x368 // uint8 if (uint8) { uint8 uint8 uint8 for (3) uint8 uint8 if (uint8) for (uint8) uint32 string}
-	SMSG_LFG_UPDATE_SEARCH                                           WorldType = 0x369 // uint8
-	CMSG_LFG_SET_ROLES                                               WorldType = 0x36A
-	CMSG_LFG_SET_NEEDS                                               WorldType = 0x36B
-	CMSG_LFG_SET_BOOT_VOTE                                           WorldType = 0x36C
-	SMSG_LFG_BOOT_PROPOSAL_UPDATE                                    WorldType = 0x36D // uint8 uint8 uint8 uint64 uint32 uint32 uint32 uint32
-	CMSG_LFD_PLAYER_LOCK_INFO_REQUEST                                WorldType = 0x36E
-	SMSG_LFG_PLAYER_INFO                                             WorldType = 0x36F // uint8 for (uint8) { uint32 uint8 uint32 uint32 uint32 uint32 uint8 for (uint8) {uint32 uint32 uint32}} uint32 for (uint32) {uint32 uint32}
-	CMSG_LFG_TELEPORT                                                WorldType = 0x370
-	CMSG_LFD_PARTY_LOCK_INFO_REQUEST                                 WorldType = 0x371
-	SMSG_LFG_PARTY_INFO                                              WorldType = 0x372 // uint8 for (uint8) uint64
-	SMSG_TITLE_EARNED                                                WorldType = 0x373
-	CMSG_SET_TITLE                                                   WorldType = 0x374
-	CMSG_CANCEL_MOUNT_AURA                                           WorldType = 0x375
-	SMSG_ARENA_ERROR                                                 WorldType = 0x376
-	MSG_INSPECT_ARENA_TEAMS                                          WorldType = 0x377
-	SMSG_DEATH_RELEASE_LOC                                           WorldType = 0x378
-	CMSG_CANCEL_TEMP_ENCHANTMENT                                     WorldType = 0x379
-	SMSG_FORCED_DEATH_UPDATE                                         WorldType = 0x37A
-	CMSG_CHEAT_SET_HONOR_CURRENCY                                    WorldType = 0x37B
-	CMSG_CHEAT_SET_ARENA_CURRENCY                                    WorldType = 0x37C
-	MSG_MOVE_SET_FLIGHT_SPEED_CHEAT                                  WorldType = 0x37D
-	MSG_MOVE_SET_FLIGHT_SPEED                                        WorldType = 0x37E
-	MSG_MOVE_SET_FLIGHT_BACK_SPEED_CHEAT                             WorldType = 0x37F
-	MSG_MOVE_SET_FLIGHT_BACK_SPEED                                   WorldType = 0x380
-	SMSG_FORCE_FLIGHT_SPEED_CHANGE                                   WorldType = 0x381
-	CMSG_FORCE_FLIGHT_SPEED_CHANGE_ACK                               WorldType = 0x382
-	SMSG_FORCE_FLIGHT_BACK_SPEED_CHANGE                              WorldType = 0x383
-	CMSG_FORCE_FLIGHT_BACK_SPEED_CHANGE_ACK                          WorldType = 0x384
-	SMSG_SPLINE_SET_FLIGHT_SPEED                                     WorldType = 0x385
-	SMSG_SPLINE_SET_FLIGHT_BACK_SPEED                                WorldType = 0x386
-	CMSG_MAELSTROM_INVALIDATE_CACHE                                  WorldType = 0x387
-	SMSG_FLIGHT_SPLINE_SYNC                                          WorldType = 0x388
-	CMSG_SET_TAXI_BENCHMARK_MODE                                     WorldType = 0x389
-	SMSG_JOINED_BATTLEGROUND_QUEUE                                   WorldType = 0x38A
-	SMSG_REALM_SPLIT                                                 WorldType = 0x38B
-	CMSG_REALM_SPLIT                                                 WorldType = 0x38C
-	CMSG_MOVE_CHNG_TRANSPORT                                         WorldType = 0x38D
-	MSG_PARTY_ASSIGNMENT                                             WorldType = 0x38E
-	SMSG_OFFER_PETITION_ERROR                                        WorldType = 0x38F
-	SMSG_TIME_SYNC_REQ                                               WorldType = 0x390
-	CMSG_TIME_SYNC_RESP                                              WorldType = 0x391
-	CMSG_SEND_LOCAL_EVENT                                            WorldType = 0x392
-	CMSG_SEND_GENERAL_TRIGGER                                        WorldType = 0x393
-	CMSG_SEND_COMBAT_TRIGGER                                         WorldType = 0x394
-	CMSG_MAELSTROM_GM_SENT_MAIL                                      WorldType = 0x395
-	SMSG_RESET_FAILED_NOTIFY                                         WorldType = 0x396
-	SMSG_REAL_GROUP_UPDATE                                           WorldType = 0x397
-	SMSG_LFG_DISABLED                                                WorldType = 0x398
-	CMSG_ACTIVE_PVP_CHEAT                                            WorldType = 0x399
-	CMSG_CHEAT_DUMP_ITEMS_DEBUG_ONLY                                 WorldType = 0x39A
-	SMSG_CHEAT_DUMP_ITEMS_DEBUG_ONLY_RESPONSE                        WorldType = 0x39B
-	SMSG_CHEAT_DUMP_ITEMS_DEBUG_ONLY_RESPONSE_WRITE_FILE             WorldType = 0x39C
-	SMSG_UPDATE_COMBO_POINTS                                         WorldType = 0x39D
-	SMSG_VOICE_SESSION_ROSTER_UPDATE                                 WorldType = 0x39E
-	SMSG_VOICE_SESSION_LEAVE                                         WorldType = 0x39F
-	SMSG_VOICE_SESSION_ADJUST_PRIORITY                               WorldType = 0x3A0
-	CMSG_VOICE_SET_TALKER_MUTED_REQUEST                              WorldType = 0x3A1
-	SMSG_VOICE_SET_TALKER_MUTED                                      WorldType = 0x3A2
-	SMSG_INIT_EXTRA_AURA_INFO_OBSOLETE                               WorldType = 0x3A3
-	SMSG_SET_EXTRA_AURA_INFO_OBSOLETE                                WorldType = 0x3A4
-	SMSG_SET_EXTRA_AURA_INFO_NEED_UPDATE_OBSOLETE                    WorldType = 0x3A5
-	SMSG_CLEAR_EXTRA_AURA_INFO_OBSOLETE                              WorldType = 0x3A6
-	MSG_MOVE_START_DESCEND                                           WorldType = 0x3A7
-	CMSG_IGNORE_REQUIREMENTS_CHEAT                                   WorldType = 0x3A8
-	SMSG_IGNORE_REQUIREMENTS_CHEAT                                   WorldType = 0x3A9
-	SMSG_SPELL_CHANCE_PROC_LOG                                       WorldType = 0x3AA
-	CMSG_MOVE_SET_RUN_SPEED                                          WorldType = 0x3AB
-	SMSG_DISMOUNT                                                    WorldType = 0x3AC
-	MSG_MOVE_UPDATE_CAN_FLY                                          WorldType = 0x3AD
-	MSG_RAID_READY_CHECK_CONFIRM                                     WorldType = 0x3AE
-	CMSG_VOICE_SESSION_ENABLE                                        WorldType = 0x3AF
-	SMSG_VOICE_SESSION_ENABLE                                        WorldType = 0x3B0
-	SMSG_VOICE_PARENTAL_CONTROLS                                     WorldType = 0x3B1
-	CMSG_GM_WHISPER                                                  WorldType = 0x3B2
-	SMSG_GM_MESSAGECHAT                                              WorldType = 0x3B3
-	MSG_GM_GEARRATING                                                WorldType = 0x3B4
-	CMSG_COMMENTATOR_ENABLE                                          WorldType = 0x3B5
-	SMSG_COMMENTATOR_STATE_CHANGED                                   WorldType = 0x3B6
-	CMSG_COMMENTATOR_GET_MAP_INFO                                    WorldType = 0x3B7
-	SMSG_COMMENTATOR_MAP_INFO                                        WorldType = 0x3B8
-	CMSG_COMMENTATOR_GET_PLAYER_INFO                                 WorldType = 0x3B9
-	SMSG_COMMENTATOR_GET_PLAYER_INFO                                 WorldType = 0x3BA
-	SMSG_COMMENTATOR_PLAYER_INFO                                     WorldType = 0x3BB
-	CMSG_COMMENTATOR_ENTER_INSTANCE                                  WorldType = 0x3BC
-	CMSG_COMMENTATOR_EXIT_INSTANCE                                   WorldType = 0x3BD
-	CMSG_COMMENTATOR_INSTANCE_COMMAND                                WorldType = 0x3BE
-	SMSG_CLEAR_TARGET                                                WorldType = 0x3BF
-	CMSG_BOT_DETECTED                                                WorldType = 0x3C0
-	SMSG_CROSSED_INEBRIATION_THRESHOLD                               WorldType = 0x3C1
-	CMSG_CHEAT_PLAYER_LOGIN                                          WorldType = 0x3C2
-	CMSG_CHEAT_PLAYER_LOOKUP                                         WorldType = 0x3C3
-	SMSG_CHEAT_PLAYER_LOOKUP                                         WorldType = 0x3C4
-	SMSG_KICK_REASON                                                 WorldType = 0x3C5
-	MSG_RAID_READY_CHECK_FINISHED                                    WorldType = 0x3C6
-	CMSG_COMPLAIN                                                    WorldType = 0x3C7
-	SMSG_COMPLAIN_RESULT                                             WorldType = 0x3C8
-	SMSG_FEATURE_SYSTEM_STATUS                                       WorldType = 0x3C9
-	CMSG_GM_SHOW_COMPLAINTS                                          WorldType = 0x3CA
-	CMSG_GM_UNSQUELCH                                                WorldType = 0x3CB
-	CMSG_CHANNEL_SILENCE_VOICE                                       WorldType = 0x3CC
-	CMSG_CHANNEL_SILENCE_ALL                                         WorldType = 0x3CD
-	CMSG_CHANNEL_UNSILENCE_VOICE                                     WorldType = 0x3CE
-	CMSG_CHANNEL_UNSILENCE_ALL                                       WorldType = 0x3CF
-	CMSG_TARGET_CAST                                                 WorldType = 0x3D0
-	CMSG_TARGET_SCRIPT_CAST                                          WorldType = 0x3D1
-	CMSG_CHANNEL_DISPLAY_LIST                                        WorldType = 0x3D2
-	CMSG_SET_ACTIVE_VOICE_CHANNEL                                    WorldType = 0x3D3
-	CMSG_GET_CHANNEL_MEMBER_COUNT                                    WorldType = 0x3D4
-	SMSG_CHANNEL_MEMBER_COUNT                                        WorldType = 0x3D5
-	CMSG_CHANNEL_VOICE_ON                                            WorldType = 0x3D6
-	CMSG_CHANNEL_VOICE_OFF                                           WorldType = 0x3D7
-	CMSG_DEBUG_LIST_TARGETS                                          WorldType = 0x3D8
-	SMSG_DEBUG_LIST_TARGETS                                          WorldType = 0x3D9
-	SMSG_AVAILABLE_VOICE_CHANNEL                                     WorldType = 0x3DA
-	CMSG_ADD_VOICE_IGNORE                                            WorldType = 0x3DB
-	CMSG_DEL_VOICE_IGNORE                                            WorldType = 0x3DC
-	CMSG_PARTY_SILENCE                                               WorldType = 0x3DD
-	CMSG_PARTY_UNSILENCE                                             WorldType = 0x3DE
-	MSG_NOTIFY_PARTY_SQUELCH                                         WorldType = 0x3DF
-	SMSG_COMSAT_RECONNECT_TRY                                        WorldType = 0x3E0
-	SMSG_COMSAT_DISCONNECT                                           WorldType = 0x3E1
-	SMSG_COMSAT_CONNECT_FAIL                                         WorldType = 0x3E2
-	SMSG_VOICE_CHAT_STATUS                                           WorldType = 0x3E3
-	CMSG_REPORT_PVP_AFK                                              WorldType = 0x3E4
-	SMSG_REPORT_PVP_AFK_RESULT                                       WorldType = 0x3E5
-	CMSG_GUILD_BANKER_ACTIVATE                                       WorldType = 0x3E6
-	CMSG_GUILD_BANK_QUERY_TAB                                        WorldType = 0x3E7
-	SMSG_GUILD_BANK_LIST                                             WorldType = 0x3E8
-	CMSG_GUILD_BANK_SWAP_ITEMS                                       WorldType = 0x3E9
-	CMSG_GUILD_BANK_BUY_TAB                                          WorldType = 0x3EA
-	CMSG_GUILD_BANK_UPDATE_TAB                                       WorldType = 0x3EB
-	CMSG_GUILD_BANK_DEPOSIT_MONEY                                    WorldType = 0x3EC
-	CMSG_GUILD_BANK_WITHDRAW_MONEY                                   WorldType = 0x3ED
-	MSG_GUILD_BANK_LOG_QUERY                                         WorldType = 0x3EE
-	CMSG_SET_CHANNEL_WATCH                                           WorldType = 0x3EF
-	SMSG_USERLIST_ADD                                                WorldType = 0x3F0
-	SMSG_USERLIST_REMOVE                                             WorldType = 0x3F1
-	SMSG_USERLIST_UPDATE                                             WorldType = 0x3F2
-	CMSG_CLEAR_CHANNEL_WATCH                                         WorldType = 0x3F3
-	SMSG_INSPECT_TALENT                                              WorldType = 0x3F4
-	SMSG_GOGOGO_OBSOLETE                                             WorldType = 0x3F5
-	SMSG_ECHO_PARTY_SQUELCH                                          WorldType = 0x3F6
-	CMSG_SET_TITLE_SUFFIX                                            WorldType = 0x3F7
-	CMSG_SPELLCLICK                                                  WorldType = 0x3F8
-	SMSG_LOOT_LIST                                                   WorldType = 0x3F9
-	CMSG_GM_CHARACTER_RESTORE                                        WorldType = 0x3FA
-	CMSG_GM_CHARACTER_SAVE                                           WorldType = 0x3FB
-	SMSG_VOICESESSION_FULL                                           WorldType = 0x3FC
-	MSG_GUILD_PERMISSIONS                                            WorldType = 0x3FD
-	MSG_GUILD_BANK_MONEY_WITHDRAWN                                   WorldType = 0x3FE
-	MSG_GUILD_EVENT_LOG_QUERY                                        WorldType = 0x3FF
-	CMSG_MAELSTROM_RENAME_GUILD                                      WorldType = 0x400
-	CMSG_GET_MIRRORIMAGE_DATA                                        WorldType = 0x401
-	SMSG_MIRRORIMAGE_DATA                                            WorldType = 0x402
-	SMSG_FORCE_DISPLAY_UPDATE                                        WorldType = 0x403
-	SMSG_SPELL_CHANCE_RESIST_PUSHBACK                                WorldType = 0x404
-	CMSG_IGNORE_DIMINISHING_RETURNS_CHEAT                            WorldType = 0x405
-	SMSG_IGNORE_DIMINISHING_RETURNS_CHEAT                            WorldType = 0x406
-	CMSG_KEEP_ALIVE                                                  WorldType = 0x407
-	SMSG_RAID_READY_CHECK_ERROR                                      WorldType = 0x408
-	CMSG_OPT_OUT_OF_LOOT                                             WorldType = 0x409
-	MSG_QUERY_GUILD_BANK_TEXT                                        WorldType = 0x40A
-	CMSG_SET_GUILD_BANK_TEXT                                         WorldType = 0x40B
-	CMSG_SET_GRANTABLE_LEVELS                                        WorldType = 0x40C
-	CMSG_GRANT_LEVEL                                                 WorldType = 0x40D
-	CMSG_REFER_A_FRIEND                                              WorldType = 0x40E
-	MSG_GM_CHANGE_ARENA_RATING                                       WorldType = 0x40F
-	CMSG_DECLINE_CHANNEL_INVITE                                      WorldType = 0x410
-	SMSG_GROUPACTION_THROTTLED                                       WorldType = 0x411
-	SMSG_OVERRIDE_LIGHT                                              WorldType = 0x412 // uint32 defaultMapLight uint32 overrideLight uint32 transitionTimeMs
-	SMSG_TOTEM_CREATED                                               WorldType = 0x413
-	CMSG_TOTEM_DESTROYED                                             WorldType = 0x414
-	CMSG_EXPIRE_RAID_INSTANCE                                        WorldType = 0x415
-	CMSG_NO_SPELL_VARIANCE                                           WorldType = 0x416
-	CMSG_QUESTGIVER_STATUS_MULTIPLE_QUERY                            WorldType = 0x417
-	SMSG_QUESTGIVER_STATUS_MULTIPLE                                  WorldType = 0x418
-	CMSG_SET_PLAYER_DECLINED_NAMES                                   WorldType = 0x419
-	SMSG_SET_PLAYER_DECLINED_NAMES_RESULT                            WorldType = 0x41A
-	CMSG_QUERY_SERVER_BUCK_DATA                                      WorldType = 0x41B
-	CMSG_CLEAR_SERVER_BUCK_DATA                                      WorldType = 0x41C
-	SMSG_SERVER_BUCK_DATA                                            WorldType = 0x41D
-	SMSG_SEND_UNLEARN_SPELLS                                         WorldType = 0x41E
-	SMSG_PROPOSE_LEVEL_GRANT                                         WorldType = 0x41F
-	CMSG_ACCEPT_LEVEL_GRANT                                          WorldType = 0x420
-	SMSG_REFER_A_FRIEND_FAILURE                                      WorldType = 0x421
-	SMSG_SPLINE_MOVE_SET_FLYING                                      WorldType = 0x422
-	SMSG_SPLINE_MOVE_UNSET_FLYING                                    WorldType = 0x423
-	SMSG_SUMMON_CANCEL                                               WorldType = 0x424
-	CMSG_CHANGE_PERSONAL_ARENA_RATING                                WorldType = 0x425
-	CMSG_ALTER_APPEARANCE                                            WorldType = 0x426
-	SMSG_ENABLE_BARBER_SHOP                                          WorldType = 0x427
-	SMSG_BARBER_SHOP_RESULT                                          WorldType = 0x428
-	CMSG_CALENDAR_GET_CALENDAR                                       WorldType = 0x429
-	CMSG_CALENDAR_GET_EVENT                                          WorldType = 0x42A
-	CMSG_CALENDAR_GUILD_FILTER                                       WorldType = 0x42B
-	CMSG_CALENDAR_ARENA_TEAM                                         WorldType = 0x42C
-	CMSG_CALENDAR_ADD_EVENT                                          WorldType = 0x42D
-	CMSG_CALENDAR_UPDATE_EVENT                                       WorldType = 0x42E
-	CMSG_CALENDAR_REMOVE_EVENT                                       WorldType = 0x42F
-	CMSG_CALENDAR_COPY_EVENT                                         WorldType = 0x430
-	CMSG_CALENDAR_EVENT_INVITE                                       WorldType = 0x431
-	CMSG_CALENDAR_EVENT_RSVP                                         WorldType = 0x432
-	CMSG_CALENDAR_EVENT_REMOVE_INVITE                                WorldType = 0x433
-	CMSG_CALENDAR_EVENT_STATUS                                       WorldType = 0x434
-	CMSG_CALENDAR_EVENT_MODERATOR_STATUS                             WorldType = 0x435
-	SMSG_CALENDAR_SEND_CALENDAR                                      WorldType = 0x436
-	SMSG_CALENDAR_SEND_EVENT                                         WorldType = 0x437
-	SMSG_CALENDAR_FILTER_GUILD                                       WorldType = 0x438
-	SMSG_CALENDAR_ARENA_TEAM                                         WorldType = 0x439
-	SMSG_CALENDAR_EVENT_INVITE                                       WorldType = 0x43A
-	SMSG_CALENDAR_EVENT_INVITE_REMOVED                               WorldType = 0x43B
-	SMSG_CALENDAR_EVENT_STATUS                                       WorldType = 0x43C
-	SMSG_CALENDAR_COMMAND_RESULT                                     WorldType = 0x43D
-	SMSG_CALENDAR_RAID_LOCKOUT_ADDED                                 WorldType = 0x43E
-	SMSG_CALENDAR_RAID_LOCKOUT_REMOVED                               WorldType = 0x43F
-	SMSG_CALENDAR_EVENT_INVITE_ALERT                                 WorldType = 0x440
-	SMSG_CALENDAR_EVENT_INVITE_REMOVED_ALERT                         WorldType = 0x441
-	SMSG_CALENDAR_EVENT_INVITE_STATUS_ALERT                          WorldType = 0x442
-	SMSG_CALENDAR_EVENT_REMOVED_ALERT                                WorldType = 0x443
-	SMSG_CALENDAR_EVENT_UPDATED_ALERT                                WorldType = 0x444
-	SMSG_CALENDAR_EVENT_MODERATOR_STATUS_ALERT                       WorldType = 0x445
-	CMSG_CALENDAR_COMPLAIN                                           WorldType = 0x446
-	CMSG_CALENDAR_GET_NUM_PENDING                                    WorldType = 0x447
-	SMSG_CALENDAR_SEND_NUM_PENDING                                   WorldType = 0x448
-	CMSG_SAVE_DANCE                                                  WorldType = 0x449
-	SMSG_NOTIFY_DANCE                                                WorldType = 0x44A
-	CMSG_PLAY_DANCE                                                  WorldType = 0x44B
-	SMSG_PLAY_DANCE                                                  WorldType = 0x44C
-	CMSG_LOAD_DANCES                                                 WorldType = 0x44D
-	CMSG_STOP_DANCE                                                  WorldType = 0x44E
-	SMSG_STOP_DANCE                                                  WorldType = 0x44F
-	CMSG_SYNC_DANCE                                                  WorldType = 0x450
-	CMSG_DANCE_QUERY                                                 WorldType = 0x451
-	SMSG_DANCE_QUERY_RESPONSE                                        WorldType = 0x452
-	SMSG_INVALIDATE_DANCE                                            WorldType = 0x453
-	CMSG_DELETE_DANCE                                                WorldType = 0x454
-	SMSG_LEARNED_DANCE_MOVES                                         WorldType = 0x455
-	CMSG_LEARN_DANCE_MOVE                                            WorldType = 0x456
-	CMSG_UNLEARN_DANCE_MOVE                                          WorldType = 0x457
-	CMSG_SET_RUNE_COUNT                                              WorldType = 0x458
-	CMSG_SET_RUNE_COOLDOWN                                           WorldType = 0x459
-	MSG_MOVE_SET_PITCH_RATE_CHEAT                                    WorldType = 0x45A
-	MSG_MOVE_SET_PITCH_RATE                                          WorldType = 0x45B
-	SMSG_FORCE_PITCH_RATE_CHANGE                                     WorldType = 0x45C
-	CMSG_FORCE_PITCH_RATE_CHANGE_ACK                                 WorldType = 0x45D
-	SMSG_SPLINE_SET_PITCH_RATE                                       WorldType = 0x45E
-	CMSG_CALENDAR_EVENT_INVITE_NOTES                                 WorldType = 0x45F
-	SMSG_CALENDAR_EVENT_INVITE_NOTES                                 WorldType = 0x460
-	SMSG_CALENDAR_EVENT_INVITE_NOTES_ALERT                           WorldType = 0x461
-	CMSG_UPDATE_MISSILE_TRAJECTORY                                   WorldType = 0x462
-	SMSG_UPDATE_ACCOUNT_DATA_COMPLETE                                WorldType = 0x463
-	SMSG_TRIGGER_MOVIE                                               WorldType = 0x464
-	CMSG_COMPLETE_MOVIE                                              WorldType = 0x465
-	CMSG_SET_GLYPH_SLOT                                              WorldType = 0x466
-	CMSG_SET_GLYPH                                                   WorldType = 0x467
-	SMSG_ACHIEVEMENT_EARNED                                          WorldType = 0x468
-	SMSG_DYNAMIC_DROP_ROLL_RESULT                                    WorldType = 0x469
-	SMSG_CRITERIA_UPDATE                                             WorldType = 0x46A
-	CMSG_QUERY_INSPECT_ACHIEVEMENTS                                  WorldType = 0x46B
-	SMSG_RESPOND_INSPECT_ACHIEVEMENTS                                WorldType = 0x46C
-	CMSG_DISMISS_CONTROLLED_VEHICLE                                  WorldType = 0x46D
-	CMSG_COMPLETE_ACHIEVEMENT_CHEAT                                  WorldType = 0x46E
-	SMSG_QUESTUPDATE_ADD_PVP_KILL                                    WorldType = 0x46F
-	CMSG_SET_CRITERIA_CHEAT                                          WorldType = 0x470
-	SMSG_CALENDAR_RAID_LOCKOUT_UPDATED                               WorldType = 0x471
-	CMSG_UNITANIMTIER_CHEAT                                          WorldType = 0x472
-	CMSG_CHAR_CUSTOMIZE                                              WorldType = 0x473
-	SMSG_CHAR_CUSTOMIZE                                              WorldType = 0x474
-	SMSG_PET_RENAMEABLE                                              WorldType = 0x475
-	CMSG_REQUEST_VEHICLE_EXIT                                        WorldType = 0x476
-	CMSG_REQUEST_VEHICLE_PREV_SEAT                                   WorldType = 0x477
-	CMSG_REQUEST_VEHICLE_NEXT_SEAT                                   WorldType = 0x478
-	CMSG_REQUEST_VEHICLE_SWITCH_SEAT                                 WorldType = 0x479
-	CMSG_PET_LEARN_TALENT                                            WorldType = 0x47A
-	CMSG_PET_UNLEARN_TALENTS                                         WorldType = 0x47B
-	SMSG_SET_PHASE_SHIFT                                             WorldType = 0x47C
-	SMSG_ALL_ACHIEVEMENT_DATA                                        WorldType = 0x47D
-	CMSG_FORCE_SAY_CHEAT                                             WorldType = 0x47E
-	SMSG_HEALTH_UPDATE                                               WorldType = 0x47F
-	SMSG_POWER_UPDATE                                                WorldType = 0x480
-	CMSG_GAMEOBJ_REPORT_USE                                          WorldType = 0x481
-	SMSG_HIGHEST_THREAT_UPDATE                                       WorldType = 0x482
-	SMSG_THREAT_UPDATE                                               WorldType = 0x483
-	SMSG_THREAT_REMOVE                                               WorldType = 0x484
-	SMSG_THREAT_CLEAR                                                WorldType = 0x485
-	SMSG_CONVERT_RUNE                                                WorldType = 0x486
-	SMSG_RESYNC_RUNES                                                WorldType = 0x487
-	SMSG_ADD_RUNE_POWER                                              WorldType = 0x488
-	CMSG_START_QUEST                                                 WorldType = 0x489
-	CMSG_REMOVE_GLYPH                                                WorldType = 0x48A
-	CMSG_DUMP_OBJECTS                                                WorldType = 0x48B
-	SMSG_DUMP_OBJECTS_DATA                                           WorldType = 0x48C
-	CMSG_DISMISS_CRITTER                                             WorldType = 0x48D
-	SMSG_NOTIFY_DEST_LOC_SPELL_CAST                                  WorldType = 0x48E
-	CMSG_AUCTION_LIST_PENDING_SALES                                  WorldType = 0x48F
-	SMSG_AUCTION_LIST_PENDING_SALES                                  WorldType = 0x490
-	SMSG_MODIFY_COOLDOWN                                             WorldType = 0x491
-	SMSG_PET_UPDATE_COMBO_POINTS                                     WorldType = 0x492
-	CMSG_ENABLETAXI                                                  WorldType = 0x493
-	SMSG_PRE_RESURRECT                                               WorldType = 0x494
-	SMSG_AURA_UPDATE_ALL                                             WorldType = 0x495
-	SMSG_AURA_UPDATE                                                 WorldType = 0x496
-	CMSG_FLOOD_GRACE_CHEAT                                           WorldType = 0x497
-	SMSG_SERVER_FIRST_ACHIEVEMENT                                    WorldType = 0x498
-	SMSG_PET_LEARNED_SPELL                                           WorldType = 0x499
-	SMSG_PET_REMOVED_SPELL                                           WorldType = 0x49A
-	CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE                          WorldType = 0x49B
-	CMSG_HEARTH_AND_RESURRECT                                        WorldType = 0x49C
-	SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA                        WorldType = 0x49D
-	SMSG_CRITERIA_DELETED                                            WorldType = 0x49E
-	SMSG_ACHIEVEMENT_DELETED                                         WorldType = 0x49F
-	CMSG_SERVER_INFO_QUERY                                           WorldType = 0x4A0
-	SMSG_SERVER_INFO_RESPONSE                                        WorldType = 0x4A1
-	CMSG_CHECK_LOGIN_CRITERIA                                        WorldType = 0x4A2
-	SMSG_SERVER_BUCK_DATA_START                                      WorldType = 0x4A3
-	CMSG_SET_BREATH                                                  WorldType = 0x4A4
-	CMSG_QUERY_VEHICLE_STATUS                                        WorldType = 0x4A5
-	SMSG_BATTLEGROUND_INFO_THROTTLED                                 WorldType = 0x4A6 // empty "You can't do that yet"
-	SMSG_PLAYER_VEHICLE_DATA                                         WorldType = 0x4A7 // guid+uint32 (vehicle)
-	CMSG_PLAYER_VEHICLE_ENTER                                        WorldType = 0x4A8 // uint64
-	CMSG_CONTROLLER_EJECT_PASSENGER                                  WorldType = 0x4A9 // uint64
-	SMSG_PET_GUIDS                                                   WorldType = 0x4AA
-	SMSG_CLIENTCACHE_VERSION                                         WorldType = 0x4AB
-	CMSG_CHANGE_GDF_ARENA_RATING                                     WorldType = 0x4AC
-	CMSG_SET_ARENA_TEAM_RATING_BY_INDEX                              WorldType = 0x4AD
-	CMSG_SET_ARENA_TEAM_WEEKLY_GAMES                                 WorldType = 0x4AE
-	CMSG_SET_ARENA_TEAM_SEASON_GAMES                                 WorldType = 0x4AF
-	CMSG_SET_ARENA_MEMBER_WEEKLY_GAMES                               WorldType = 0x4B0
-	CMSG_SET_ARENA_MEMBER_SEASON_GAMES                               WorldType = 0x4B1
-	SMSG_ITEM_REFUND_INFO_RESPONSE                                   WorldType = 0x4B2
-	CMSG_ITEM_REFUND_INFO                                            WorldType = 0x4B3
-	CMSG_ITEM_REFUND                                                 WorldType = 0x4B4 // lua: ContainerRefundItemPurchase
-	SMSG_ITEM_REFUND_RESULT                                          WorldType = 0x4B5
-	CMSG_CORPSE_MAP_POSITION_QUERY                                   WorldType = 0x4B6 // uint32
-	SMSG_CORPSE_MAP_POSITION_QUERY_RESPONSE                          WorldType = 0x4B7 // 3*float+float
-	CMSG_UNUSED5                                                     WorldType = 0x4B8
-	CMSG_UNUSED6                                                     WorldType = 0x4B9
-	CMSG_CALENDAR_EVENT_SIGNUP                                       WorldType = 0x4BA // uint64
-	SMSG_CALENDAR_CLEAR_PENDING_ACTION                               WorldType = 0x4BB
-	SMSG_EQUIPMENT_SET_LIST                                          WorldType = 0x4BC // equipment manager list?
-	CMSG_EQUIPMENT_SET_SAVE                                          WorldType = 0x4BD
-	CMSG_UPDATE_PROJECTILE_POSITION                                  WorldType = 0x4BE
-	SMSG_SET_PROJECTILE_POSITION                                     WorldType = 0x4BF
-	SMSG_TALENTS_INFO                                                WorldType = 0x4C0
-	CMSG_LEARN_PREVIEW_TALENTS                                       WorldType = 0x4C1
-	CMSG_LEARN_PREVIEW_TALENTS_PET                                   WorldType = 0x4C2
-	CMSG_SET_ACTIVE_TALENT_GROUP_OBSOLETE                            WorldType = 0x4C3
-	CMSG_GM_GRANT_ACHIEVEMENT                                        WorldType = 0x4C4
-	CMSG_GM_REMOVE_ACHIEVEMENT                                       WorldType = 0x4C5
-	CMSG_GM_SET_CRITERIA_FOR_PLAYER                                  WorldType = 0x4C6
-	SMSG_ARENA_UNIT_DESTROYED                                        WorldType = 0x4C7
-	SMSG_ARENA_TEAM_CHANGE_FAILED_QUEUED                             WorldType = 0x4C8 // uint32 "Can't modify arena team while queued or in a match."
-	CMSG_PROFILEDATA_REQUEST                                         WorldType = 0x4C9
-	SMSG_PROFILEDATA_RESPONSE                                        WorldType = 0x4CA
-	CMSG_START_BATTLEFIELD_CHEAT                                     WorldType = 0x4CB
-	CMSG_END_BATTLEFIELD_CHEAT                                       WorldType = 0x4CC
-	SMSG_MULTIPLE_PACKETS                                            WorldType = 0x4CD
-	SMSG_MOVE_GRAVITY_DISABLE                                        WorldType = 0x4CE
-	CMSG_MOVE_GRAVITY_DISABLE_ACK                                    WorldType = 0x4CF
-	SMSG_MOVE_GRAVITY_ENABLE                                         WorldType = 0x4D0
-	CMSG_MOVE_GRAVITY_ENABLE_ACK                                     WorldType = 0x4D1
-	MSG_MOVE_GRAVITY_CHNG                                            WorldType = 0x4D2
-	SMSG_SPLINE_MOVE_GRAVITY_DISABLE                                 WorldType = 0x4D3
-	SMSG_SPLINE_MOVE_GRAVITY_ENABLE                                  WorldType = 0x4D4
-	CMSG_EQUIPMENT_SET_USE                                           WorldType = 0x4D5
-	SMSG_EQUIPMENT_SET_USE_RESULT                                    WorldType = 0x4D6
-	CMSG_FORCE_ANIM                                                  WorldType = 0x4D7
-	SMSG_FORCE_ANIM                                                  WorldType = 0x4D8
-	CMSG_CHAR_FACTION_CHANGE                                         WorldType = 0x4D9
-	SMSG_CHAR_FACTION_CHANGE                                         WorldType = 0x4DA
-	CMSG_PVP_QUEUE_STATS_REQUEST                                     WorldType = 0x4DB
-	SMSG_PVP_QUEUE_STATS                                             WorldType = 0x4DC
-	CMSG_SET_PAID_SERVICE_CHEAT                                      WorldType = 0x4DD
-	SMSG_BATTLEFIELD_MGR_ENTRY_INVITE                                WorldType = 0x4DE // uint32
-	CMSG_BATTLEFIELD_MGR_ENTRY_INVITE_RESPONSE                       WorldType = 0x4DF
-	SMSG_BATTLEFIELD_MGR_ENTERED                                     WorldType = 0x4E0 // uint32 uint8 uint8
-	SMSG_BATTLEFIELD_MGR_QUEUE_INVITE                                WorldType = 0x4E1 // uint32
-	CMSG_BATTLEFIELD_MGR_QUEUE_INVITE_RESPONSE                       WorldType = 0x4E2
-	CMSG_BATTLEFIELD_MGR_QUEUE_REQUEST                               WorldType = 0x4E3
-	SMSG_BATTLEFIELD_MGR_QUEUE_REQUEST_RESPONSE                      WorldType = 0x4E4 // uint32 uint8
-	SMSG_BATTLEFIELD_MGR_EJECT_PENDING                               WorldType = 0x4E5 // uint32
-	SMSG_BATTLEFIELD_MGR_EJECTED                                     WorldType = 0x4E6 // uint32 uint32 uint8
-	CMSG_BATTLEFIELD_MGR_EXIT_REQUEST                                WorldType = 0x4E7
-	SMSG_BATTLEFIELD_MGR_STATE_CHANGE                                WorldType = 0x4E8 // uint32 uint32
-	CMSG_BATTLEFIELD_MANAGER_ADVANCE_STATE                           WorldType = 0x4E9
-	CMSG_BATTLEFIELD_MANAGER_SET_NEXT_TRANSITION_TIME                WorldType = 0x4EA
-	MSG_SET_RAID_DIFFICULTY                                          WorldType = 0x4EB
-	CMSG_TOGGLE_XP_GAIN                                              WorldType = 0x4EC
-	SMSG_TOGGLE_XP_GAIN                                              WorldType = 0x4ED // enable/disable XP gain console message
-	SMSG_GMRESPONSE_DB_ERROR                                         WorldType = 0x4EE // empty
-	SMSG_GMRESPONSE_RECEIVED                                         WorldType = 0x4EF // uint32 uint32 string[2000] string[4000][4]
-	CMSG_GMRESPONSE_RESOLVE                                          WorldType = 0x4F0
-	SMSG_GMRESPONSE_STATUS_UPDATE                                    WorldType = 0x4F1 // uint8 (1 - EVENT_GMSURVEY_DISPLAY 0 - EVENT_UPDATE_TICKET)
-	SMSG_GMRESPONSE_CREATE_TICKET                                    WorldType = 0x4F2
-	CMSG_GMRESPONSE_CREATE_TICKET                                    WorldType = 0x4F3
-	CMSG_SERVERINFO                                                  WorldType = 0x4F4
-	SMSG_SERVERINFO                                                  WorldType = 0x4F5
-	CMSG_WORLD_STATE_UI_TIMER_UPDATE                                 WorldType = 0x4F6
-	SMSG_WORLD_STATE_UI_TIMER_UPDATE                                 WorldType = 0x4F7
-	CMSG_CHAR_RACE_CHANGE                                            WorldType = 0x4F8
-	MSG_VIEW_PHASE_SHIFT                                             WorldType = 0x4F9
-	SMSG_TALENTS_INVOLUNTARILY_RESET                                 WorldType = 0x4FA // uint8
-	CMSG_DEBUG_SERVER_GEO                                            WorldType = 0x4FB
-	SMSG_DEBUG_SERVER_GEO                                            WorldType = 0x4FC
-	SMSG_LOOT_SLOT_CHANGED                                           WorldType = 0x4FD
-	UMSG_UPDATE_GROUP_INFO                                           WorldType = 0x4FE
-	CMSG_READY_FOR_ACCOUNT_DATA_TIMES                                WorldType = 0x4FF
-	CMSG_QUERY_QUESTS_COMPLETED                                      WorldType = 0x500
-	SMSG_QUERY_QUESTS_COMPLETED_RESPONSE                             WorldType = 0x501
-	CMSG_GM_REPORT_LAG                                               WorldType = 0x502
-	CMSG_AFK_MONITOR_INFO_REQUEST                                    WorldType = 0x503
-	SMSG_AFK_MONITOR_INFO_RESPONSE                                   WorldType = 0x504
-	CMSG_AFK_MONITOR_INFO_CLEAR                                      WorldType = 0x505
-	SMSG_CORPSE_NOT_IN_INSTANCE                                      WorldType = 0x506
-	CMSG_GM_NUKE_CHARACTER                                           WorldType = 0x507
-	CMSG_SET_ALLOW_LOW_LEVEL_RAID1                                   WorldType = 0x508
-	CMSG_SET_ALLOW_LOW_LEVEL_RAID2                                   WorldType = 0x509
-	SMSG_CAMERA_SHAKE                                                WorldType = 0x50A // uint32 SpellEffectCameraShakes.dbc index uint32
-	SMSG_SOCKET_GEMS_RESULT                                          WorldType = 0x50B
-	CMSG_SET_CHARACTER_MODEL                                         WorldType = 0x50C
-	SMSG_REDIRECT_CLIENT                                             WorldType = 0x50D // uint32 ip uint16 port uint32 unk uint8[20] hash (ip + port seedWorldType =sessionkey)
-	CMSG_REDIRECTION_FAILED                                          WorldType = 0x50E // something with networking
-	SMSG_SUSPEND_COMMS                                               WorldType = 0x50F
-	CMSG_SUSPEND_COMMS_ACK                                           WorldType = 0x510
-	SMSG_FORCE_SEND_QUEUED_PACKETS                                   WorldType = 0x511
-	CMSG_REDIRECTION_AUTH_PROOF                                      WorldType = 0x512
-	CMSG_DROP_NEW_CONNECTION                                         WorldType = 0x513
-	SMSG_SEND_ALL_COMBAT_LOG                                         WorldType = 0x514
-	SMSG_OPEN_LFG_DUNGEON_FINDER                                     WorldType = 0x515
-	SMSG_MOVE_SET_COLLISION_HGT                                      WorldType = 0x516
-	CMSG_MOVE_SET_COLLISION_HGT_ACK                                  WorldType = 0x517
-	MSG_MOVE_SET_COLLISION_HGT                                       WorldType = 0x518
-	CMSG_CLEAR_RANDOM_BG_WIN_TIME                                    WorldType = 0x519
-	CMSG_CLEAR_HOLIDAY_BG_WIN_TIME                                   WorldType = 0x51A
-	CMSG_COMMENTATOR_SKIRMISH_QUEUE_COMMAND                          WorldType = 0x51B
-	SMSG_COMMENTATOR_SKIRMISH_QUEUE_RESULT1                          WorldType = 0x51C
-	SMSG_COMMENTATOR_SKIRMISH_QUEUE_RESULT2                          WorldType = 0x51D
-	SMSG_MULTIPLE_MOVES                                              WorldType = 0x51E // uncompressed version of SMSG_COMPRESSED_MOVES
-	NUM_MSG_TYPES                                                    WorldType = 0x51F
-	M_SMSG_ABORT_NEW_WORLD                                           WorldType = 0x25AE // Modern opcodes (post-12340)
-	M_SMSG_ACCOUNT_CRITERIA_UPDATE                                   WorldType = 0x2655
-	M_SMSG_ACCOUNT_DATA_TIMES                                        WorldType = 0x2753
-	M_SMSG_ACCOUNT_MOUNT_UPDATE                                      WorldType = 0x25C3
-	M_SMSG_ACCOUNT_TOYS_UPDATE                                       WorldType = 0x25C4
-	M_SMSG_ACHIEVEMENT_DELETED                                       WorldType = 0x2728
-	M_SMSG_ACHIEVEMENT_EARNED                                        WorldType = 0x2663
-	M_SMSG_ACTIVATE_TAXI_REPLY                                       WorldType = 0x26AC
-	M_SMSG_ACTIVE_GLYPHS                                             WorldType = 0x2C53
-	M_SMSG_ADD_BATTLENET_FRIEND_RESPONSE                             WorldType = 0x265D
-	M_SMSG_ADD_ITEM_PASSIVE                                          WorldType = 0x25BF
-	M_SMSG_ADD_LOSS_OF_CONTROL                                       WorldType = 0x269C
-	M_SMSG_ADD_RUNE_POWER                                            WorldType = 0x26EB
-	M_SMSG_ADJUST_SPLINE_DURATION                                    WorldType = 0x25E8
-	M_SMSG_ADVENTURE_MAP_POI_QUERY_RESPONSE                          WorldType = 0x2847
-	M_SMSG_AE_LOOT_TARGETS                                           WorldType = 0x262E
-	M_SMSG_AE_LOOT_TARGET_ACK                                        WorldType = 0x262F
-	M_SMSG_AI_REACTION                                               WorldType = 0x26E8
-	M_SMSG_ALL_ACCOUNT_CRITERIA                                      WorldType = 0x2570
-	M_SMSG_ALL_ACHIEVEMENT_DATA                                      WorldType = 0x256F
-	M_SMSG_ALL_GUILD_ACHIEVEMENTS                                    WorldType = 0x29B8
-	M_SMSG_ARCHAEOLOGY_SURVERY_CAST                                  WorldType = 0x2587
-	M_SMSG_AREA_POI_UPDATE                                           WorldType = 0x2854
-	M_SMSG_AREA_SPIRIT_HEALER_TIME                                   WorldType = 0x278B
-	M_SMSG_AREA_TRIGGER_DENIED                                       WorldType = 0x26A3
-	M_SMSG_AREA_TRIGGER_NO_CORPSE                                    WorldType = 0x275F
-	M_SMSG_AREA_TRIGGER_PLAY_VISUAL_EVENT                            WorldType = 0x2640
-	M_SMSG_AREA_TRIGGER_RE_PATH                                      WorldType = 0x263E
-	M_SMSG_AREA_TRIGGER_RE_SHAPE                                     WorldType = 0x2643
-	M_SMSG_ARENA_CROWD_CONTROL_SPELLS                                WorldType = 0x2651
-	M_SMSG_ARENA_MATCH_END                                           WorldType = 0x28AC
-	M_SMSG_ARENA_MATCH_START                                         WorldType = 0x28AB
-	M_SMSG_ARENA_PREP_OPPONENT_SPECIALIZATIONS                       WorldType = 0x2668
-	M_SMSG_ARTIFACT_FORGE_OPENED                                     WorldType = 0x27EF
-	M_SMSG_ARTIFACT_RESPEC_CONFIRM                                   WorldType = 0x27F2
-	M_SMSG_ARTIFACT_TRAITS_REFUNDED                                  WorldType = 0x27F3
-	M_SMSG_ARTIFACT_XP_GAIN                                          WorldType = 0x2837
-	M_SMSG_ATTACKER_STATE_UPDATE                                     WorldType = 0x27DC
-	M_SMSG_ATTACK_START                                              WorldType = 0x2670
-	M_SMSG_ATTACK_STOP                                               WorldType = 0x2671
-	M_SMSG_ATTACK_SWING_ERROR                                        WorldType = 0x273D
-	M_SMSG_ATTACK_SWING_LANDED_LOG                                   WorldType = 0x273E
-	M_SMSG_AUCTION_CLOSED_NOTIFICATION                               WorldType = 0x2732
-	M_SMSG_AUCTION_COMMAND_RESULT                                    WorldType = 0x272F
-	M_SMSG_AUCTION_HELLO_RESPONSE                                    WorldType = 0x272D
-	M_SMSG_AUCTION_LIST_BIDDER_ITEMS_RESULT                          WorldType = 0x2736
-	M_SMSG_AUCTION_LIST_ITEMS_RESULT                                 WorldType = 0x2734
-	M_SMSG_AUCTION_LIST_OWNER_ITEMS_RESULT                           WorldType = 0x2735
-	M_SMSG_AUCTION_LIST_PENDING_SALES_RESULT                         WorldType = 0x2737
-	M_SMSG_AUCTION_OUTBID_NOTIFICATION                               WorldType = 0x2731
-	M_SMSG_AUCTION_OWNER_BID_NOTIFICATION                            WorldType = 0x2733
-	M_SMSG_AUCTION_REPLICATE_RESPONSE                                WorldType = 0x272E
-	M_SMSG_AUCTION_WON_NOTIFICATION                                  WorldType = 0x2730
-	M_SMSG_AURA_POINTS_DEPLETED                                      WorldType = 0x2C23
-	M_SMSG_AURA_UPDATE                                               WorldType = 0x2C22
-	M_SMSG_AUTH_CHALLENGE                                            WorldType = 0x3048
-	M_SMSG_AUTH_RESPONSE                                             WorldType = 0x256C
-	M_SMSG_AVAILABLE_HOTFIXES                                        WorldType = 0x25A2
-	M_SMSG_AZERITE_EMPOWERED_ITEM_EQUIPPED_STATUS_CHANGED            WorldType = 0x2876
-	M_SMSG_AZERITE_EMPOWERED_ITEM_RESPEC_OPEN                        WorldType = 0x2841
-	M_SMSG_AZERITE_ESSENCE_FORGE_CLOSE                               WorldType = 0x2879
-	M_SMSG_AZERITE_ESSENCE_FORGE_OPENED                              WorldType = 0x2878
-	M_SMSG_AZERITE_ESSENCE_SELECTION_RESULT                          WorldType = 0x2877
-	M_SMSG_AZERITE_XP_GAIN                                           WorldType = 0x2875
-	M_SMSG_BAN_REASON                                                WorldType = 0x26B8
-	M_SMSG_BARBER_SHOP_RESULT                                        WorldType = 0x26F1
-	M_SMSG_BATTLEFIELD_LIST                                          WorldType = 0x2595
-	M_SMSG_BATTLEFIELD_PORT_DENIED                                   WorldType = 0x259B
-	M_SMSG_BATTLEFIELD_STATUS_ACTIVE                                 WorldType = 0x2591
-	M_SMSG_BATTLEFIELD_STATUS_FAILED                                 WorldType = 0x2594
-	M_SMSG_BATTLEFIELD_STATUS_NEED_CONFIRMATION                      WorldType = 0x2590
-	M_SMSG_BATTLEFIELD_STATUS_NONE                                   WorldType = 0x2593
-	M_SMSG_BATTLEFIELD_STATUS_QUEUED                                 WorldType = 0x2592
-	M_SMSG_BATTLEFIELD_STATUS_WAIT_FOR_GROUPS                        WorldType = 0x25A6
-	M_SMSG_BATTLEGROUND_INFO_THROTTLED                               WorldType = 0x259C
-	M_SMSG_BATTLEGROUND_INIT                                         WorldType = 0x27AA
-	M_SMSG_BATTLEGROUND_PLAYER_JOINED                                WorldType = 0x2599
-	M_SMSG_BATTLEGROUND_PLAYER_LEFT                                  WorldType = 0x259A
-	M_SMSG_BATTLEGROUND_PLAYER_POSITIONS                             WorldType = 0x2596
-	M_SMSG_BATTLEGROUND_POINTS                                       WorldType = 0x27A9
-	M_SMSG_BATTLENET_CHALLENGE_ABORT                                 WorldType = 0x27DB
-	M_SMSG_BATTLENET_CHALLENGE_START                                 WorldType = 0x27DA
-	M_SMSG_BATTLENET_NOTIFICATION                                    WorldType = 0x284F
-	M_SMSG_BATTLENET_REALM_LIST_TICKET                               WorldType = 0x2851
-	M_SMSG_BATTLENET_RESPONSE                                        WorldType = 0x284E
-	M_SMSG_BATTLENET_SET_SESSION_STATE                               WorldType = 0x2850
-	M_SMSG_BATTLENET_UPDATE_SESSION_KEY                              WorldType = 0x286F
-	M_SMSG_BATTLE_PAY_ACK_FAILED                                     WorldType = 0x27D3
-	M_SMSG_BATTLE_PAY_BATTLE_PET_DELIVERED                           WorldType = 0x27C8
-	M_SMSG_BATTLE_PAY_BUNDLE_PRICE_UPDATE                            WorldType = 0x2862
-	M_SMSG_BATTLE_PAY_CONFIRM_PURCHASE                               WorldType = 0x27D2
-	M_SMSG_BATTLE_PAY_DELIVERY_ENDED                                 WorldType = 0x27C6
-	M_SMSG_BATTLE_PAY_DELIVERY_STARTED                               WorldType = 0x27C5
-	M_SMSG_BATTLE_PAY_DISTRIBUTION_UPDATE                            WorldType = 0x27C4
-	M_SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE                 WorldType = 0x27C2
-	M_SMSG_BATTLE_PAY_GET_PRODUCT_LIST_RESPONSE                      WorldType = 0x27C0
-	M_SMSG_BATTLE_PAY_GET_PURCHASE_LIST_RESPONSE                     WorldType = 0x27C1
-	M_SMSG_BATTLE_PAY_MOUNT_DELIVERED                                WorldType = 0x27C7
-	M_SMSG_BATTLE_PAY_OPEN_CHECKOUT_RESULT                           WorldType = 0x2868
-	M_SMSG_BATTLE_PAY_PURCHASE_UPDATE                                WorldType = 0x27D1
-	M_SMSG_BATTLE_PAY_START_DISTRIBUTION_ASSIGN_TO_TARGET_RESPONSE   WorldType = 0x27CF
-	M_SMSG_BATTLE_PAY_START_PURCHASE_RESPONSE                        WorldType = 0x27CE
-	M_SMSG_BATTLE_PAY_SUBSCRIPTION_CHANGED                           WorldType = 0x2871
-	M_SMSG_BATTLE_PAY_TOY_DELIVERED                                  WorldType = 0x27C9
-	M_SMSG_BATTLE_PAY_VAS_BNET_TRANSFER_VALIDATION_RESULT            WorldType = 0x2866
-	M_SMSG_BATTLE_PAY_VAS_BOOST_CONSUMED                             WorldType = 0x27C3
-	M_SMSG_BATTLE_PAY_VAS_CHARACTER_LIST                             WorldType = 0x283A
-	M_SMSG_BATTLE_PAY_VAS_CHARACTER_QUEUE_STATUS                     WorldType = 0x2864
-	M_SMSG_BATTLE_PAY_VAS_GUILD_FOLLOW_INFO                          WorldType = 0x29E7
-	M_SMSG_BATTLE_PAY_VAS_GUILD_MASTER_LIST                          WorldType = 0x29E6
-	M_SMSG_BATTLE_PAY_VAS_PURCHASE_COMPLETE                          WorldType = 0x283D
-	M_SMSG_BATTLE_PAY_VAS_PURCHASE_LIST                              WorldType = 0x283E
-	M_SMSG_BATTLE_PAY_VAS_PURCHASE_STARTED                           WorldType = 0x283C
-	M_SMSG_BATTLE_PAY_VAS_REALM_LIST                                 WorldType = 0x283B
-	M_SMSG_BATTLE_PAY_VAS_TRANSFER_QUEUE_STATUS                      WorldType = 0x2863
-	M_SMSG_BATTLE_PETS_HEALED                                        WorldType = 0x260A
-	M_SMSG_BATTLE_PET_CAGE_DATE_ERROR                                WorldType = 0x26A6
-	M_SMSG_BATTLE_PET_DELETED                                        WorldType = 0x2607
-	M_SMSG_BATTLE_PET_ERROR                                          WorldType = 0x2658
-	M_SMSG_BATTLE_PET_JOURNAL                                        WorldType = 0x2606
-	M_SMSG_BATTLE_PET_JOURNAL_LOCK_ACQUIRED                          WorldType = 0x2604
-	M_SMSG_BATTLE_PET_JOURNAL_LOCK_DENIED                            WorldType = 0x2605
-	M_SMSG_BATTLE_PET_LICENSE_CHANGED                                WorldType = 0x260B
-	M_SMSG_BATTLE_PET_MAX_COUNT_CHANGED                              WorldType = 0x2602
-	M_SMSG_BATTLE_PET_RESTORED                                       WorldType = 0x2609
-	M_SMSG_BATTLE_PET_REVOKED                                        WorldType = 0x2608
-	M_SMSG_BATTLE_PET_TRAP_LEVEL                                     WorldType = 0x2601
-	M_SMSG_BATTLE_PET_UPDATES                                        WorldType = 0x2600
-	M_SMSG_BINDER_CONFIRM                                            WorldType = 0x2743
-	M_SMSG_BIND_POINT_UPDATE                                         WorldType = 0x257C
-	M_SMSG_BLACK_MARKET_BID_ON_ITEM_RESULT                           WorldType = 0x2647
-	M_SMSG_BLACK_MARKET_OPEN_RESULT                                  WorldType = 0x2645
-	M_SMSG_BLACK_MARKET_OUTBID                                       WorldType = 0x2648
-	M_SMSG_BLACK_MARKET_REQUEST_ITEMS_RESULT                         WorldType = 0x2646
-	M_SMSG_BLACK_MARKET_WON                                          WorldType = 0x2649
-	M_SMSG_BONUS_ROLL_EMPTY                                          WorldType = 0x2665
-	M_SMSG_BONUS_ROLL_FAILED                                         WorldType = 0x287C
-	M_SMSG_BOSS_KILL_CREDIT                                          WorldType = 0x27CD
-	M_SMSG_BREAK_TARGET                                              WorldType = 0x266F
-	M_SMSG_BROADCAST_ACHIEVEMENT                                     WorldType = 0x2BBC
-	M_SMSG_BUY_FAILED                                                WorldType = 0x26FA
-	M_SMSG_BUY_SUCCEEDED                                             WorldType = 0x26F9
-	M_SMSG_CACHE_INFO                                                WorldType = 0x274D
-	M_SMSG_CACHE_VERSION                                             WorldType = 0x274C
-	M_SMSG_CALENDAR_CLEAR_PENDING_ACTION                             WorldType = 0x26CC
-	M_SMSG_CALENDAR_COMMAND_RESULT                                   WorldType = 0x26CD
-	M_SMSG_CALENDAR_EVENT_INITIAL_INVITES                            WorldType = 0x26BC
-	M_SMSG_CALENDAR_EVENT_INVITE                                     WorldType = 0x26BD
-	M_SMSG_CALENDAR_EVENT_INVITE_ALERT                               WorldType = 0x26C1
-	M_SMSG_CALENDAR_EVENT_INVITE_MODERATOR_STATUS                    WorldType = 0x26C0
-	M_SMSG_CALENDAR_EVENT_INVITE_NOTES                               WorldType = 0x26C6
-	M_SMSG_CALENDAR_EVENT_INVITE_NOTES_ALERT                         WorldType = 0x26C7
-	M_SMSG_CALENDAR_EVENT_INVITE_REMOVED                             WorldType = 0x26BE
-	M_SMSG_CALENDAR_EVENT_INVITE_REMOVED_ALERT                       WorldType = 0x26C3
-	M_SMSG_CALENDAR_EVENT_INVITE_STATUS                              WorldType = 0x26BF
-	M_SMSG_CALENDAR_EVENT_INVITE_STATUS_ALERT                        WorldType = 0x26C2
-	M_SMSG_CALENDAR_EVENT_REMOVED_ALERT                              WorldType = 0x26C4
-	M_SMSG_CALENDAR_EVENT_UPDATED_ALERT                              WorldType = 0x26C5
-	M_SMSG_CALENDAR_RAID_LOCKOUT_ADDED                               WorldType = 0x26C8
-	M_SMSG_CALENDAR_RAID_LOCKOUT_REMOVED                             WorldType = 0x26C9
-	M_SMSG_CALENDAR_RAID_LOCKOUT_UPDATED                             WorldType = 0x26CA
-	M_SMSG_CALENDAR_SEND_CALENDAR                                    WorldType = 0x26BA
-	M_SMSG_CALENDAR_SEND_EVENT                                       WorldType = 0x26BB
-	M_SMSG_CALENDAR_SEND_NUM_PENDING                                 WorldType = 0x26CB
-	M_SMSG_CAMERA_EFFECT                                             WorldType = 0x2770
-	M_SMSG_CANCEL_AUTO_REPEAT                                        WorldType = 0x271C
-	M_SMSG_CANCEL_COMBAT                                             WorldType = 0x273B
-	M_SMSG_CANCEL_ORPHAN_SPELL_VISUAL                                WorldType = 0x2C46
-	M_SMSG_CANCEL_SCENE                                              WorldType = 0x2657
-	M_SMSG_CANCEL_SPELL_VISUAL                                       WorldType = 0x2C44
-	M_SMSG_CANCEL_SPELL_VISUAL_KIT                                   WorldType = 0x2C48
-	M_SMSG_CAN_DUEL_RESULT                                           WorldType = 0x267A
-	M_SMSG_CAST_FAILED                                               WorldType = 0x2C56
-	M_SMSG_CATEGORY_COOLDOWN                                         WorldType = 0x2C16
-	M_SMSG_CHALLENGE_MODE_AFFIXES                                    WorldType = 0x2624
-	M_SMSG_CHALLENGE_MODE_ALL_MAP_STATS                              WorldType = 0x2623
-	M_SMSG_CHALLENGE_MODE_COMPLETE                                   WorldType = 0x2621
-	M_SMSG_CHALLENGE_MODE_NEW_PLAYER_RECORD                          WorldType = 0x2627
-	M_SMSG_CHALLENGE_MODE_NEW_PLAYER_SEASON_RECORD                   WorldType = 0x2628
-	M_SMSG_CHALLENGE_MODE_REQUEST_LEADERS_RESULT                     WorldType = 0x2625
-	M_SMSG_CHALLENGE_MODE_RESET                                      WorldType = 0x2620
-	M_SMSG_CHALLENGE_MODE_REWARDS                                    WorldType = 0x2622
-	M_SMSG_CHALLENGE_MODE_START                                      WorldType = 0x261E
-	M_SMSG_CHALLENGE_MODE_UPDATE_DEATH_COUNT                         WorldType = 0x261F
-	M_SMSG_CHANGE_PLAYER_DIFFICULTY_RESULT                           WorldType = 0x273F
-	M_SMSG_CHANNEL_LIST                                              WorldType = 0x2BC3
-	M_SMSG_CHANNEL_NOTIFY                                            WorldType = 0x2BC0
-	M_SMSG_CHANNEL_NOTIFY_JOINED                                     WorldType = 0x2BC1
-	M_SMSG_CHANNEL_NOTIFY_LEFT                                       WorldType = 0x2BC2
-	M_SMSG_CHARACTER_CLASS_TRIAL_CREATE                              WorldType = 0x280D
-	M_SMSG_CHARACTER_INVENTORY_OVERFLOW_WARNING                      WorldType = 0x2870
-	M_SMSG_CHARACTER_ITEM_FIXUP                                      WorldType = 0x285F
-	M_SMSG_CHARACTER_LOGIN_FAILED                                    WorldType = 0x274E
-	M_SMSG_CHARACTER_OBJECT_TEST_RESPONSE                            WorldType = 0x27D9
-	M_SMSG_CHARACTER_RENAME_RESULT                                   WorldType = 0x27B2
-	M_SMSG_CHARACTER_UPGRADE_COMPLETE                                WorldType = 0x280C
-	M_SMSG_CHARACTER_UPGRADE_QUEUED                                  WorldType = 0x280B
-	M_SMSG_CHARACTER_UPGRADE_SPELL_TIER_SET                          WorldType = 0x25F5
-	M_SMSG_CHARACTER_UPGRADE_STARTED                                 WorldType = 0x280A
-	M_SMSG_CHARACTER_UPGRADE_UNREVOKE_RESULT                         WorldType = 0x280E
-	M_SMSG_CHAR_CUSTOMIZE                                            WorldType = 0x2723
-	M_SMSG_CHAR_CUSTOMIZE_FAILED                                     WorldType = 0x2722
-	M_SMSG_CHAR_FACTION_CHANGE_RESULT                                WorldType = 0x27F7
-	M_SMSG_CHAT                                                      WorldType = 0x2BAD
-	M_SMSG_CHAT_AUTO_RESPONDED                                       WorldType = 0x2BB8
-	M_SMSG_CHAT_DOWN                                                 WorldType = 0x2BBD
-	M_SMSG_CHAT_IGNORED_ACCOUNT_MUTED                                WorldType = 0x2BAC
-	M_SMSG_CHAT_IS_DOWN                                              WorldType = 0x2BBE
-	M_SMSG_CHAT_NOT_IN_PARTY                                         WorldType = 0x2BB2
-	M_SMSG_CHAT_PLAYER_AMBIGUOUS                                     WorldType = 0x2BB0
-	M_SMSG_CHAT_PLAYER_NOTFOUND                                      WorldType = 0x2BB7
-	M_SMSG_CHAT_RECONNECT                                            WorldType = 0x2BBF
-	M_SMSG_CHAT_RESTRICTED                                           WorldType = 0x2BB3
-	M_SMSG_CHAT_SERVER_MESSAGE                                       WorldType = 0x2BC4
-	M_SMSG_CHEAT_IGNORE_DIMISHING_RETURNS                            WorldType = 0x2C12
-	M_SMSG_CHECK_WARGAME_ENTRY                                       WorldType = 0x259F
-	M_SMSG_CLEAR_ALL_SPELL_CHARGES                                   WorldType = 0x2C27
-	M_SMSG_CLEAR_BOSS_EMOTES                                         WorldType = 0x25CD
-	M_SMSG_CLEAR_COOLDOWN                                            WorldType = 0x26ED
-	M_SMSG_CLEAR_COOLDOWNS                                           WorldType = 0x2C26
-	M_SMSG_CLEAR_LOSS_OF_CONTROL                                     WorldType = 0x269E
-	M_SMSG_CLEAR_SPELL_CHARGES                                       WorldType = 0x2C28
-	M_SMSG_CLEAR_TARGET                                              WorldType = 0x26E4
-	M_SMSG_CLUB_FINDER_APPLICANTS_LIST                               WorldType = 0x28B3
-	M_SMSG_CLUB_FINDER_APPLICATIONS                                  WorldType = 0x28B4
-	M_SMSG_CLUB_FINDER_APPLICATIONS_CHANGED                          WorldType = 0x28B5
-	M_SMSG_CLUB_FINDER_CLUBS_DATA                                    WorldType = 0x28B6
-	M_SMSG_CLUB_FINDER_CLUBS_LIST                                    WorldType = 0x28B2
-	M_SMSG_COIN_REMOVED                                              WorldType = 0x262D
-	M_SMSG_COMBAT_EVENT_FAILED                                       WorldType = 0x2672
-	M_SMSG_COMMENTATOR_MAP_INFO                                      WorldType = 0x2750
-	M_SMSG_COMMENTATOR_PLAYER_INFO                                   WorldType = 0x2751
-	M_SMSG_COMMENTATOR_STATE_CHANGED                                 WorldType = 0x274F
-	M_SMSG_COMPLAINT_RESULT                                          WorldType = 0x26DB
-	M_SMSG_COMPLETE_SHIPMENT_RESPONSE                                WorldType = 0x27EB
-	M_SMSG_CONNECT_TO                                                WorldType = 0x304D
-	M_SMSG_CONQUEST_FORMULA_CONSTANTS                                WorldType = 0x27D4
-	M_SMSG_CONSOLE_WRITE                                             WorldType = 0x2654
-	M_SMSG_CONTACT_LIST                                              WorldType = 0x27D7
-	M_SMSG_CONTRIBUTION_COLLECTOR_STATE                              WorldType = 0x2867
-	M_SMSG_CONTROL_UPDATE                                            WorldType = 0x2667
-	M_SMSG_COOLDOWN_CHEAT                                            WorldType = 0x2784
-	M_SMSG_COOLDOWN_EVENT                                            WorldType = 0x26EC
-	M_SMSG_CORPSE_LOCATION                                           WorldType = 0x266E
-	M_SMSG_CORPSE_RECLAIM_DELAY                                      WorldType = 0x2797
-	M_SMSG_CORPSE_TRANSPORT_QUERY                                    WorldType = 0x275B
-	M_SMSG_CREATE_CHAR                                               WorldType = 0x2748
-	M_SMSG_CREATE_SHIPMENT_RESPONSE                                  WorldType = 0x27EA
-	M_SMSG_CRITERIA_DELETED                                          WorldType = 0x2727
-	M_SMSG_CRITERIA_UPDATE                                           WorldType = 0x2721
-	M_SMSG_CROSSED_INEBRIATION_THRESHOLD                             WorldType = 0x26F5
-	M_SMSG_CUSTOM_LOAD_SCREEN                                        WorldType = 0x25E3
-	M_SMSG_DAILY_QUESTS_RESET                                        WorldType = 0x2A80
-	M_SMSG_DAMAGE_CALC_LOG                                           WorldType = 0x2815
-	M_SMSG_DB_REPLY                                                  WorldType = 0x25A1
-	M_SMSG_DEATH_RELEASE_LOC                                         WorldType = 0x2710
-	M_SMSG_DEFENSE_MESSAGE                                           WorldType = 0x2BB6
-	M_SMSG_DELETE_CHAR                                               WorldType = 0x2749
-	M_SMSG_DESTROY_ARENA_UNIT                                        WorldType = 0x278D
-	M_SMSG_DESTRUCTIBLE_BUILDING_DAMAGE                              WorldType = 0x273C
-	M_SMSG_DIFFERENT_INSTANCE_FROM_PARTY                             WorldType = 0x258B
-	M_SMSG_DISENCHANT_CREDIT                                         WorldType = 0x25BC
-	M_SMSG_DISMOUNT                                                  WorldType = 0x26E3
-	M_SMSG_DISMOUNT_RESULT                                           WorldType = 0x257B
-	M_SMSG_DISPEL_FAILED                                             WorldType = 0x2C30
-	M_SMSG_DISPLAY_GAME_ERROR                                        WorldType = 0x25B5
-	M_SMSG_DISPLAY_PLAYER_CHOICE                                     WorldType = 0x26A7
-	M_SMSG_DISPLAY_PROMOTION                                         WorldType = 0x266B
-	M_SMSG_DISPLAY_QUEST_POPUP                                       WorldType = 0x2A9D
-	M_SMSG_DISPLAY_TOAST                                             WorldType = 0x263A
-	M_SMSG_DONT_AUTO_PUSH_SPELLS_TO_ACTION_BAR                       WorldType = 0x25F7
-	M_SMSG_DROP_NEW_CONNECTION                                       WorldType = 0x304C
-	M_SMSG_DUEL_COMPLETE                                             WorldType = 0x2678
-	M_SMSG_DUEL_COUNTDOWN                                            WorldType = 0x2677
-	M_SMSG_DUEL_IN_BOUNDS                                            WorldType = 0x2676
-	M_SMSG_DUEL_OPPONENT_SELECTED                                    WorldType = 0x2674
-	M_SMSG_DUEL_OUT_OF_BOUNDS                                        WorldType = 0x2675
-	M_SMSG_DUEL_REQUESTED                                            WorldType = 0x2673
-	M_SMSG_DUEL_WINNER                                               WorldType = 0x2679
-	M_SMSG_DURABILITY_DAMAGE_DEATH                                   WorldType = 0x2793
-	M_SMSG_EMOTE                                                     WorldType = 0x2816
-	M_SMSG_ENABLE_BARBER_SHOP                                        WorldType = 0x26F0
-	M_SMSG_ENABLE_ENCRYPTION                                         WorldType = 0x3049
-	M_SMSG_ENCHANTMENT_LOG                                           WorldType = 0x275C
-	M_SMSG_ENCOUNTER_END                                             WorldType = 0x27CC
-	M_SMSG_ENCOUNTER_START                                           WorldType = 0x27CB
-	M_SMSG_ENUM_CHARACTERS_RESULT                                    WorldType = 0x2583
-	M_SMSG_ENVIRONMENTAL_DAMAGE_LOG                                  WorldType = 0x2C21
-	M_SMSG_EQUIPMENT_SET_ID                                          WorldType = 0x26E5
-	M_SMSG_EXPECTED_SPAM_RECORDS                                     WorldType = 0x2BB1
-	M_SMSG_EXPLORATION_EXPERIENCE                                    WorldType = 0x27AF
-	M_SMSG_FACTION_BONUS_INFO                                        WorldType = 0x276F
-	M_SMSG_FAILED_PLAYER_CONDITION                                   WorldType = 0x25E2
-	M_SMSG_FEATURE_SYSTEM_STATUS                                     WorldType = 0x25D1
-	M_SMSG_FEATURE_SYSTEM_STATUS_GLUE_SCREEN                         WorldType = 0x25D2
-	M_SMSG_FEIGN_DEATH_RESISTED                                      WorldType = 0x2790
-	M_SMSG_FISH_ESCAPED                                              WorldType = 0x2703
-	M_SMSG_FISH_NOT_HOOKED                                           WorldType = 0x2702
-	M_SMSG_FLIGHT_SPLINE_SYNC                                        WorldType = 0x2DF7
-	M_SMSG_FORCED_DEATH_UPDATE                                       WorldType = 0x2711
-	M_SMSG_FORCE_ANIM                                                WorldType = 0x279E
-	M_SMSG_FORCE_OBJECT_RELINK                                       WorldType = 0x266A
-	M_SMSG_FRIEND_STATUS                                             WorldType = 0x27D8
-	M_SMSG_GAME_EVENT_DEBUG_INITIALIZE                               WorldType = 0x2680
-	M_SMSG_GAME_OBJECT_ACTIVATE_ANIM_KIT                             WorldType = 0x25D6
-	M_SMSG_GAME_OBJECT_CUSTOM_ANIM                                   WorldType = 0x25D7
-	M_SMSG_GAME_OBJECT_DESPAWN                                       WorldType = 0x25D8
-	M_SMSG_GAME_OBJECT_MULTI_TRANSITION                              WorldType = 0x287A
-	M_SMSG_GAME_OBJECT_PLAY_SPELL_VISUAL                             WorldType = 0x2C4B
-	M_SMSG_GAME_OBJECT_PLAY_SPELL_VISUAL_KIT                         WorldType = 0x2C4A
-	M_SMSG_GAME_OBJECT_RESET_STATE                                   WorldType = 0x2766
-	M_SMSG_GAME_OBJECT_SET_STATE                                     WorldType = 0x284D
-	M_SMSG_GAME_OBJECT_UI_ACTION                                     WorldType = 0x2763
-	M_SMSG_GAME_SPEED_SET                                            WorldType = 0x26B0
-	M_SMSG_GAME_TIME_SET                                             WorldType = 0x2755
-	M_SMSG_GAME_TIME_UPDATE                                          WorldType = 0x2754
-	M_SMSG_GARRISON_ADD_FOLLOWER_RESULT                              WorldType = 0x2902
-	M_SMSG_GARRISON_ADD_MISSION_RESULT                               WorldType = 0x2906
-	M_SMSG_GARRISON_ASSIGN_FOLLOWER_TO_BUILDING_RESULT               WorldType = 0x2918
-	M_SMSG_GARRISON_BUILDING_ACTIVATED                               WorldType = 0x28FB
-	M_SMSG_GARRISON_BUILDING_LANDMARKS                               WorldType = 0x292C
-	M_SMSG_GARRISON_BUILDING_REMOVED                                 WorldType = 0x28F4
-	M_SMSG_GARRISON_BUILDING_SET_ACTIVE_SPECIALIZATION_RESULT        WorldType = 0x28F6
-	M_SMSG_GARRISON_CLEAR_ALL_FOLLOWERS_EXHAUSTION                   WorldType = 0x2916
-	M_SMSG_GARRISON_COMPLETE_MISSION_RESULT                          WorldType = 0x2908
-	M_SMSG_GARRISON_CREATE_RESULT                                    WorldType = 0x28FC
-	M_SMSG_GARRISON_DELETE_RESULT                                    WorldType = 0x2920
-	M_SMSG_GARRISON_FOLLOWER_CATEGORIES                              WorldType = 0x2901
-	M_SMSG_GARRISON_FOLLOWER_CHANGED_ABILITIES                       WorldType = 0x2914
-	M_SMSG_GARRISON_FOLLOWER_CHANGED_DURABILITY                      WorldType = 0x2904
-	M_SMSG_GARRISON_FOLLOWER_CHANGED_ITEM_LEVEL                      WorldType = 0x2913
-	M_SMSG_GARRISON_FOLLOWER_CHANGED_STATUS                          WorldType = 0x2915
-	M_SMSG_GARRISON_FOLLOWER_CHANGED_XP                              WorldType = 0x2912
-	M_SMSG_GARRISON_IS_UPGRADEABLE_RESULT                            WorldType = 0x2929
-	M_SMSG_GARRISON_LANDING_PAGE_SHIPMENT_INFO                       WorldType = 0x27ED
-	M_SMSG_GARRISON_LEARN_BLUEPRINT_RESULT                           WorldType = 0x28F7
-	M_SMSG_GARRISON_LEARN_SPECIALIZATION_RESULT                      WorldType = 0x28F5
-	M_SMSG_GARRISON_LIST_FOLLOWERS_CHEAT_RESULT                      WorldType = 0x2905
-	M_SMSG_GARRISON_LIST_MISSIONS_CHEAT_RESULT                       WorldType = 0x292A
-	M_SMSG_GARRISON_MISSION_AREA_BONUS_ADDED                         WorldType = 0x2910
-	M_SMSG_GARRISON_MISSION_BONUS_ROLL_RESULT                        WorldType = 0x290C
-	M_SMSG_GARRISON_MISSION_LIST_UPDATE                              WorldType = 0x290E
-	M_SMSG_GARRISON_MISSION_REWARD_RESPONSE                          WorldType = 0x292D
-	M_SMSG_GARRISON_MISSION_UPDATE_CAN_START                         WorldType = 0x2911
-	M_SMSG_GARRISON_NUM_FOLLOWER_ACTIVATIONS_REMAINING               WorldType = 0x2917
-	M_SMSG_GARRISON_OPEN_ARCHITECT                                   WorldType = 0x2921
-	M_SMSG_GARRISON_OPEN_MISSION_NPC                                 WorldType = 0x2923
-	M_SMSG_GARRISON_OPEN_RECRUITMENT_NPC                             WorldType = 0x291C
-	M_SMSG_GARRISON_OPEN_TALENT_NPC                                  WorldType = 0x291D
-	M_SMSG_GARRISON_OPEN_TRADESKILL_NPC                              WorldType = 0x2922
-	M_SMSG_GARRISON_PLACE_BUILDING_RESULT                            WorldType = 0x28F3
-	M_SMSG_GARRISON_PLOT_PLACED                                      WorldType = 0x28F1
-	M_SMSG_GARRISON_PLOT_REMOVED                                     WorldType = 0x28F2
-	M_SMSG_GARRISON_RECALL_PORTAL_LAST_USED_TIME                     WorldType = 0x290A
-	M_SMSG_GARRISON_RECALL_PORTAL_USED                               WorldType = 0x290B
-	M_SMSG_GARRISON_RECRUITMENT_FOLLOWERS_GENERATED                  WorldType = 0x291E
-	M_SMSG_GARRISON_RECRUIT_FOLLOWER_RESULT                          WorldType = 0x291F
-	M_SMSG_GARRISON_REMOTE_INFO                                      WorldType = 0x28FA
-	M_SMSG_GARRISON_REMOVE_FOLLOWER_FROM_BUILDING_RESULT             WorldType = 0x2919
-	M_SMSG_GARRISON_REMOVE_FOLLOWER_RESULT                           WorldType = 0x2903
-	M_SMSG_GARRISON_REQUEST_BLUEPRINT_AND_SPECIALIZATION_DATA_RESULT WorldType = 0x28F9
-	M_SMSG_GARRISON_START_MISSION_RESULT                             WorldType = 0x2907
-	M_SMSG_GARRISON_UNLEARN_BLUEPRINT_RESULT                         WorldType = 0x28F8
-	M_SMSG_GARRISON_UPGRADE_RESULT                                   WorldType = 0x28FD
-	M_SMSG_GENERATE_RANDOM_CHARACTER_NAME_RESULT                     WorldType = 0x2584
-	M_SMSG_GET_ACCOUNT_CHARACTER_LIST_RESULT                         WorldType = 0x27B0
-	M_SMSG_GET_DISPLAYED_TROPHY_LIST_RESPONSE                        WorldType = 0x2928
-	M_SMSG_GET_GARRISON_INFO_RESULT                                  WorldType = 0x28F0
-	M_SMSG_GET_SHIPMENTS_OF_TYPE_RESPONSE                            WorldType = 0x27EC
-	M_SMSG_GET_SHIPMENT_INFO_RESPONSE                                WorldType = 0x27E8
-	M_SMSG_GET_TROPHY_LIST_RESPONSE                                  WorldType = 0x2811
-	M_SMSG_GM_PLAYER_INFO                                            WorldType = 0x2783
-	M_SMSG_GM_REQUEST_PLAYER_INFO                                    WorldType = 0x25EE
-	M_SMSG_GM_TICKET_CASE_STATUS                                     WorldType = 0x26D2
-	M_SMSG_GM_TICKET_SYSTEM_STATUS                                   WorldType = 0x26D1
-	M_SMSG_GOD_MODE                                                  WorldType = 0x2742
-	M_SMSG_GOSSIP_COMPLETE                                           WorldType = 0x2A96
-	M_SMSG_GOSSIP_MESSAGE                                            WorldType = 0x2A97
-	M_SMSG_GOSSIP_POI                                                WorldType = 0x27E5
-	M_SMSG_GOSSIP_TEXT_UPDATE                                        WorldType = 0x2A98
-	M_SMSG_GROUP_ACTION_THROTTLED                                    WorldType = 0x259D
-	M_SMSG_GROUP_DECLINE                                             WorldType = 0x27E0
-	M_SMSG_GROUP_DESTROYED                                           WorldType = 0x27E2
-	M_SMSG_GROUP_INVITE_CONFIRMATION                                 WorldType = 0x2860
-	M_SMSG_GROUP_NEW_LEADER                                          WorldType = 0x264C
-	M_SMSG_GROUP_UNINVITE                                            WorldType = 0x27E1
-	M_SMSG_GUILD_ACHIEVEMENT_DELETED                                 WorldType = 0x29C5
-	M_SMSG_GUILD_ACHIEVEMENT_EARNED                                  WorldType = 0x29C4
-	M_SMSG_GUILD_ACHIEVEMENT_MEMBERS                                 WorldType = 0x29C7
-	M_SMSG_GUILD_BANK_LOG_QUERY_RESULTS                              WorldType = 0x29DF
-	M_SMSG_GUILD_BANK_QUERY_RESULTS                                  WorldType = 0x29DE
-	M_SMSG_GUILD_BANK_REMAINING_WITHDRAW_MONEY                       WorldType = 0x29E0
-	M_SMSG_GUILD_BANK_TEXT_QUERY_RESULT                              WorldType = 0x29E3
-	M_SMSG_GUILD_CHALLENGE_COMPLETED                                 WorldType = 0x29D3
-	M_SMSG_GUILD_CHALLENGE_UPDATE                                    WorldType = 0x29D2
-	M_SMSG_GUILD_CHANGE_NAME_RESULT                                  WorldType = 0x29DD
-	M_SMSG_GUILD_COMMAND_RESULT                                      WorldType = 0x29BA
-	M_SMSG_GUILD_CRITERIA_DELETED                                    WorldType = 0x29C6
-	M_SMSG_GUILD_CRITERIA_UPDATE                                     WorldType = 0x29C3
-	M_SMSG_GUILD_EVENT_AWAY_CHANGE                                   WorldType = 0x29F0
-	M_SMSG_GUILD_EVENT_BANK_CONTENTS_CHANGED                         WorldType = 0x29F8
-	M_SMSG_GUILD_EVENT_BANK_MONEY_CHANGED                            WorldType = 0x29F7
-	M_SMSG_GUILD_EVENT_DISBANDED                                     WorldType = 0x29ED
-	M_SMSG_GUILD_EVENT_LOG_QUERY_RESULTS                             WorldType = 0x29E2
-	M_SMSG_GUILD_EVENT_MOTD                                          WorldType = 0x29EE
-	M_SMSG_GUILD_EVENT_NEW_LEADER                                    WorldType = 0x29EC
-	M_SMSG_GUILD_EVENT_PLAYER_JOINED                                 WorldType = 0x29EA
-	M_SMSG_GUILD_EVENT_PLAYER_LEFT                                   WorldType = 0x29EB
-	M_SMSG_GUILD_EVENT_PRESENCE_CHANGE                               WorldType = 0x29EF
-	M_SMSG_GUILD_EVENT_RANKS_UPDATED                                 WorldType = 0x29F1
-	M_SMSG_GUILD_EVENT_RANK_CHANGED                                  WorldType = 0x29F2
-	M_SMSG_GUILD_EVENT_TAB_ADDED                                     WorldType = 0x29F3
-	M_SMSG_GUILD_EVENT_TAB_DELETED                                   WorldType = 0x29F4
-	M_SMSG_GUILD_EVENT_TAB_MODIFIED                                  WorldType = 0x29F5
-	M_SMSG_GUILD_EVENT_TAB_TEXT_CHANGED                              WorldType = 0x29F6
-	M_SMSG_GUILD_FLAGGED_FOR_RENAME                                  WorldType = 0x29DC
-	M_SMSG_GUILD_INVITE                                              WorldType = 0x29CA
-	M_SMSG_GUILD_INVITE_DECLINED                                     WorldType = 0x29E8
-	M_SMSG_GUILD_INVITE_EXPIRED                                      WorldType = 0x29E9
-	M_SMSG_GUILD_ITEM_LOOTED                                         WorldType = 0x29D4
-	M_SMSG_GUILD_KNOWN_RECIPES                                       WorldType = 0x29BE
-	M_SMSG_GUILD_MEMBERS_WITH_RECIPE                                 WorldType = 0x29BF
-	M_SMSG_GUILD_MEMBER_DAILY_RESET                                  WorldType = 0x29E4
-	M_SMSG_GUILD_MEMBER_RECIPES                                      WorldType = 0x29BD
-	M_SMSG_GUILD_MEMBER_UPDATE_NOTE                                  WorldType = 0x29C9
-	M_SMSG_GUILD_MOVED                                               WorldType = 0x29DA
-	M_SMSG_GUILD_MOVE_STARTING                                       WorldType = 0x29D9
-	M_SMSG_GUILD_NAME_CHANGED                                        WorldType = 0x29DB
-	M_SMSG_GUILD_NEWS                                                WorldType = 0x29C1
-	M_SMSG_GUILD_NEWS_DELETED                                        WorldType = 0x29C2
-	M_SMSG_GUILD_PARTY_STATE                                         WorldType = 0x29CB
-	M_SMSG_GUILD_PERMISSIONS_QUERY_RESULTS                           WorldType = 0x29E1
-	M_SMSG_GUILD_RANKS                                               WorldType = 0x29C8
-	M_SMSG_GUILD_REPUTATION_REACTION_CHANGED                         WorldType = 0x29CC
-	M_SMSG_GUILD_RESET                                               WorldType = 0x29D8
-	M_SMSG_GUILD_REWARD_LIST                                         WorldType = 0x29C0
-	M_SMSG_GUILD_ROSTER                                              WorldType = 0x29BB
-	M_SMSG_GUILD_ROSTER_UPDATE                                       WorldType = 0x29BC
-	M_SMSG_GUILD_SEND_RANK_CHANGE                                    WorldType = 0x29B9
-	M_SMSG_HEALTH_UPDATE                                             WorldType = 0x2706
-	M_SMSG_HIGHEST_THREAT_UPDATE                                     WorldType = 0x2717
-	M_SMSG_HOTFIX_MESSAGE                                            WorldType = 0x25A3
-	M_SMSG_HOTFIX_RESPONSE                                           WorldType = 0x25A4
-	M_SMSG_INCOMING_SUMMON_COMPLETED                                 WorldType = 0x28AE
-	M_SMSG_INCOMING_SUMMON_PENDING                                   WorldType = 0x28AD
-	M_SMSG_INITIALIZE_FACTIONS                                       WorldType = 0x276E
-	M_SMSG_INITIAL_SETUP                                             WorldType = 0x2580
-	M_SMSG_INIT_WORLD_STATES                                         WorldType = 0x2794
-	M_SMSG_INSPECT_RESULT                                            WorldType = 0x2650
-	M_SMSG_INSTANCE_ENCOUNTER_CHANGE_PRIORITY                        WorldType = 0x27FD
-	M_SMSG_INSTANCE_ENCOUNTER_DISENGAGE_UNIT                         WorldType = 0x27FC
-	M_SMSG_INSTANCE_ENCOUNTER_END                                    WorldType = 0x2805
-	M_SMSG_INSTANCE_ENCOUNTER_ENGAGE_UNIT                            WorldType = 0x27FB
-	M_SMSG_INSTANCE_ENCOUNTER_GAIN_COMBAT_RESURRECTION_CHARGE        WorldType = 0x2807
-	M_SMSG_INSTANCE_ENCOUNTER_IN_COMBAT_RESURRECTION                 WorldType = 0x2806
-	M_SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_COMPLETE                     WorldType = 0x2800
-	M_SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_START                        WorldType = 0x27FF
-	M_SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_UPDATE                       WorldType = 0x2804
-	M_SMSG_INSTANCE_ENCOUNTER_PHASE_SHIFT_CHANGED                    WorldType = 0x2808
-	M_SMSG_INSTANCE_ENCOUNTER_SET_ALLOWING_RELEASE                   WorldType = 0x2803
-	M_SMSG_INSTANCE_ENCOUNTER_SET_SUPPRESSING_RELEASE                WorldType = 0x2802
-	M_SMSG_INSTANCE_ENCOUNTER_START                                  WorldType = 0x2801
-	M_SMSG_INSTANCE_ENCOUNTER_TIMER_START                            WorldType = 0x27FE
-	M_SMSG_INSTANCE_GROUP_SIZE_CHANGED                               WorldType = 0x2740
-	M_SMSG_INSTANCE_INFO                                             WorldType = 0x2653
-	M_SMSG_INSTANCE_RESET                                            WorldType = 0x26B5
-	M_SMSG_INSTANCE_RESET_FAILED                                     WorldType = 0x26B6
-	M_SMSG_INSTANCE_SAVE_CREATED                                     WorldType = 0x27CA
-	M_SMSG_INVALIDATE_PAGE_TEXT                                      WorldType = 0x270C
-	M_SMSG_INVALIDATE_PLAYER                                         WorldType = 0x26DA
-	M_SMSG_INVALID_PROMOTION_CODE                                    WorldType = 0x279F
-	M_SMSG_INVENTORY_CHANGE_FAILURE                                  WorldType = 0x276C
-	M_SMSG_ISLAND_AZERITE_XP_GAIN                                    WorldType = 0x27AC
-	M_SMSG_ISLAND_COMPLETED                                          WorldType = 0x27AD
-	M_SMSG_ISLAND_OPEN_QUEUE_NPC                                     WorldType = 0x2842
-	M_SMSG_IS_QUEST_COMPLETE_RESPONSE                                WorldType = 0x2A83
-	M_SMSG_ITEM_CHANGED                                              WorldType = 0x272A
-	M_SMSG_ITEM_COOLDOWN                                             WorldType = 0x2814
-	M_SMSG_ITEM_ENCHANT_TIME_UPDATE                                  WorldType = 0x27A1
-	M_SMSG_ITEM_EXPIRE_PURCHASE_REFUND                               WorldType = 0x25B2
-	M_SMSG_ITEM_PURCHASE_REFUND_RESULT                               WorldType = 0x25B0
-	M_SMSG_ITEM_PUSH_RESULT                                          WorldType = 0x2639
-	M_SMSG_ITEM_TIME_UPDATE                                          WorldType = 0x27A0
-	M_SMSG_KICK_REASON                                               WorldType = 0x2839
-	M_SMSG_LEARNED_SPELLS                                            WorldType = 0x2C4D
-	M_SMSG_LEARN_PVP_TALENTS_FAILED                                  WorldType = 0x25EA
-	M_SMSG_LEARN_TALENTS_FAILED                                      WorldType = 0x25E9
-	M_SMSG_LEVEL_UPDATE                                              WorldType = 0x2588
-	M_SMSG_LEVEL_UP_INFO                                             WorldType = 0x2729
-	M_SMSG_LFG_BOOT_PLAYER                                           WorldType = 0x2A35
-	M_SMSG_LFG_DISABLED                                              WorldType = 0x2A33
-	M_SMSG_LFG_INSTANCE_SHUTDOWN_COUNTDOWN                           WorldType = 0x2A25
-	M_SMSG_LFG_JOIN_RESULT                                           WorldType = 0x2A1C
-	M_SMSG_LFG_LIST_JOIN_RESULT                                      WorldType = 0x2A1D
-	M_SMSG_LFG_LIST_SEARCH_RESULTS                                   WorldType = 0x2A1E
-	M_SMSG_LFG_LIST_SEARCH_STATUS                                    WorldType = 0x2A1F
-	M_SMSG_LFG_LIST_UPDATE_BLACKLIST                                 WorldType = 0x2A2A
-	M_SMSG_LFG_LIST_UPDATE_STATUS                                    WorldType = 0x2A26
-	M_SMSG_LFG_OFFER_CONTINUE                                        WorldType = 0x2A34
-	M_SMSG_LFG_PARTY_INFO                                            WorldType = 0x2A36
-	M_SMSG_LFG_PLAYER_INFO                                           WorldType = 0x2A37
-	M_SMSG_LFG_PLAYER_REWARD                                         WorldType = 0x2A38
-	M_SMSG_LFG_PROPOSAL_UPDATE                                       WorldType = 0x2A2D
-	M_SMSG_LFG_QUEUE_STATUS                                          WorldType = 0x2A20
-	M_SMSG_LFG_READY_CHECK_RESULT                                    WorldType = 0x2A3A
-	M_SMSG_LFG_READY_CHECK_UPDATE                                    WorldType = 0x2A22
-	M_SMSG_LFG_ROLE_CHECK_UPDATE                                     WorldType = 0x2A21
-	M_SMSG_LFG_SLOT_INVALID                                          WorldType = 0x2A30
-	M_SMSG_LFG_TELEPORT_DENIED                                       WorldType = 0x2A32
-	M_SMSG_LFG_UPDATE_STATUS                                         WorldType = 0x2A24
-	M_SMSG_LF_GUILD_APPLICANT_LIST_CHANGED                           WorldType = 0x29D5
-	M_SMSG_LF_GUILD_APPLICATIONS                                     WorldType = 0x29D1
-	M_SMSG_LF_GUILD_APPLICATIONS_LIST_CHANGED                        WorldType = 0x29D6
-	M_SMSG_LF_GUILD_BROWSE                                           WorldType = 0x29CE
-	M_SMSG_LF_GUILD_COMMAND_RESULT                                   WorldType = 0x29D0
-	M_SMSG_LF_GUILD_POST                                             WorldType = 0x29CD
-	M_SMSG_LF_GUILD_RECRUITS                                         WorldType = 0x29CF
-	M_SMSG_LIGHTNING_STORM_END                                       WorldType = 0x26D7
-	M_SMSG_LIGHTNING_STORM_START                                     WorldType = 0x26D6
-	M_SMSG_LIVE_REGION_ACCOUNT_RESTORE_RESULT                        WorldType = 0x27BE
-	M_SMSG_LIVE_REGION_CHARACTER_COPY_RESULT                         WorldType = 0x27BC
-	M_SMSG_LIVE_REGION_GET_ACCOUNT_CHARACTER_LIST_RESULT             WorldType = 0x27B1
-	M_SMSG_LOAD_CUF_PROFILES                                         WorldType = 0x25CE
-	M_SMSG_LOAD_EQUIPMENT_SET                                        WorldType = 0x2757
-	M_SMSG_LOAD_SELECTED_TROPHY_RESULT                               WorldType = 0x2812
-	M_SMSG_LOGIN_SET_TIME_SPEED                                      WorldType = 0x2756
-	M_SMSG_LOGIN_VERIFY_WORLD                                        WorldType = 0x25AD
-	M_SMSG_LOGOUT_CANCEL_ACK                                         WorldType = 0x26B4
-	M_SMSG_LOGOUT_COMPLETE                                           WorldType = 0x26B3
-	M_SMSG_LOGOUT_RESPONSE                                           WorldType = 0x26B2
-	M_SMSG_LOG_XP_GAIN                                               WorldType = 0x2725
-	M_SMSG_LOOT_ALL_PASSED                                           WorldType = 0x2637
-	M_SMSG_LOOT_LEGACY_RULES_IN_EFFECT                               WorldType = 0x287B
-	M_SMSG_LOOT_LIST                                                 WorldType = 0x278C
-	M_SMSG_LOOT_MONEY_NOTIFY                                         WorldType = 0x2632
-	M_SMSG_LOOT_RELEASE                                              WorldType = 0x2631
-	M_SMSG_LOOT_RELEASE_ALL                                          WorldType = 0x2630
-	M_SMSG_LOOT_REMOVED                                              WorldType = 0x262C
-	M_SMSG_LOOT_RESPONSE                                             WorldType = 0x262B
-	M_SMSG_LOOT_ROLL                                                 WorldType = 0x2634
-	M_SMSG_LOOT_ROLLS_COMPLETE                                       WorldType = 0x2636
-	M_SMSG_LOOT_ROLL_WON                                             WorldType = 0x2638
-	M_SMSG_LOSS_OF_CONTROL_AURA_UPDATE                               WorldType = 0x269B
-	M_SMSG_MAIL_COMMAND_RESULT                                       WorldType = 0x265B
-	M_SMSG_MAIL_LIST_RESULT                                          WorldType = 0x27A2
-	M_SMSG_MAIL_QUERY_NEXT_TIME_RESULT                               WorldType = 0x27A3
-	M_SMSG_MAP_OBJECTIVES_INIT                                       WorldType = 0x27AB
-	M_SMSG_MAP_OBJECTIVE_ADD                                         WorldType = 0x2597
-	M_SMSG_MAP_OBJECTIVE_REMOVE                                      WorldType = 0x2598
-	M_SMSG_MAP_OBJ_EVENTS                                            WorldType = 0x25D9
-	M_SMSG_MASTER_LOOT_CANDIDATE_LIST                                WorldType = 0x2635
-	M_SMSG_MESSAGE_BOX                                               WorldType = 0x2575
-	M_SMSG_MINIMAP_PING                                              WorldType = 0x2701
-	M_SMSG_MIRROR_IMAGE_COMPONENTED_DATA                             WorldType = 0x2C14
-	M_SMSG_MIRROR_IMAGE_CREATURE_DATA                                WorldType = 0x2C13
-	M_SMSG_MISSILE_CANCEL                                            WorldType = 0x25DA
-	M_SMSG_MODIFY_CHARGE_RECOVERY_SPEED                              WorldType = 0x27B5
-	M_SMSG_MODIFY_COOLDOWN                                           WorldType = 0x27B3
-	M_SMSG_MODIFY_COOLDOWN_RECOVERY_SPEED                            WorldType = 0x27B4
-	M_SMSG_MODIFY_PARTY_RANGE                                        WorldType = 0x278F
-	M_SMSG_MOTD                                                      WorldType = 0x2BAF
-	M_SMSG_MOUNT_EQUIPMENT_APPLY_RESULT                              WorldType = 0x28B7
-	M_SMSG_MOUNT_RESULT                                              WorldType = 0x257A
-	M_SMSG_MOVE_APPLY_MOVEMENT_FORCE                                 WorldType = 0x2DE1
-	M_SMSG_MOVE_DISABLE_COLLISION                                    WorldType = 0x2DDD
-	M_SMSG_MOVE_DISABLE_DOUBLE_JUMP                                  WorldType = 0x2DCB
-	M_SMSG_MOVE_DISABLE_GRAVITY                                      WorldType = 0x2DDB
-	M_SMSG_MOVE_DISABLE_TRANSITION_BETWEEN_SWIM_AND_FLY              WorldType = 0x2DDA
-	M_SMSG_MOVE_ENABLE_COLLISION                                     WorldType = 0x2DDE
-	M_SMSG_MOVE_ENABLE_DOUBLE_JUMP                                   WorldType = 0x2DCA
-	M_SMSG_MOVE_ENABLE_GRAVITY                                       WorldType = 0x2DDC
-	M_SMSG_MOVE_ENABLE_TRANSITION_BETWEEN_SWIM_AND_FLY               WorldType = 0x2DD9
-	M_SMSG_MOVE_KNOCK_BACK                                           WorldType = 0x2DD1
-	M_SMSG_MOVE_REMOVE_MOVEMENT_FORCE                                WorldType = 0x2DE2
-	M_SMSG_MOVE_ROOT                                                 WorldType = 0x2DC7
-	M_SMSG_MOVE_SET_ACTIVE_MOVER                                     WorldType = 0x2DA3
-	M_SMSG_MOVE_SET_CAN_FLY                                          WorldType = 0x2DD3
-	M_SMSG_MOVE_SET_CAN_TURN_WHILE_FALLING                           WorldType = 0x2DD5
-	M_SMSG_MOVE_SET_COLLISION_HEIGHT                                 WorldType = 0x2DDF
-	M_SMSG_MOVE_SET_COMPOUND_STATE                                   WorldType = 0x2DE3
-	M_SMSG_MOVE_SET_FEATHER_FALL                                     WorldType = 0x2DCD
-	M_SMSG_MOVE_SET_FLIGHT_BACK_SPEED                                WorldType = 0x2DC3
-	M_SMSG_MOVE_SET_FLIGHT_SPEED                                     WorldType = 0x2DC2
-	M_SMSG_MOVE_SET_HOVERING                                         WorldType = 0x2DCF
-	M_SMSG_MOVE_SET_IGNORE_MOVEMENT_FORCES                           WorldType = 0x2DD7
-	M_SMSG_MOVE_SET_LAND_WALK                                        WorldType = 0x2DCC
-	M_SMSG_MOVE_SET_MOD_MOVEMENT_FORCE_MAGNITUDE                     WorldType = 0x2DB4
-	M_SMSG_MOVE_SET_NORMAL_FALL                                      WorldType = 0x2DCE
-	M_SMSG_MOVE_SET_PITCH_RATE                                       WorldType = 0x2DC6
-	M_SMSG_MOVE_SET_RUN_BACK_SPEED                                   WorldType = 0x2DBF
-	M_SMSG_MOVE_SET_RUN_SPEED                                        WorldType = 0x2DBE
-	M_SMSG_MOVE_SET_SWIM_BACK_SPEED                                  WorldType = 0x2DC1
-	M_SMSG_MOVE_SET_SWIM_SPEED                                       WorldType = 0x2DC0
-	M_SMSG_MOVE_SET_TURN_RATE                                        WorldType = 0x2DC5
-	M_SMSG_MOVE_SET_VEHICLE_REC_ID                                   WorldType = 0x2DE0
-	M_SMSG_MOVE_SET_WALK_SPEED                                       WorldType = 0x2DC4
-	M_SMSG_MOVE_SET_WATER_WALK                                       WorldType = 0x2DC9
-	M_SMSG_MOVE_SKIP_TIME                                            WorldType = 0x2DE4
-	M_SMSG_MOVE_SPLINE_DISABLE_COLLISION                             WorldType = 0x2DE9
-	M_SMSG_MOVE_SPLINE_DISABLE_GRAVITY                               WorldType = 0x2DE7
-	M_SMSG_MOVE_SPLINE_ENABLE_COLLISION                              WorldType = 0x2DEA
-	M_SMSG_MOVE_SPLINE_ENABLE_GRAVITY                                WorldType = 0x2DE8
-	M_SMSG_MOVE_SPLINE_ROOT                                          WorldType = 0x2DE5
-	M_SMSG_MOVE_SPLINE_SET_FEATHER_FALL                              WorldType = 0x2DEB
-	M_SMSG_MOVE_SPLINE_SET_FLIGHT_BACK_SPEED                         WorldType = 0x2DBA
-	M_SMSG_MOVE_SPLINE_SET_FLIGHT_SPEED                              WorldType = 0x2DB9
-	M_SMSG_MOVE_SPLINE_SET_FLYING                                    WorldType = 0x2DF5
-	M_SMSG_MOVE_SPLINE_SET_HOVER                                     WorldType = 0x2DED
-	M_SMSG_MOVE_SPLINE_SET_LAND_WALK                                 WorldType = 0x2DF0
-	M_SMSG_MOVE_SPLINE_SET_NORMAL_FALL                               WorldType = 0x2DEC
-	M_SMSG_MOVE_SPLINE_SET_PITCH_RATE                                WorldType = 0x2DBD
-	M_SMSG_MOVE_SPLINE_SET_RUN_BACK_SPEED                            WorldType = 0x2DB6
-	M_SMSG_MOVE_SPLINE_SET_RUN_MODE                                  WorldType = 0x2DF3
-	M_SMSG_MOVE_SPLINE_SET_RUN_SPEED                                 WorldType = 0x2DB5
-	M_SMSG_MOVE_SPLINE_SET_SWIM_BACK_SPEED                           WorldType = 0x2DB8
-	M_SMSG_MOVE_SPLINE_SET_SWIM_SPEED                                WorldType = 0x2DB7
-	M_SMSG_MOVE_SPLINE_SET_TURN_RATE                                 WorldType = 0x2DBC
-	M_SMSG_MOVE_SPLINE_SET_WALK_MODE                                 WorldType = 0x2DF4
-	M_SMSG_MOVE_SPLINE_SET_WALK_SPEED                                WorldType = 0x2DBB
-	M_SMSG_MOVE_SPLINE_SET_WATER_WALK                                WorldType = 0x2DEF
-	M_SMSG_MOVE_SPLINE_START_SWIM                                    WorldType = 0x2DF1
-	M_SMSG_MOVE_SPLINE_STOP_SWIM                                     WorldType = 0x2DF2
-	M_SMSG_MOVE_SPLINE_UNROOT                                        WorldType = 0x2DE6
-	M_SMSG_MOVE_SPLINE_UNSET_FLYING                                  WorldType = 0x2DF6
-	M_SMSG_MOVE_SPLINE_UNSET_HOVER                                   WorldType = 0x2DEE
-	M_SMSG_MOVE_TELEPORT                                             WorldType = 0x2DD2
-	M_SMSG_MOVE_UNROOT                                               WorldType = 0x2DC8
-	M_SMSG_MOVE_UNSET_CAN_FLY                                        WorldType = 0x2DD4
-	M_SMSG_MOVE_UNSET_CAN_TURN_WHILE_FALLING                         WorldType = 0x2DD6
-	M_SMSG_MOVE_UNSET_HOVERING                                       WorldType = 0x2DD0
-	M_SMSG_MOVE_UNSET_IGNORE_MOVEMENT_FORCES                         WorldType = 0x2DD8
-	M_SMSG_MOVE_UPDATE                                               WorldType = 0x2DAE
-	M_SMSG_MOVE_UPDATE_APPLY_MOVEMENT_FORCE                          WorldType = 0x2DB2
-	M_SMSG_MOVE_UPDATE_COLLISION_HEIGHT                              WorldType = 0x2DAD
-	M_SMSG_MOVE_UPDATE_FLIGHT_BACK_SPEED                             WorldType = 0x2DAA
-	M_SMSG_MOVE_UPDATE_FLIGHT_SPEED                                  WorldType = 0x2DA9
-	M_SMSG_MOVE_UPDATE_KNOCK_BACK                                    WorldType = 0x2DB0
-	M_SMSG_MOVE_UPDATE_MOD_MOVEMENT_FORCE_MAGNITUDE                  WorldType = 0x2DB1
-	M_SMSG_MOVE_UPDATE_PITCH_RATE                                    WorldType = 0x2DAC
-	M_SMSG_MOVE_UPDATE_REMOVE_MOVEMENT_FORCE                         WorldType = 0x2DB3
-	M_SMSG_MOVE_UPDATE_RUN_BACK_SPEED                                WorldType = 0x2DA5
-	M_SMSG_MOVE_UPDATE_RUN_SPEED                                     WorldType = 0x2DA4
-	M_SMSG_MOVE_UPDATE_SWIM_BACK_SPEED                               WorldType = 0x2DA8
-	M_SMSG_MOVE_UPDATE_SWIM_SPEED                                    WorldType = 0x2DA7
-	M_SMSG_MOVE_UPDATE_TELEPORT                                      WorldType = 0x2DAF
-	M_SMSG_MOVE_UPDATE_TURN_RATE                                     WorldType = 0x2DAB
-	M_SMSG_MOVE_UPDATE_WALK_SPEED                                    WorldType = 0x2DA6
-	M_SMSG_NEUTRAL_PLAYER_FACTION_SELECT_RESULT                      WorldType = 0x25F2
-	M_SMSG_NEW_TAXI_PATH                                             WorldType = 0x26AD
-	M_SMSG_NEW_WORLD                                                 WorldType = 0x25AC
-	M_SMSG_NOTIFY_DEST_LOC_SPELL_CAST                                WorldType = 0x2C43
-	M_SMSG_NOTIFY_MISSILE_TRAJECTORY_COLLISION                       WorldType = 0x26D9
-	M_SMSG_NOTIFY_MONEY                                              WorldType = 0x25AF
-	M_SMSG_NOTIFY_RECEIVED_MAIL                                      WorldType = 0x265C
-	M_SMSG_OFFER_PETITION_ERROR                                      WorldType = 0x26E9
-	M_SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA                      WorldType = 0x2726
-	M_SMSG_ON_MONSTER_MOVE                                           WorldType = 0x2DA2
-	M_SMSG_OPEN_ALLIED_RACE_DETAILS_GIVER                            WorldType = 0x2843
-	M_SMSG_OPEN_CONTAINER                                            WorldType = 0x276D
-	M_SMSG_OPEN_LFG_DUNGEON_FINDER                                   WorldType = 0x2A31
-	M_SMSG_OPEN_SHIPMENT_NPC_FROM_GOSSIP                             WorldType = 0x27E7
-	M_SMSG_OPEN_SHIPMENT_NPC_RESULT                                  WorldType = 0x27E9
-	M_SMSG_OPEN_TRANSMOGRIFIER                                       WorldType = 0x2840
-	M_SMSG_OVERRIDE_LIGHT                                            WorldType = 0x26EF
-	M_SMSG_PAGE_TEXT                                                 WorldType = 0x2762
-	M_SMSG_PARTY_COMMAND_RESULT                                      WorldType = 0x27E4
-	M_SMSG_PARTY_INVITE                                              WorldType = 0x25CF
-	M_SMSG_PARTY_KILL_LOG                                            WorldType = 0x27A7
-	M_SMSG_PARTY_MEMBER_STATE                                        WorldType = 0x27A5
-	M_SMSG_PARTY_MEMBER_STATE_UPDATE                                 WorldType = 0x27A4
-	M_SMSG_PARTY_UPDATE                                              WorldType = 0x260C
-	M_SMSG_PAUSE_MIRROR_TIMER                                        WorldType = 0x2759
-	M_SMSG_PENDING_RAID_LOCK                                         WorldType = 0x273A
-	M_SMSG_PETITION_ALREADY_SIGNED                                   WorldType = 0x25B8
-	M_SMSG_PETITION_RENAME_GUILD_RESPONSE                            WorldType = 0x29FA
-	M_SMSG_PETITION_SHOW_LIST                                        WorldType = 0x26F2
-	M_SMSG_PETITION_SHOW_SIGNATURES                                  WorldType = 0x26F3
-	M_SMSG_PETITION_SIGN_RESULTS                                     WorldType = 0x2799
-	M_SMSG_PET_ACTION_FEEDBACK                                       WorldType = 0x2796
-	M_SMSG_PET_ACTION_SOUND                                          WorldType = 0x26CF
-	M_SMSG_PET_ADDED                                                 WorldType = 0x25A9
-	M_SMSG_PET_BATTLE_CHAT_RESTRICTED                                WorldType = 0x2619
-	M_SMSG_PET_BATTLE_DEBUG_QUEUE_DUMP_RESPONSE                      WorldType = 0x26A2
-	M_SMSG_PET_BATTLE_FINALIZE_LOCATION                              WorldType = 0x2612
-	M_SMSG_PET_BATTLE_FINAL_ROUND                                    WorldType = 0x2617
-	M_SMSG_PET_BATTLE_FINISHED                                       WorldType = 0x2618
-	M_SMSG_PET_BATTLE_FIRST_ROUND                                    WorldType = 0x2614
-	M_SMSG_PET_BATTLE_INITIAL_UPDATE                                 WorldType = 0x2613
-	M_SMSG_PET_BATTLE_MAX_GAME_LENGTH_WARNING                        WorldType = 0x261A
-	M_SMSG_PET_BATTLE_PVP_CHALLENGE                                  WorldType = 0x2611
-	M_SMSG_PET_BATTLE_QUEUE_PROPOSE_MATCH                            WorldType = 0x2659
-	M_SMSG_PET_BATTLE_QUEUE_STATUS                                   WorldType = 0x265A
-	M_SMSG_PET_BATTLE_REPLACEMENTS_MADE                              WorldType = 0x2616
-	M_SMSG_PET_BATTLE_REQUEST_FAILED                                 WorldType = 0x2610
-	M_SMSG_PET_BATTLE_ROUND_RESULT                                   WorldType = 0x2615
-	M_SMSG_PET_BATTLE_SLOT_UPDATES                                   WorldType = 0x2603
-	M_SMSG_PET_CAST_FAILED                                           WorldType = 0x2C57
-	M_SMSG_PET_CLEAR_SPELLS                                          WorldType = 0x2C24
-	M_SMSG_PET_DISMISS_SOUND                                         WorldType = 0x26D0
-	M_SMSG_PET_GOD_MODE                                              WorldType = 0x26AA
-	M_SMSG_PET_GUIDS                                                 WorldType = 0x274B
-	M_SMSG_PET_LEARNED_SPELLS                                        WorldType = 0x2C4F
-	M_SMSG_PET_MODE                                                  WorldType = 0x258A
-	M_SMSG_PET_NAME_INVALID                                          WorldType = 0x26F7
-	M_SMSG_PET_SLOT_UPDATED                                          WorldType = 0x2589
-	M_SMSG_PET_SPELLS_MESSAGE                                        WorldType = 0x2C25
-	M_SMSG_PET_STABLE_LIST                                           WorldType = 0x25AA
-	M_SMSG_PET_STABLE_RESULT                                         WorldType = 0x25AB
-	M_SMSG_PET_TAME_FAILURE                                          WorldType = 0x26E6
-	M_SMSG_PET_UNLEARNED_SPELLS                                      WorldType = 0x2C50
-	M_SMSG_PHASE_SHIFT_CHANGE                                        WorldType = 0x2577
-	M_SMSG_PLAYED_TIME                                               WorldType = 0x2713
-	M_SMSG_PLAYER_BOUND                                              WorldType = 0x257D
-	M_SMSG_PLAYER_SAVE_GUILD_EMBLEM                                  WorldType = 0x29F9
-	M_SMSG_PLAYER_SKINNED                                            WorldType = 0x2791
-	M_SMSG_PLAYER_TABARD_VENDOR_ACTIVATE                             WorldType = 0x27A6
-	M_SMSG_PLAY_MUSIC                                                WorldType = 0x27B8
-	M_SMSG_PLAY_OBJECT_SOUND                                         WorldType = 0x27B9
-	M_SMSG_PLAY_ONE_SHOT_ANIM_KIT                                    WorldType = 0x277B
-	M_SMSG_PLAY_ORPHAN_SPELL_VISUAL                                  WorldType = 0x2C47
-	M_SMSG_PLAY_SCENE                                                WorldType = 0x2656
-	M_SMSG_PLAY_SOUND                                                WorldType = 0x27B7
-	M_SMSG_PLAY_SPEAKERBOT_SOUND                                     WorldType = 0x27BA
-	M_SMSG_PLAY_SPELL_VISUAL                                         WorldType = 0x2C45
-	M_SMSG_PLAY_SPELL_VISUAL_KIT                                     WorldType = 0x2C49
-	M_SMSG_PLAY_TIME_WARNING                                         WorldType = 0x2744
-	M_SMSG_PONG                                                      WorldType = 0x304E
-	M_SMSG_POWER_UPDATE                                              WorldType = 0x2707
-	M_SMSG_PRE_RESSURECT                                             WorldType = 0x27B6
-	M_SMSG_PRINT_NOTIFICATION                                        WorldType = 0x25E1
-	M_SMSG_PROC_RESIST                                               WorldType = 0x27A8
-	M_SMSG_PROPOSE_LEVEL_GRANT                                       WorldType = 0x271B
-	M_SMSG_PUSH_SPELL_TO_ACTION_BAR                                  WorldType = 0x2C51
-	M_SMSG_PVP_CREDIT                                                WorldType = 0x2720
-	M_SMSG_PVP_LOG_DATA                                              WorldType = 0x25B3
-	M_SMSG_PVP_MATCH_START                                           WorldType = 0x28B1
-	M_SMSG_PVP_OPTIONS_ENABLED                                       WorldType = 0x25B6
-	M_SMSG_PVP_SEASON                                                WorldType = 0x25D3
-	M_SMSG_QUERY_BATTLE_PET_NAME_RESPONSE                            WorldType = 0x270E
-	M_SMSG_QUERY_COMMUNITY_NAME_RESPONSE                             WorldType = 0x270A
-	M_SMSG_QUERY_CREATURE_RESPONSE                                   WorldType = 0x2704
-	M_SMSG_QUERY_GAME_OBJECT_RESPONSE                                WorldType = 0x2705
-	M_SMSG_QUERY_GARRISON_CREATURE_NAME_RESPONSE                     WorldType = 0x292B
-	M_SMSG_QUERY_GUILD_INFO_RESPONSE                                 WorldType = 0x29E5
-	M_SMSG_QUERY_ITEM_TEXT_RESPONSE                                  WorldType = 0x2813
-	M_SMSG_QUERY_NPC_TEXT_RESPONSE                                   WorldType = 0x2708
-	M_SMSG_QUERY_PAGE_TEXT_RESPONSE                                  WorldType = 0x270B
-	M_SMSG_QUERY_PETITION_RESPONSE                                   WorldType = 0x270F
-	M_SMSG_QUERY_PET_NAME_RESPONSE                                   WorldType = 0x270D
-	M_SMSG_QUERY_PLAYER_NAME_RESPONSE                                WorldType = 0x2709
-	M_SMSG_QUERY_QUEST_INFO_RESPONSE                                 WorldType = 0x2A95
-	M_SMSG_QUERY_TIME_RESPONSE                                       WorldType = 0x2724
-	M_SMSG_QUERY_TREASURE_PICKER_RESPONSE                            WorldType = 0x2852
-	M_SMSG_QUEST_COMPLETION_NPC_RESPONSE                             WorldType = 0x2A81
-	M_SMSG_QUEST_CONFIRM_ACCEPT                                      WorldType = 0x2A8E
-	M_SMSG_QUEST_FORCE_REMOVED                                       WorldType = 0x2A9B
-	M_SMSG_QUEST_GIVER_INVALID_QUEST                                 WorldType = 0x2A84
-	M_SMSG_QUEST_GIVER_OFFER_REWARD_MESSAGE                          WorldType = 0x2A93
-	M_SMSG_QUEST_GIVER_QUEST_COMPLETE                                WorldType = 0x2A82
-	M_SMSG_QUEST_GIVER_QUEST_DETAILS                                 WorldType = 0x2A91
-	M_SMSG_QUEST_GIVER_QUEST_FAILED                                  WorldType = 0x2A85
-	M_SMSG_QUEST_GIVER_QUEST_LIST_MESSAGE                            WorldType = 0x2A99
-	M_SMSG_QUEST_GIVER_QUEST_TURN_IN_FAILURE                         WorldType = 0x285D
-	M_SMSG_QUEST_GIVER_REQUEST_ITEMS                                 WorldType = 0x2A92
-	M_SMSG_QUEST_GIVER_STATUS                                        WorldType = 0x2A9A
-	M_SMSG_QUEST_GIVER_STATUS_MULTIPLE                               WorldType = 0x2A90
-	M_SMSG_QUEST_LOG_FULL                                            WorldType = 0x2A86
-	M_SMSG_QUEST_POI_CHANGED                                         WorldType = 0x2A9F
-	M_SMSG_QUEST_POI_QUERY_RESPONSE                                  WorldType = 0x2A9C
-	M_SMSG_QUEST_PUSH_RESULT                                         WorldType = 0x2A8F
-	M_SMSG_QUEST_SPAWN_TRACKING_UPDATE                               WorldType = 0x2A9E
-	M_SMSG_QUEST_UPDATE_ADD_CREDIT                                   WorldType = 0x2A8B
-	M_SMSG_QUEST_UPDATE_ADD_CREDIT_SIMPLE                            WorldType = 0x2A8C
-	M_SMSG_QUEST_UPDATE_ADD_PVP_CREDIT                               WorldType = 0x2A8D
-	M_SMSG_QUEST_UPDATE_COMPLETE                                     WorldType = 0x2A88
-	M_SMSG_QUEST_UPDATE_COMPLETE_BY_SPELL                            WorldType = 0x2A87
-	M_SMSG_QUEST_UPDATE_FAILED                                       WorldType = 0x2A89
-	M_SMSG_QUEST_UPDATE_FAILED_TIMER                                 WorldType = 0x2A8A
-	M_SMSG_RAF_EMAIL_ENABLED_RESPONSE                                WorldType = 0x27D5
-	M_SMSG_RAID_DIFFICULTY_SET                                       WorldType = 0x27F8
-	M_SMSG_RAID_GROUP_ONLY                                           WorldType = 0x27FA
-	M_SMSG_RAID_INSTANCE_MESSAGE                                     WorldType = 0x2BB4
-	M_SMSG_RAID_MARKERS_CHANGED                                      WorldType = 0x25B9
-	M_SMSG_RANDOM_ROLL                                               WorldType = 0x264F
-	M_SMSG_RATED_BATTLEFIELD_INFO                                    WorldType = 0x25A7
-	M_SMSG_READY_CHECK_COMPLETED                                     WorldType = 0x260F
-	M_SMSG_READY_CHECK_RESPONSE                                      WorldType = 0x260E
-	M_SMSG_READY_CHECK_STARTED                                       WorldType = 0x260D
-	M_SMSG_READ_ITEM_RESULT_FAILED                                   WorldType = 0x27F4
-	M_SMSG_READ_ITEM_RESULT_OK                                       WorldType = 0x27EE
-	M_SMSG_REALM_LOOKUP_INFORMATION                                  WorldType = 0x2819
-	M_SMSG_REALM_QUERY_RESPONSE                                      WorldType = 0x26EE
-	M_SMSG_RECRUIT_A_FRIEND_RESPONSE                                 WorldType = 0x27D6
-	M_SMSG_REFER_A_FRIEND_EXPIRED                                    WorldType = 0x276B
-	M_SMSG_REFER_A_FRIEND_FAILURE                                    WorldType = 0x26F4
-	M_SMSG_REFRESH_COMPONENT                                         WorldType = 0x267C
-	M_SMSG_REFRESH_SPELL_HISTORY                                     WorldType = 0x2C2C
-	M_SMSG_REMOVE_ITEM_PASSIVE                                       WorldType = 0x25C0
-	M_SMSG_REMOVE_LOSS_OF_CONTROL                                    WorldType = 0x269D
-	M_SMSG_REPLACE_TROPHY_RESPONSE                                   WorldType = 0x2810
-	M_SMSG_REPORT_PVP_PLAYER_AFK_RESULT                              WorldType = 0x26E2
-	M_SMSG_REQUEST_ADDON_LIST                                        WorldType = 0x2662
-	M_SMSG_REQUEST_CEMETERY_LIST_RESPONSE                            WorldType = 0x259E
-	M_SMSG_REQUEST_PVP_BRAWL_INFO_RESPONSE                           WorldType = 0x25D5
-	M_SMSG_REQUEST_PVP_REWARDS_RESPONSE                              WorldType = 0x25D4
-	M_SMSG_RESEARCH_COMPLETE                                         WorldType = 0x2586
-	M_SMSG_RESET_COMPRESSION_CONTEXT                                 WorldType = 0x304F
-	M_SMSG_RESET_FAILED_NOTIFY                                       WorldType = 0x26EA
-	M_SMSG_RESET_RANGED_COMBAT_TIMER                                 WorldType = 0x271D
-	M_SMSG_RESET_WEEKLY_CURRENCY                                     WorldType = 0x2574
-	M_SMSG_RESPEC_WIPE_CONFIRM                                       WorldType = 0x2629
-	M_SMSG_RESPOND_INSPECT_ACHIEVEMENTS                              WorldType = 0x2571
-	M_SMSG_RESUME_CAST_BAR                                           WorldType = 0x2C3E
-	M_SMSG_RESUME_COMMS                                              WorldType = 0x304B
-	M_SMSG_RESUME_TOKEN                                              WorldType = 0x25BE
-	M_SMSG_RESURRECT_CLEAR_DATA                                      WorldType = 0x257F
-	M_SMSG_RESURRECT_REQUEST                                         WorldType = 0x257E
-	M_SMSG_RESYNC_RUNES                                              WorldType = 0x2747
-	M_SMSG_ROLE_CHANGED_INFORM                                       WorldType = 0x258D
-	M_SMSG_ROLE_CHOSEN                                               WorldType = 0x2A39
-	M_SMSG_ROLE_POLL_INFORM                                          WorldType = 0x258E
-	M_SMSG_RUNE_REGEN_DEBUG                                          WorldType = 0x25C8
-	M_SMSG_SCENARIO_BOOT                                             WorldType = 0x27F5
-	M_SMSG_SCENARIO_COMPLETED                                        WorldType = 0x2836
-	M_SMSG_SCENARIO_POIS                                             WorldType = 0x2652
-	M_SMSG_SCENARIO_PROGRESS_UPDATE                                  WorldType = 0x264B
-	M_SMSG_SCENARIO_SET_SHOULD_SHOW_CRITERIA                         WorldType = 0x2846
-	M_SMSG_SCENARIO_SPELL_UPDATE                                     WorldType = 0x2845
-	M_SMSG_SCENARIO_STATE                                            WorldType = 0x264A
-	M_SMSG_SCENE_OBJECT_EVENT                                        WorldType = 0x25F8
-	M_SMSG_SCENE_OBJECT_PET_BATTLE_FINAL_ROUND                       WorldType = 0x25FD
-	M_SMSG_SCENE_OBJECT_PET_BATTLE_FINISHED                          WorldType = 0x25FE
-	M_SMSG_SCENE_OBJECT_PET_BATTLE_FIRST_ROUND                       WorldType = 0x25FA
-	M_SMSG_SCENE_OBJECT_PET_BATTLE_INITIAL_UPDATE                    WorldType = 0x25F9
-	M_SMSG_SCENE_OBJECT_PET_BATTLE_REPLACEMENTS_MADE                 WorldType = 0x25FC
-	M_SMSG_SCENE_OBJECT_PET_BATTLE_ROUND_RESULT                      WorldType = 0x25FB
-	M_SMSG_SCRIPT_CAST                                               WorldType = 0x2C55
-	M_SMSG_SELL_RESPONSE                                             WorldType = 0x26F8
-	M_SMSG_SEND_ITEM_PASSIVES                                        WorldType = 0x25C1
-	M_SMSG_SEND_KNOWN_SPELLS                                         WorldType = 0x2C2A
-	M_SMSG_SEND_RAID_TARGET_UPDATE_ALL                               WorldType = 0x264D
-	M_SMSG_SEND_RAID_TARGET_UPDATE_SINGLE                            WorldType = 0x264E
-	M_SMSG_SEND_SPELL_CHARGES                                        WorldType = 0x2C2D
-	M_SMSG_SEND_SPELL_HISTORY                                        WorldType = 0x2C2B
-	M_SMSG_SEND_UNLEARN_SPELLS                                       WorldType = 0x2C2E
-	M_SMSG_SERVER_FIRST_ACHIEVEMENTS                                 WorldType = 0x266D
-	M_SMSG_SERVER_TIME                                               WorldType = 0x26B1
-	M_SMSG_SETUP_CURRENCY                                            WorldType = 0x2572
-	M_SMSG_SETUP_RESEARCH_HISTORY                                    WorldType = 0x2585
-	M_SMSG_SET_AI_ANIM_KIT                                           WorldType = 0x277A
-	M_SMSG_SET_ALL_TASK_PROGRESS                                     WorldType = 0x27DE
-	M_SMSG_SET_ANIM_TIER                                             WorldType = 0x277E
-	M_SMSG_SET_CURRENCY                                              WorldType = 0x2573
-	M_SMSG_SET_DF_FAST_LAUNCH_RESULT                                 WorldType = 0x2A2E
-	M_SMSG_SET_DUNGEON_DIFFICULTY                                    WorldType = 0x26D3
-	M_SMSG_SET_FACTION_AT_WAR                                        WorldType = 0x2746
-	M_SMSG_SET_FACTION_NOT_VISIBLE                                   WorldType = 0x2775
-	M_SMSG_SET_FACTION_STANDING                                      WorldType = 0x2776
-	M_SMSG_SET_FACTION_VISIBLE                                       WorldType = 0x2774
-	M_SMSG_SET_FLAT_SPELL_MODIFIER                                   WorldType = 0x2C36
-	M_SMSG_SET_FORCED_REACTIONS                                      WorldType = 0x2765
-	M_SMSG_SET_ITEM_PURCHASE_DATA                                    WorldType = 0x25B1
-	M_SMSG_SET_LOOT_METHOD_FAILED                                    WorldType = 0x281F
-	M_SMSG_SET_MAX_WEEKLY_QUANTITY                                   WorldType = 0x25B7
-	M_SMSG_SET_MELEE_ANIM_KIT                                        WorldType = 0x277D
-	M_SMSG_SET_MOVEMENT_ANIM_KIT                                     WorldType = 0x277C
-	M_SMSG_SET_PCT_SPELL_MODIFIER                                    WorldType = 0x2C37
-	M_SMSG_SET_PET_SPECIALIZATION                                    WorldType = 0x2644
-	M_SMSG_SET_PLAYER_DECLINED_NAMES_RESULT                          WorldType = 0x2712
-	M_SMSG_SET_PLAY_HOVER_ANIM                                       WorldType = 0x25CC
-	M_SMSG_SET_PROFICIENCY                                           WorldType = 0x277F
-	M_SMSG_SET_SPELL_CHARGES                                         WorldType = 0x2C29
-	M_SMSG_SET_TASK_COMPLETE                                         WorldType = 0x27DF
-	M_SMSG_SET_TIME_ZONE_INFORMATION                                 WorldType = 0x26A5
-	M_SMSG_SET_VEHICLE_REC_ID                                        WorldType = 0x2739
-	M_SMSG_SHOW_ADVENTURE_MAP                                        WorldType = 0x283F
-	M_SMSG_SHOW_BANK                                                 WorldType = 0x26AE
-	M_SMSG_SHOW_MAILBOX                                              WorldType = 0x27F6
-	M_SMSG_SHOW_NEUTRAL_PLAYER_FACTION_SELECT_UI                     WorldType = 0x25F1
-	M_SMSG_SHOW_TAXI_NODES                                           WorldType = 0x2700
-	M_SMSG_SHOW_TRADE_SKILL_RESPONSE                                 WorldType = 0x27BF
-	M_SMSG_SOCKET_GEMS                                               WorldType = 0x2771
-	M_SMSG_SOCKET_GEMS_FAILURE                                       WorldType = 0x2772
-	M_SMSG_SORT_BAGS_RESULT                                          WorldType = 0x282D
-	M_SMSG_SOR_START_EXPERIENCE_INCOMPLETE                           WorldType = 0x25F3
-	M_SMSG_SPECIALIZATION_CHANGED                                    WorldType = 0x25ED
-	M_SMSG_SPECIAL_MOUNT_ANIM                                        WorldType = 0x26CE
-	M_SMSG_SPEC_INVOLUNTARILY_CHANGED                                WorldType = 0x2761
-	M_SMSG_SPELL_ABSORB_LOG                                          WorldType = 0x2C1F
-	M_SMSG_SPELL_CATEGORY_COOLDOWN                                   WorldType = 0x2C17
-	M_SMSG_SPELL_CHANNEL_START                                       WorldType = 0x2C34
-	M_SMSG_SPELL_CHANNEL_UPDATE                                      WorldType = 0x2C35
-	M_SMSG_SPELL_COOLDOWN                                            WorldType = 0x2C15
-	M_SMSG_SPELL_DAMAGE_SHIELD                                       WorldType = 0x2C31
-	M_SMSG_SPELL_DELAYED                                             WorldType = 0x2C3F
-	M_SMSG_SPELL_DISPELL_LOG                                         WorldType = 0x2C1A
-	M_SMSG_SPELL_ENERGIZE_LOG                                        WorldType = 0x2C1C
-	M_SMSG_SPELL_EXECUTE_LOG                                         WorldType = 0x2C40
-	M_SMSG_SPELL_FAILED_OTHER                                        WorldType = 0x2C54
-	M_SMSG_SPELL_FAILURE                                             WorldType = 0x2C52
-	M_SMSG_SPELL_FAILURE_MESSAGE                                     WorldType = 0x2C59
-	M_SMSG_SPELL_GO                                                  WorldType = 0x2C39
-	M_SMSG_SPELL_HEAL_ABSORB_LOG                                     WorldType = 0x2C1E
-	M_SMSG_SPELL_HEAL_LOG                                            WorldType = 0x2C1D
-	M_SMSG_SPELL_INSTAKILL_LOG                                       WorldType = 0x2C33
-	M_SMSG_SPELL_INTERRUPT_LOG                                       WorldType = 0x2C20
-	M_SMSG_SPELL_MISS_LOG                                            WorldType = 0x2C41
-	M_SMSG_SPELL_NON_MELEE_DAMAGE_LOG                                WorldType = 0x2C32
-	M_SMSG_SPELL_OR_DAMAGE_IMMUNE                                    WorldType = 0x2C2F
-	M_SMSG_SPELL_PERIODIC_AURA_LOG                                   WorldType = 0x2C1B
-	M_SMSG_SPELL_PREPARE                                             WorldType = 0x2C38
-	M_SMSG_SPELL_START                                               WorldType = 0x2C3A
-	M_SMSG_SPIRIT_HEALER_CONFIRM                                     WorldType = 0x275E
-	M_SMSG_STAND_STATE_UPDATE                                        WorldType = 0x2764
-	M_SMSG_START_ELAPSED_TIMER                                       WorldType = 0x261B
-	M_SMSG_START_ELAPSED_TIMERS                                      WorldType = 0x261D
-	M_SMSG_START_LOOT_ROLL                                           WorldType = 0x2633
-	M_SMSG_START_MIRROR_TIMER                                        WorldType = 0x2758
-	M_SMSG_START_TIMER                                               WorldType = 0x25BB
-	M_SMSG_STOP_ELAPSED_TIMER                                        WorldType = 0x261C
-	M_SMSG_STOP_MIRROR_TIMER                                         WorldType = 0x275A
-	M_SMSG_STOP_SPEAKERBOT_SOUND                                     WorldType = 0x27BB
-	M_SMSG_STREAMING_MOVIES                                          WorldType = 0x25BA
-	M_SMSG_SUMMON_CANCEL                                             WorldType = 0x26E1
-	M_SMSG_SUMMON_RAID_MEMBER_VALIDATE_FAILED                        WorldType = 0x258F
-	M_SMSG_SUMMON_REQUEST                                            WorldType = 0x2769
-	M_SMSG_SUPERCEDED_SPELLS                                         WorldType = 0x2C4C
-	M_SMSG_SUSPEND_COMMS                                             WorldType = 0x304A
-	M_SMSG_SUSPEND_TOKEN                                             WorldType = 0x25BD
-	M_SMSG_TALENTS_INVOLUNTARILY_RESET                               WorldType = 0x2760
-	M_SMSG_TAXI_NODE_STATUS                                          WorldType = 0x26AB
-	M_SMSG_TEXT_EMOTE                                                WorldType = 0x26A9
-	M_SMSG_THREAT_CLEAR                                              WorldType = 0x271A
-	M_SMSG_THREAT_REMOVE                                             WorldType = 0x2719
-	M_SMSG_THREAT_UPDATE                                             WorldType = 0x2718
-	M_SMSG_TIME_ADJUSTMENT                                           WorldType = 0x2DA1
-	M_SMSG_TIME_SYNC_REQUEST                                         WorldType = 0x2DA0
-	M_SMSG_TITLE_EARNED                                              WorldType = 0x2715
-	M_SMSG_TITLE_LOST                                                WorldType = 0x2716
-	M_SMSG_TOTEM_CREATED                                             WorldType = 0x26FB
-	M_SMSG_TOTEM_DURATION_CHANGED                                    WorldType = 0x26FC
-	M_SMSG_TOTEM_MOVED                                               WorldType = 0x26FD
-	M_SMSG_TRADE_STATUS                                              WorldType = 0x2582
-	M_SMSG_TRADE_UPDATED                                             WorldType = 0x2581
-	M_SMSG_TRAINER_BUY_FAILED                                        WorldType = 0x271F
-	M_SMSG_TRAINER_LIST                                              WorldType = 0x271E
-	M_SMSG_TRANSFER_ABORTED                                          WorldType = 0x274A
-	M_SMSG_TRANSFER_PENDING                                          WorldType = 0x25E5
-	M_SMSG_TRANSMOG_COLLECTION_UPDATE                                WorldType = 0x25C6
-	M_SMSG_TRANSMOG_SET_COLLECTION_UPDATE                            WorldType = 0x25C7
-	M_SMSG_TRIGGER_CINEMATIC                                         WorldType = 0x2817
-	M_SMSG_TRIGGER_MOVIE                                             WorldType = 0x26FE
-	M_SMSG_TURN_IN_PETITION_RESULT                                   WorldType = 0x279B
-	M_SMSG_TUTORIAL_FLAGS                                            WorldType = 0x2809
-	M_SMSG_TUTORIAL_HIGHLIGHT_SPELL                                  WorldType = 0x284C
-	M_SMSG_TUTORIAL_UNHIGHLIGHT_SPELL                                WorldType = 0x284B
-	M_SMSG_TWITTER_STATUS                                            WorldType = 0x2FFD
-	M_SMSG_UI_TIME                                                   WorldType = 0x275D
-	M_SMSG_UNDELETE_CHARACTER_RESPONSE                               WorldType = 0x281A
-	M_SMSG_UNDELETE_COOLDOWN_STATUS_RESPONSE                         WorldType = 0x281B
-	M_SMSG_UNLEARNED_SPELLS                                          WorldType = 0x2C4E
-	M_SMSG_UPDATE_ACCOUNT_DATA                                       WorldType = 0x2752
-	M_SMSG_UPDATE_ACTION_BUTTONS                                     WorldType = 0x25F6
-	M_SMSG_UPDATE_CELESTIAL_BODY                                     WorldType = 0x286B
-	M_SMSG_UPDATE_CHARACTER_FLAGS                                    WorldType = 0x280F
-	M_SMSG_UPDATE_EXPANSION_LEVEL                                    WorldType = 0x2666
-	M_SMSG_UPDATE_GAME_TIME_STATE                                    WorldType = 0x2872
-	M_SMSG_UPDATE_INSTANCE_OWNERSHIP                                 WorldType = 0x26D8
-	M_SMSG_UPDATE_LAST_INSTANCE                                      WorldType = 0x26B7
-	M_SMSG_UPDATE_OBJECT                                             WorldType = 0x2818
-	M_SMSG_UPDATE_TALENT_DATA                                        WorldType = 0x25EC
-	M_SMSG_UPDATE_TASK_PROGRESS                                      WorldType = 0x27DD
-	M_SMSG_UPDATE_WEEKLY_SPELL_USAGE                                 WorldType = 0x2C19
-	M_SMSG_UPDATE_WORLD_STATE                                        WorldType = 0x2795
-	M_SMSG_USERLIST_ADD                                              WorldType = 0x2BB9
-	M_SMSG_USERLIST_REMOVE                                           WorldType = 0x2BBA
-	M_SMSG_USERLIST_UPDATE                                           WorldType = 0x2BBB
-	M_SMSG_USE_EQUIPMENT_SET_RESULT                                  WorldType = 0x279C
-	M_SMSG_VENDOR_INVENTORY                                          WorldType = 0x25CA
-	M_SMSG_VIGNETTE_UPDATE                                           WorldType = 0x27BD
-	M_SMSG_VOID_ITEM_SWAP_RESPONSE                                   WorldType = 0x25DF
-	M_SMSG_VOID_STORAGE_CONTENTS                                     WorldType = 0x25DC
-	M_SMSG_VOID_STORAGE_FAILED                                       WorldType = 0x25DB
-	M_SMSG_VOID_STORAGE_TRANSFER_CHANGES                             WorldType = 0x25DD
-	M_SMSG_VOID_TRANSFER_RESULT                                      WorldType = 0x25DE
-	M_SMSG_WAIT_QUEUE_FINISH                                         WorldType = 0x256E
-	M_SMSG_WAIT_QUEUE_UPDATE                                         WorldType = 0x256D
-	M_SMSG_WARDEN_DATA                                               WorldType = 0x2576
-	M_SMSG_WARFRONT_COMPLETED                                        WorldType = 0x27AE
-	M_SMSG_WARGAME_REQUEST_SUCCESSFULLY_SENT_TO_OPPONENT             WorldType = 0x25B4
-	M_SMSG_WEATHER                                                   WorldType = 0x26D5
-	M_SMSG_WEEKLY_SPELL_USAGE                                        WorldType = 0x2C18
-	M_SMSG_WHO                                                       WorldType = 0x2BAE
-	M_SMSG_WHO_IS                                                    WorldType = 0x26D4
-	M_SMSG_WORLD_QUEST_UPDATE                                        WorldType = 0x2853
-	M_SMSG_WORLD_SERVER_INFO                                         WorldType = 0x25C2
-	M_SMSG_WORLD_TEXT                                                WorldType = 0x2838
-	M_SMSG_WOW_TOKEN_AUCTION_SOLD                                    WorldType = 0x2825
-	M_SMSG_WOW_TOKEN_BUY_REQUEST_CONFIRMATION                        WorldType = 0x2827
-	M_SMSG_WOW_TOKEN_BUY_RESULT_CONFIRMATION                         WorldType = 0x2828
-	M_SMSG_WOW_TOKEN_CAN_REDEEM_FOR_BALANCE_RESULT                   WorldType = 0x2861
-	M_SMSG_WOW_TOKEN_CAN_VETERAN_BUY_RESULT                          WorldType = 0x2826
-	M_SMSG_WOW_TOKEN_DISTRIBUTION_GLUE_UPDATE                        WorldType = 0x2820
-	M_SMSG_WOW_TOKEN_DISTRIBUTION_UPDATE                             WorldType = 0x2821
-	M_SMSG_WOW_TOKEN_MARKET_PRICE_RESPONSE                           WorldType = 0x2822
-	M_SMSG_WOW_TOKEN_REDEEM_GAME_TIME_UPDATED                        WorldType = 0x2829
-	M_SMSG_WOW_TOKEN_REDEEM_REQUEST_CONFIRMATION                     WorldType = 0x282A
-	M_SMSG_WOW_TOKEN_REDEEM_RESULT                                   WorldType = 0x282B
-	M_SMSG_WOW_TOKEN_SELL_REQUEST_CONFIRMATION                       WorldType = 0x2823
-	M_SMSG_WOW_TOKEN_SELL_RESULT_CONFIRMATION                        WorldType = 0x2824
-	M_SMSG_WOW_TOKEN_UPDATE_AUCTIONABLE_LIST_RESPONSE                WorldType = 0x282C
-	M_SMSG_XP_GAIN_ABORTED                                           WorldType = 0x25E0
-	M_SMSG_XP_GAIN_ENABLED                                           WorldType = 0x27F9
-	M_SMSG_ZONE_UNDER_ATTACK                                         WorldType = 0x2BB5
+	CMSG_BOOTME WorldType = iota
+	// Defunct codes from alpha:
+	CMSG_TELEPORT_TO_PLAYER
+	CMSG_EMBLAZON_TABARD_OBSOLETE
+	CMSG_UNEMBLAZON_TABARD_OBSOLETE
+	CMSG_MAKEMONSTERATTACKME
+	CMSG_ENABLEDEBUGCOMBATLOGGING
+	SMSG_ATTACKERSTATEUPDATEDEBUGINFO
+	SMSG_ATTACKERSTATEUPDATEDEBUGINFOSPELL
+	SMSG_ATTACKERSTATEUPDATEDEBUGINFOSPELLMISS
+	SMSG_DEBUG_PLAYER_RANGE
+	CMSG_LEVELUP_CHEAT
+	CMSG_PVP_PORT
+	CMSG_GAMEOBJ_CHAIR_USE_OBSOLETE
+	SMSG_MOVE_WORLDPORT_ACK
+	MSG_MOVE_COLLIDE_REDIRECT
+	MSG_MOVE_COLLIDE_STUCK
+	MSG_MOVE_RESERVED_0
+	MSG_MOVE_RESERVED_1
+	MSG_MOVE_RESERVED_2
+	CMSG_ENABLE_PVP
+	MSG_MOVE_RESERVED_3
+	SMSG_FORCE_SPEED_CHANGE
+	CMSG_FORCE_SPEED_CHANGE_ACK
+	CMSG_STUCK_OBSOLETE
+	CMSG_TUTORIAL_SHOWN
+	CMSG_PICKUP_ITEM
+	CMSG_DROP_ITEM
+	SMSG_INSPECT
+	SMSG_CAST_RESULT
+	SMSG_UPDATE_AURA_DURATION
+	CMSG_SET_TARGET
+	CMSG_START_USING_RANGED_WEAPON
+	CMSG_STOP_USING_RANGED_WEAPON
+	SMSG_ATTACKSWING_NOTSTANDING
+	SMSG_VICTIMSTATEUPDATE_OBSOLETE
+	SMSG_DAMAGE_DONE
+	SMSG_DAMAGE_TAKEN
+	SMSG_PLAYER_COMBAT_XP_GAIN_OBSOLETE
+	SMSG_HEALSPELL_ON_PLAYER
+	SMSG_HEALSPELL_ON_PLAYERS_PET
+	SMSG_DEATH_NOTIFY
+	SMSG_PUREMOUNT_CANCELLED
+	CMSG_PET_CAST_SPELL_OBSOLETE
+	CMSG_NPC_OFFER_ITEM
+	MSG_NPC_ACCEPT_ITEM
+	SMSG_NPC_DECLINE_ITEM
+	SMSG_NPC_ACCEPT_ITEM
+	MSG_SPLIT_MONEY
+	CMSG_SETWEAPONMODE
+	CMSG_PLAYER_MACRO
+	SMSG_PLAYER_MACRO
+	CMSG_SCREENSHOT
+	MSG_ADD_DYNAMIC_TARGET
+	SMSG_MIRRORTIMERDAMAGELOG
+	CMSG_RWHOIS
+	MSG_LOOKING_FOR_GROUP
+	CMSG_SET_LOOKING_FOR_GROUP
+	MSG_NULL_ACTION
+	SMSG_DEBUGINFOSPELLMISS_OBSOLETE
+	CMSG_PVP_PORT_OBSOLETE
+	MSG_MOVE_SET_RAW_POSITION_ACK
+	OBSOLETE_DROP_ITEM
+	CMSG_SET_TARGET_OBSOLETE
+	CMSG_UNUSED
+	CMSG_UNUSED2
+	SMSG_DAMAGE_DONE_OBSOLETE
+	SMSG_DAMAGE_TAKEN_OBSOLETE
+	CMSG_SHEATHE_OBSOLETE
+	SMSG_PUREMOUNT_CANCELLED_OBSOLETE
+	CMSG_PLAYER_MACRO_OBSOLETE
+	SMSG_PLAYER_MACRO_OBSOLETE
+	CMSG_RWHOIS_OBSOLETE
+	SMSG_POWERGAINLOG_OBSOLETE
+	SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE
+	SMSG_SET_REST_START
+	SMSG_BATTLEFIELD_WIN_OBSOLETE
+	SMSG_BATTLEFIELD_LOSE_OBSOLETE
+	SMSG_STANDSTATE_CHANGE_FAILURE_OBSOLETE
+	CMSG_MEETINGSTONE_JOIN
+	MSG_MEETINGSTONE_LEAVE
+	CMSG_MEETINGSTONE_CHEAT
+	SMSG_MEETINGSTONE_SETQUEUE
+	CMSG_MEETINGSTONE_INFO
+	SMSG_MEETINGSTONE_COMPLETE
+	SMSG_MEETINGSTONE_IN_PROGRESS
+	SMSG_MEETINGSTONE_MEMBER_ADDED
+	MSG_MOVE_TOGGLE_GRAVITY_CHEAT
+	CMSG_TOGGLE_HELM
+	CMSG_TOGGLE_CLOAK
+	SMSG_MEETINGSTONE_JOINFAILED
+	SMSG_MOVE_SET_FLIGHT
+	SMSG_MOVE_UNSET_FLIGHT
+	CMSG_MOVE_FLIGHT_ACK
+	SMSG_INIT_EXTRA_AURA_INFO
+	SMSG_SET_EXTRA_AURA_INFO
+	SMSG_SET_EXTRA_AURA_INFO_NEED_UPDATE
+	CMSG_GROUPACTION_THROTTLED
+	// TBC codes
+	UMSG_UPDATE_ARENA_TEAM_OBSOLETE
+	CMSG_LFG_SET_AUTOJOIN
+	CMSG_LFG_CLEAR_AUTOJOIN
+	CMSG_LFM_SET_AUTOFILL
+	CMSG_LFM_CLEAR_AUTOFILL
+	CMSG_ACCEPT_LFG_MATCH
+	CMSG_DECLINE_LFG_MATCH
+	CMSG_CANCEL_PENDING_LFG
+	CMSG_CLEAR_LOOKING_FOR_GROUP
+	CMSG_CLEAR_LOOKING_FOR_MORE
+	CMSG_SET_LOOKING_FOR_MORE
+	SMSG_LFG_TIMEDOUT
+	SMSG_LFG_OTHER_TIMEDOUT
+	SMSG_LFG_AUTOJOIN_FAILED
+	SMSG_LFG_AUTOJOIN_FAILED_NO_PLAYER
+	SMSG_LFG_LEADER_IS_LFM
+	SMSG_LFG_UPDATE
+	SMSG_LFG_UPDATE_LFM
+	SMSG_LFG_UPDATE_LFG
+	SMSG_LFG_UPDATE_QUEUED
+	SMSG_LFG_PENDING_INVITE
+	SMSG_LFG_PENDING_MATCH
+	SMSG_LFG_PENDING_MATCH_DONE
+	// WoTLK codes
+	SMSG_INSTANCE_ENCOUNTER
+	CMSG_LFG_SEARCH_JOIN
+	CMSG_LFG_SEARCH_LEAVE
+	SMSG_LFG_SEARCH_RESULTS
+	CMSG_LFG_PROPOSAL_RESPONSE
+	CMSG_LFG_BOOT_PLAYER_VOTE
+	CMSG_LFG_GET_PLAYER_INFO
+	CMSG_LFG_GET_PARTY_INFO
+	SMSG_INSPECT_RESULTS
+	CMSG_CORPSE_TRANSPORT_QUERY
+	CMSG_ON_MISSILE_TRAJECTORY_COLLISION
+	SMSG_TALENT_UPDATE
+	CMSG_LEARN_TALENT_GROUP
+	CMSG_PET_LEARN_TALENT_GROUP
+	SMSG_ARENA_TEAM_CHANGE_FAILED
+	SMSG_COMPOUND_MOVE
+	CMSG_BATTLEFIELD_MANAGER_ENTRY_INVITE_RESPONSE
+	SMSG_BATTLEFIELD_MANAGER_ENTERING
+	SMSG_BATTLEFIELD_MANAGER_QUEUE_INVITE
+	CMSG_BATTLEFIELD_MANAGER_QUEUE_INVITE_RESPONSE
+	CMSG_BATTLEFIELD_MANAGER_QUEUE_REQUEST
+	SMSG_BATTLEFIELD_MANAGER_QUEUE_REQUEST_RESPONSE
+	SMSG_BATTLEFIELD_MANAGER_EJECT_PENDING
+	SMSG_BATTLEFIELD_MANAGER_EJECTED
+	CMSG_BATTLEFIELD_MANAGER_EXIT_REQUEST
+	SMSG_BATTLEFIELD_MANAGER_ENTRY_INVITE
+	SMSG_BATTLEFIELD_MANAGER_STATE_CHANGED
+	CMSG_XPGAIN
+	SMSG_XPGAIN
+	SMSG_GMTICKET_RESPONSE_ERROR
+	SMSG_GMTICKET_GET_RESPONSE
+	CMSG_GMTICKET_RESOLVE_RESPONSE
+	SMSG_GMTICKET_RESOLVE_RESPONSE
+	SMSG_GMTICKET_CREATE_RESPONSE_TICKET
+	CMSG_GM_CREATE_TICKET_RESPONSE
+	SMSG_LOOT_UPDATE
+	CMSG_QUERY_GET_ALL_QUESTS
+	SMSG_ALL_QUESTS_COMPLETED
+	CMSG_GMLAGREPORT_SUBMIT
+	CMSG_LOW_LEVEL_RAID
+	CMSG_LOW_LEVEL_RAID_USER
+	SMSG_COMPRESSED_UNKNOWN_1310
+	// Codes still used in Vanilla:
+	CMSG_DBLOOKUP
+	SMSG_DBLOOKUP
+	CMSG_QUERY_OBJECT_POSITION
+	SMSG_QUERY_OBJECT_POSITION
+	CMSG_QUERY_OBJECT_ROTATION
+	SMSG_QUERY_OBJECT_ROTATION
+	CMSG_WORLD_TELEPORT
+	CMSG_TELEPORT_TO_UNIT
+	CMSG_ZONE_MAP
+	SMSG_ZONE_MAP
+	CMSG_DEBUG_CHANGECELLZONE
+	CMSG_MOVE_CHARACTER_CHEAT
+	SMSG_MOVE_CHARACTER_CHEAT
+	CMSG_RECHARGE
+	CMSG_LEARN_SPELL
+	CMSG_CREATEMONSTER
+	CMSG_DESTROYMONSTER
+	CMSG_CREATEITEM
+	CMSG_CREATEGAMEOBJECT
+	SMSG_CHECK_FOR_BOTS
+	CMSG_MAKEMONSTERATTACKGUID
+	CMSG_BOT_DETECTED2
+	CMSG_FORCEACTION
+	CMSG_FORCEACTIONONOTHER
+	CMSG_FORCEACTIONSHOW
+	SMSG_FORCEACTIONSHOW
+	CMSG_PETGODMODE
+	SMSG_PETGODMODE
+	SMSG_REFER_A_FRIEND_EXPIRED
+	CMSG_WEATHER_SPEED_CHEAT
+	CMSG_UNDRESSPLAYER
+	CMSG_BEASTMASTER
+	CMSG_GODMODE
+	SMSG_GODMODE
+	CMSG_CHEAT_SETMONEY
+	CMSG_LEVEL_CHEAT
+	CMSG_PET_LEVEL_CHEAT
+	CMSG_SET_WORLDSTATE
+	CMSG_COOLDOWN_CHEAT
+	CMSG_USE_SKILL_CHEAT
+	CMSG_FLAG_QUEST
+	CMSG_FLAG_QUEST_FINISH
+	CMSG_CLEAR_QUEST
+	CMSG_SEND_EVENT
+	CMSG_DEBUG_AISTATE
+	SMSG_DEBUG_AISTATE
+	CMSG_DISABLE_PVP_CHEAT
+	CMSG_ADVANCE_SPAWN_TIME
+	SMSG_DESTRUCTIBLE_BUILDING_DAMAGE
+	CMSG_AUTH_SRP6_BEGIN
+	CMSG_AUTH_SRP6_PROOF
+	CMSG_AUTH_SRP6_RECODE
+	CMSG_CHAR_CREATE
+	CMSG_CHAR_ENUM
+	CMSG_CHAR_DELETE
+	SMSG_AUTH_SRP6_RESPONSE
+	SMSG_CHAR_CREATE
+	SMSG_CHAR_ENUM
+	SMSG_CHAR_DELETE
+	CMSG_PLAYER_LOGIN
+	SMSG_NEW_WORLD
+	SMSG_TRANSFER_PENDING
+	SMSG_TRANSMOGRIFY_NPC
+	SMSG_TRANSFER_ABORTED
+	SMSG_CHARACTER_LOGIN_FAILED
+	SMSG_LOGIN_SETTIMESPEED
+	SMSG_GAMETIME_UPDATE
+	CMSG_GAMETIME_SET
+	SMSG_GAMETIME_SET
+	CMSG_GAMESPEED_SET
+	SMSG_GAMESPEED_SET
+	CMSG_SERVERTIME
+	SMSG_SERVERTIME
+	CMSG_PLAYER_LOGOUT
+	CMSG_LOGOUT_REQUEST
+	SMSG_LOGOUT_RESPONSE
+	SMSG_LOGOUT_COMPLETE
+	CMSG_LOGOUT_CANCEL
+	SMSG_LOGOUT_CANCEL_ACK
+	CMSG_NAME_QUERY
+	SMSG_NAME_QUERY_RESPONSE
+	CMSG_PET_NAME_QUERY
+	SMSG_PET_NAME_QUERY_RESPONSE
+	CMSG_GUILD_QUERY
+	SMSG_GUILD_QUERY_RESPONSE
+	CMSG_ITEM_QUERY_SINGLE
+	CMSG_ITEM_QUERY_MULTIPLE
+	SMSG_ITEM_QUERY_SINGLE_RESPONSE
+	SMSG_ITEM_QUERY_MULTIPLE_RESPONSE
+	CMSG_PAGE_TEXT_QUERY
+	SMSG_PAGE_TEXT_QUERY_RESPONSE
+	CMSG_QUEST_QUERY
+	SMSG_QUEST_QUERY_RESPONSE
+	CMSG_GAMEOBJECT_QUERY
+	SMSG_GAMEOBJECT_QUERY_RESPONSE
+	CMSG_CREATURE_QUERY
+	SMSG_CREATURE_QUERY_RESPONSE
+	CMSG_WHO
+	SMSG_WHO
+	CMSG_WHOIS
+	SMSG_WHOIS
+	CMSG_FRIEND_LIST // Equal to CMSG_CONTACT_LIST
+	CMSG_CONTACT_LIST
+	SMSG_FRIEND_LIST
+	SMSG_IGNORE_LIST
+	SMSG_CONTACT_LIST
+	SMSG_FRIEND_STATUS
+	CMSG_ADD_FRIEND
+	CMSG_DEL_FRIEND
+	CMSG_SET_CONTACT_NOTES
+	CMSG_ADD_IGNORE
+	CMSG_DEL_IGNORE
+	CMSG_GROUP_INVITE
+	SMSG_GROUP_INVITE
+	CMSG_GROUP_CANCEL
+	SMSG_GROUP_CANCEL
+	CMSG_GROUP_ACCEPT
+	CMSG_GROUP_DECLINE
+	SMSG_GROUP_DECLINE
+	CMSG_GROUP_UNINVITE
+	CMSG_GROUP_UNINVITE_GUID
+	SMSG_GROUP_UNINVITE
+	CMSG_GROUP_SET_LEADER
+	SMSG_GROUP_SET_LEADER
+	CMSG_LOOT_METHOD
+	CMSG_GROUP_DISBAND
+	SMSG_GROUP_DESTROYED
+	SMSG_GROUP_LIST
+	SMSG_PARTY_MEMBER_STATS
+	SMSG_PARTY_COMMAND_RESULT
+	UMSG_UPDATE_GROUP_MEMBERS
+	CMSG_GUILD_CREATE
+	CMSG_GUILD_INVITE
+	SMSG_GUILD_INVITE
+	CMSG_GUILD_ACCEPT
+	CMSG_GUILD_DECLINE
+	SMSG_GUILD_DECLINE
+	CMSG_GUILD_INFO
+	SMSG_GUILD_INFO
+	CMSG_GUILD_ROSTER
+	SMSG_GUILD_ROSTER
+	CMSG_GUILD_PROMOTE
+	CMSG_GUILD_DEMOTE
+	CMSG_GUILD_LEAVE
+	CMSG_GUILD_REMOVE
+	CMSG_GUILD_DISBAND
+	CMSG_GUILD_LEADER
+	CMSG_GUILD_MOTD
+	SMSG_GUILD_EVENT
+	SMSG_GUILD_COMMAND_RESULT
+	UMSG_UPDATE_GUILD
+	CMSG_MESSAGECHAT
+	SMSG_MESSAGECHAT
+	CMSG_JOIN_CHANNEL
+	CMSG_LEAVE_CHANNEL
+	SMSG_CHANNEL_NOTIFY
+	CMSG_CHANNEL_LIST
+	SMSG_CHANNEL_LIST
+	CMSG_CHANNEL_PASSWORD
+	CMSG_CHANNEL_SET_OWNER
+	CMSG_CHANNEL_OWNER
+	CMSG_CHANNEL_MODERATOR
+	CMSG_CHANNEL_UNMODERATOR
+	CMSG_CHANNEL_MUTE
+	CMSG_CHANNEL_UNMUTE
+	CMSG_CHANNEL_INVITE
+	CMSG_CHANNEL_KICK
+	CMSG_CHANNEL_BAN
+	CMSG_CHANNEL_UNBAN
+	CMSG_CHANNEL_ANNOUNCEMENTS
+	CMSG_CHANNEL_MODERATE
+	SMSG_UPDATE_OBJECT
+	SMSG_DESTROY_OBJECT
+	CMSG_USE_ITEM
+	CMSG_PERFORM_ITEM_INTERACTION
+	CMSG_OPEN_ITEM
+	CMSG_READ_ITEM
+	SMSG_READ_ITEM_OK
+	SMSG_READ_ITEM_FAILED
+	SMSG_ITEM_COOLDOWN
+	CMSG_GAMEOBJ_USE
+	CMSG_DESTROY_ITEMS
+	SMSG_GAMEOBJECT_CUSTOM_ANIM
+	CMSG_AREATRIGGER
+	MSG_MOVE_START_FORWARD
+	MSG_MOVE_START_BACKWARD
+	MSG_MOVE_STOP
+	MSG_MOVE_START_STRAFE_LEFT
+	MSG_MOVE_START_STRAFE_RIGHT
+	MSG_MOVE_STOP_STRAFE
+	MSG_MOVE_JUMP
+	MSG_MOVE_START_TURN_LEFT
+	MSG_MOVE_START_TURN_RIGHT
+	MSG_MOVE_STOP_TURN
+	MSG_MOVE_START_PITCH_UP
+	MSG_MOVE_START_PITCH_DOWN
+	MSG_MOVE_STOP_PITCH
+	MSG_MOVE_SET_RUN_MODE
+	MSG_MOVE_SET_WALK_MODE
+	MSG_MOVE_TOGGLE_LOGGING
+	MSG_MOVE_TELEPORT
+	MSG_MOVE_TELEPORT_CHEAT
+	MSG_MOVE_TELEPORT_ACK
+	MSG_MOVE_TOGGLE_FALL_LOGGING
+	MSG_MOVE_FALL_LAND
+	MSG_MOVE_START_SWIM
+	MSG_MOVE_STOP_SWIM
+	MSG_MOVE_SET_RUN_SPEED_CHEAT
+	MSG_MOVE_SET_RUN_SPEED
+	MSG_MOVE_SET_RUN_BACK_SPEED_CHEAT
+	MSG_MOVE_SET_RUN_BACK_SPEED
+	MSG_MOVE_SET_WALK_SPEED_CHEAT
+	MSG_MOVE_SET_WALK_SPEED
+	MSG_MOVE_SET_SWIM_SPEED_CHEAT
+	MSG_MOVE_SET_SWIM_SPEED
+	MSG_MOVE_SET_SWIM_BACK_SPEED_CHEAT
+	MSG_MOVE_SET_SWIM_BACK_SPEED
+	MSG_MOVE_SET_ALL_SPEED_CHEAT
+	MSG_MOVE_SET_TURN_RATE_CHEAT
+	MSG_MOVE_SET_TURN_RATE
+	MSG_MOVE_TOGGLE_COLLISION_CHEAT
+	MSG_MOVE_SET_FACING
+	MSG_MOVE_SET_PITCH
+	MSG_MOVE_WORLDPORT_ACK
+	SMSG_MONSTER_MOVE
+	SMSG_MOVE_WATER_WALK
+	SMSG_MOVE_LAND_WALK
+	CMSG_MOVE_CHARM_PORT_CHEAT
+	CMSG_MOVE_SET_RAW_POSITION
+	SMSG_FORCE_RUN_SPEED_CHANGE
+	CMSG_FORCE_RUN_SPEED_CHANGE_ACK
+	SMSG_FORCE_RUN_BACK_SPEED_CHANGE
+	CMSG_FORCE_RUN_BACK_SPEED_CHANGE_ACK
+	SMSG_FORCE_SWIM_SPEED_CHANGE
+	CMSG_FORCE_SWIM_SPEED_CHANGE_ACK
+	SMSG_FORCE_MOVE_ROOT
+	CMSG_FORCE_MOVE_ROOT_ACK
+	SMSG_FORCE_MOVE_UNROOT
+	CMSG_FORCE_MOVE_UNROOT_ACK
+	MSG_MOVE_ROOT
+	MSG_MOVE_UNROOT
+	MSG_MOVE_HEARTBEAT
+	SMSG_MOVE_KNOCK_BACK
+	CMSG_MOVE_KNOCK_BACK_ACK
+	MSG_MOVE_KNOCK_BACK
+	SMSG_MOVE_FEATHER_FALL
+	SMSG_MOVE_NORMAL_FALL
+	SMSG_MOVE_SET_HOVER
+	SMSG_MOVE_UNSET_HOVER
+	CMSG_MOVE_HOVER_ACK
+	MSG_MOVE_HOVER
+	CMSG_TRIGGER_CINEMATIC_CHEAT
+	CMSG_OPENING_CINEMATIC
+	SMSG_TRIGGER_CINEMATIC
+	CMSG_NEXT_CINEMATIC_CAMERA
+	CMSG_COMPLETE_CINEMATIC
+	SMSG_TUTORIAL_FLAGS
+	CMSG_TUTORIAL_FLAG
+	CMSG_TUTORIAL_CLEAR
+	CMSG_TUTORIAL_RESET
+	CMSG_STANDSTATECHANGE
+	CMSG_EMOTE
+	SMSG_EMOTE
+	CMSG_TEXT_EMOTE
+	SMSG_TEXT_EMOTE
+	CMSG_AUTOEQUIP_GROUND_ITEM
+	CMSG_AUTOSTORE_GROUND_ITEM
+	CMSG_AUTOSTORE_LOOT_ITEM
+	CMSG_STORE_LOOT_IN_SLOT
+	CMSG_AUTOEQUIP_ITEM
+	CMSG_AUTOSTORE_BAG_ITEM
+	CMSG_SWAP_ITEM
+	CMSG_SWAP_INV_ITEM
+	CMSG_SPLIT_ITEM
+	CMSG_AUTOEQUIP_ITEM_SLOT
+	CMSG_UNCLAIM_LICENSE
+	CMSG_DESTROYITEM
+	SMSG_INVENTORY_CHANGE_FAILURE
+	SMSG_OPEN_CONTAINER
+	CMSG_INSPECT
+	SMSG_INSPECT_RESULTS_UPDATE
+	CMSG_INITIATE_TRADE
+	CMSG_BEGIN_TRADE
+	CMSG_BUSY_TRADE
+	CMSG_IGNORE_TRADE
+	CMSG_ACCEPT_TRADE
+	CMSG_UNACCEPT_TRADE
+	CMSG_CANCEL_TRADE
+	CMSG_SET_TRADE_ITEM
+	CMSG_CLEAR_TRADE_ITEM
+	CMSG_SET_TRADE_GOLD
+	SMSG_TRADE_STATUS
+	SMSG_TRADE_STATUS_EXTENDED
+	SMSG_INITIALIZE_FACTIONS
+	SMSG_SET_FACTION_VISIBLE
+	SMSG_SET_FACTION_STANDING
+	CMSG_SET_FACTION_ATWAR
+	CMSG_SET_FACTION_CHEAT
+	SMSG_SET_PROFICIENCY
+	CMSG_SET_ACTION_BUTTON
+	SMSG_ACTION_BUTTONS
+	SMSG_INITIAL_SPELLS
+	SMSG_LEARNED_SPELL
+	SMSG_SUPERCEDED_SPELL
+	CMSG_NEW_SPELL_SLOT
+	CMSG_CAST_SPELL
+	CMSG_CAN_REDEEM_TOKEN_FOR_BALANCE
+	CMSG_CANCEL_CAST
+	SMSG_CAST_FAILED
+	SMSG_SPELL_START
+	SMSG_SPELL_GO
+	SMSG_SPELL_FAILURE
+	SMSG_SPELL_COOLDOWN
+	SMSG_COOLDOWN_EVENT
+	CMSG_CANCEL_AURA
+	SMSG_EQUIPMENT_SET_SAVED
+	SMSG_PET_CAST_FAILED
+	MSG_CHANNEL_START
+	MSG_CHANNEL_UPDATE
+	CMSG_CANCEL_CHANNELLING
+	SMSG_AI_REACTION
+	CMSG_SET_SELECTION
+	CMSG_DELETEEQUIPMENT_SET
+	CMSG_INSTANCE_LOCK_RESPONSE
+	CMSG_DEBUG_PASSIVE_AURA
+	CMSG_ATTACKSWING
+	CMSG_ATTACKSTOP
+	SMSG_ATTACKSTART
+	SMSG_ATTACKSTOP
+	SMSG_ATTACKSWING_NOTINRANGE
+	SMSG_ATTACKSWING_BADFACING
+	SMSG_INSTANCE_LOCK_WARNING_QUERY
+	SMSG_ATTACKSWING_DEADTARGET
+	SMSG_ATTACKSWING_CANT_ATTACK
+	SMSG_ATTACKERSTATEUPDATE
+	SMSG_BATTLEFIELD_PORT_DENIED
+	CMSG_PERFORM_ACTION_SET
+	SMSG_RESUME_CAST_BAR
+	SMSG_CANCEL_COMBAT
+	SMSG_SPELLBREAKLOG
+	SMSG_SPELLHEALLOG
+	SMSG_SPELLENERGIZELOG
+	SMSG_BREAK_TARGET
+	CMSG_SAVE_PLAYER
+	CMSG_SETDEATHBINDPOINT
+	SMSG_BINDPOINTUPDATE
+	CMSG_GETDEATHBINDZONE
+	SMSG_BINDZONEREPLY
+	SMSG_PLAYERBOUND
+	SMSG_CLIENT_CONTROL_UPDATE
+	CMSG_REPOP_REQUEST
+	SMSG_RESURRECT_REQUEST
+	CMSG_RESURRECT_RESPONSE
+	CMSG_LOOT
+	CMSG_LOOT_MONEY
+	CMSG_LOOT_RELEASE
+	SMSG_LOOT_RESPONSE
+	SMSG_LOOT_RELEASE_RESPONSE
+	SMSG_LOOT_REMOVED
+	SMSG_LOOT_MONEY_NOTIFY
+	SMSG_LOOT_ITEM_NOTIFY
+	SMSG_LOOT_CLEAR_MONEY
+	SMSG_ITEM_PUSH_RESULT
+	SMSG_DUEL_REQUESTED
+	SMSG_DUEL_OUTOFBOUNDS
+	SMSG_DUEL_INBOUNDS
+	SMSG_DUEL_COMPLETE
+	SMSG_DUEL_WINNER
+	CMSG_DUEL_ACCEPTED
+	CMSG_DUEL_CANCELLED
+	SMSG_MOUNTRESULT
+	SMSG_DISMOUNTRESULT
+	SMSG_REMOVED_FROM_PVP_QUEUE
+	CMSG_MOUNTSPECIAL_ANIM
+	SMSG_MOUNTSPECIAL_ANIM
+	SMSG_PET_TAME_FAILURE
+	CMSG_PET_SET_ACTION
+	CMSG_PET_ACTION
+	CMSG_PET_ABANDON
+	CMSG_PET_RENAME
+	SMSG_PET_NAME_INVALID
+	SMSG_PET_SPELLS
+	SMSG_PET_MODE
+	CMSG_GOSSIP_HELLO
+	CMSG_GOSSIP_SELECT_OPTION
+	SMSG_GOSSIP_MESSAGE
+	SMSG_GOSSIP_COMPLETE
+	CMSG_NPC_TEXT_QUERY
+	SMSG_NPC_TEXT_UPDATE
+	SMSG_NPC_WONT_TALK
+	CMSG_QUESTGIVER_STATUS_QUERY
+	SMSG_QUESTGIVER_STATUS
+	CMSG_QUESTGIVER_HELLO
+	SMSG_QUESTGIVER_QUEST_LIST
+	CMSG_QUESTGIVER_QUERY_QUEST
+	CMSG_QUESTGIVER_QUEST_AUTOLAUNCH
+	SMSG_QUESTGIVER_QUEST_DETAILS
+	CMSG_QUESTGIVER_ACCEPT_QUEST
+	CMSG_QUESTGIVER_COMPLETE_QUEST
+	SMSG_QUESTGIVER_REQUEST_ITEMS
+	CMSG_QUESTGIVER_REQUEST_REWARD
+	SMSG_QUESTGIVER_OFFER_REWARD
+	CMSG_QUESTGIVER_CHOOSE_REWARD
+	SMSG_QUESTGIVER_QUEST_INVALID
+	CMSG_QUESTGIVER_CANCEL
+	SMSG_QUESTGIVER_QUEST_COMPLETE
+	SMSG_QUESTGIVER_QUEST_FAILED
+	CMSG_QUESTLOG_SWAP_QUEST
+	CMSG_QUESTLOG_REMOVE_QUEST
+	SMSG_QUESTLOG_FULL
+	SMSG_QUESTUPDATE_FAILED
+	SMSG_QUESTUPDATE_FAILEDTIMER
+	SMSG_QUESTUPDATE_COMPLETE
+	SMSG_QUESTUPDATE_ADD_KILL
+	SMSG_QUESTUPDATE_ADD_ITEM
+	CMSG_QUEST_CONFIRM_ACCEPT
+	SMSG_QUEST_CONFIRM_ACCEPT
+	CMSG_PUSHQUESTTOPARTY
+	CMSG_LIST_INVENTORY
+	SMSG_LIST_INVENTORY
+	CMSG_SELL_ITEM
+	SMSG_SELL_ITEM
+	CMSG_BUY_ITEM
+	CMSG_BUY_ITEM_IN_SLOT
+	SMSG_BUY_ITEM
+	SMSG_BUY_FAILED
+	CMSG_TAXICLEARALLNODES
+	CMSG_TAXIENABLEALLNODES
+	CMSG_TAXISHOWNODES
+	SMSG_SHOWTAXINODES
+	CMSG_TAXINODE_STATUS_QUERY
+	SMSG_TAXINODE_STATUS
+	CMSG_TAXIQUERYAVAILABLENODES
+	CMSG_ACTIVATETAXI
+	SMSG_ACTIVATETAXIREPLY
+	SMSG_NEW_TAXI_PATH
+	CMSG_TRAINER_LIST
+	SMSG_TRAINER_LIST
+	CMSG_TRAINER_BUY_SPELL
+	SMSG_TRAINER_BUY_SUCCEEDED
+	SMSG_TRAINER_BUY_FAILED
+	CMSG_BINDER_ACTIVATE
+	SMSG_PLAYERBINDERROR
+	CMSG_BANKER_ACTIVATE
+	SMSG_SHOW_BANK
+	CMSG_BUY_BANK_SLOT
+	SMSG_BUY_BANK_SLOT_RESULT
+	CMSG_PETITION_SHOWLIST
+	SMSG_PETITION_SHOWLIST
+	CMSG_PETITION_BUY
+	CMSG_PETITION_SHOW_SIGNATURES
+	SMSG_PETITION_SHOW_SIGNATURES
+	CMSG_PETITION_SIGN
+	SMSG_PETITION_SIGN_RESULTS
+	MSG_PETITION_DECLINE
+	CMSG_OFFER_PETITION
+	CMSG_TURN_IN_PETITION
+	SMSG_TURN_IN_PETITION_RESULTS
+	CMSG_PETITION_QUERY
+	SMSG_PETITION_QUERY_RESPONSE
+	SMSG_FISH_NOT_HOOKED
+	SMSG_FISH_ESCAPED
+	CMSG_BUG
+	SMSG_NOTIFICATION
+	CMSG_PLAYED_TIME
+	SMSG_PLAYED_TIME
+	CMSG_UI_TIME_REQUEST
+	CMSG_QUERY_TIME
+	SMSG_QUERY_TIME_RESPONSE
+	SMSG_LOG_XPGAIN
+	SMSG_AURACASTLOG
+	CMSG_RECLAIM_CORPSE
+	CMSG_WRAP_ITEM
+	SMSG_LEVELUP_INFO
+	MSG_MINIMAP_PING
+	SMSG_RESISTLOG
+	SMSG_ENCHANTMENTLOG
+	CMSG_SET_SKILL_CHEAT
+	SMSG_START_MIRROR_TIMER
+	SMSG_PAUSE_MIRROR_TIMER
+	SMSG_STOP_MIRROR_TIMER
+	CMSG_PING
+	SMSG_PONG
+	SMSG_CLEAR_COOLDOWN
+	SMSG_GAMEOBJECT_PAGETEXT
+	CMSG_SETSHEATHED
+	SMSG_COOLDOWN_CHEAT
+	SMSG_SPELL_DELAYED
+	CMSG_QUEST_POI_QUERY
+	SMSG_QUEST_POI_QUERY_RESPONSE
+	CMSG_GHOST
+	CMSG_GM_INVIS
+	SMSG_INVALID_PROMOTION_CODE
+	MSG_GM_BIND_OTHER
+	MSG_GM_SUMMON
+	SMSG_ITEM_TIME_UPDATE
+	SMSG_ITEM_ENCHANT_TIME_UPDATE
+	SMSG_AUTH_CHALLENGE
+	CMSG_AUTH_SESSION
+	SMSG_AUTH_RESPONSE
+	MSG_GM_SHOWLABEL
+	CMSG_PET_CAST_SPELL
+	MSG_SAVE_GUILD_EMBLEM
+	MSG_TABARDVENDOR_ACTIVATE
+	SMSG_PLAY_SPELL_VISUAL
+	CMSG_ZONEUPDATE
+	SMSG_PARTYKILLLOG
+	SMSG_COMPRESSED_UPDATE_OBJECT
+	SMSG_PLAY_SPELL_IMPACT
+	SMSG_EXPLORATION_EXPERIENCE
+	CMSG_GM_SET_SECURITY_GROUP
+	CMSG_GM_NUKE
+	MSG_RANDOM_ROLL
+	SMSG_ENVIRONMENTALDAMAGELOG
+	CMSG_CHANGEPLAYER_DIFFICULTY
+	SMSG_RWHOIS
+	SMSG_LFG_PLAYER_REWARD
+	SMSG_LFG_TELEPORT_DENIED
+	SMSG_LFG_SLOT_INVALID
+	CMSG_UNLEARN_SPELL
+	CMSG_UNLEARN_SKILL
+	SMSG_REMOVED_SPELL
+	CMSG_DECHARGE
+	CMSG_GMTICKET_CREATE
+	SMSG_GMTICKET_CREATE
+	CMSG_GMTICKET_UPDATETEXT
+	SMSG_GMTICKET_UPDATETEXT
+	SMSG_ACCOUNT_DATA_TIMES
+	CMSG_REQUEST_ACCOUNT_DATA
+	CMSG_UPDATE_ACCOUNT_DATA
+	SMSG_UPDATE_ACCOUNT_DATA
+	SMSG_CLEAR_FAR_SIGHT_IMMEDIATE
+	SMSG_CHANGEPLAYER_DIFFICULTY_RESULT
+	CMSG_GM_TEACH
+	CMSG_GM_CREATE_ITEM_TARGET
+	CMSG_GMTICKET_GETTICKET
+	SMSG_GMTICKET_GETTICKET
+	CMSG_UNLEARN_TALENTS
+	SMSG_UPDATE_INSTANCE_ENCOUNTER_UNIT
+	SMSG_GAMEOBJECT_DESPAWN_ANIM
+	MSG_CORPSE_QUERY
+	CMSG_GMTICKET_DELETETICKET
+	SMSG_GMTICKET_DELETETICKET
+	SMSG_CHAT_WRONG_FACTION
+	CMSG_GMTICKET_SYSTEMSTATUS
+	SMSG_GMTICKET_SYSTEMSTATUS
+	CMSG_SPIRIT_HEALER_ACTIVATE
+	CMSG_SET_STAT_CHEAT
+	SMSG_QUEST_FORCE_REMOVE
+	CMSG_SKILL_BUY_STEP
+	CMSG_SKILL_BUY_RANK
+	CMSG_XP_CHEAT
+	SMSG_SPIRIT_HEALER_CONFIRM
+	CMSG_CHARACTER_POINT_CHEAT
+	SMSG_GOSSIP_POI
+	CMSG_CHAT_IGNORED
+	CMSG_GM_VISION
+	CMSG_SERVER_COMMAND
+	CMSG_GM_SILENCE
+	CMSG_GM_REVEALTO
+	CMSG_GM_RESURRECT
+	CMSG_GM_SUMMONMOB
+	CMSG_GM_MOVECORPSE
+	CMSG_GM_FREEZE
+	CMSG_GM_UBERINVIS
+	CMSG_GM_REQUEST_PLAYER_INFO
+	SMSG_GM_PLAYER_INFO
+	CMSG_GUILD_RANK
+	CMSG_GUILD_ADD_RANK
+	CMSG_GUILD_DEL_RANK
+	CMSG_GUILD_SET_PUBLIC_NOTE
+	CMSG_GUILD_SET_OFFICER_NOTE
+	SMSG_LOGIN_VERIFY_WORLD
+	CMSG_CLEAR_EXPLORATION
+	CMSG_SEND_MAIL
+	SMSG_SEND_MAIL_RESULT
+	CMSG_GET_MAIL_LIST
+	SMSG_MAIL_LIST_RESULT
+	CMSG_BATTLEFIELD_LIST
+	SMSG_BATTLEFIELD_LIST
+	CMSG_BATTLEFIELD_JOIN
+	SMSG_FORCE_SET_VEHICLE_REC_ID
+	CMSG_SET_VEHICLE_REC_ID_ACK
+	CMSG_TAXICLEARNODE
+	CMSG_TAXIENABLENODE
+	CMSG_ITEM_TEXT_QUERY
+	SMSG_ITEM_TEXT_QUERY_RESPONSE
+	CMSG_MAIL_TAKE_MONEY
+	CMSG_MAIL_TAKE_ITEM
+	CMSG_MAIL_MARK_AS_READ
+	CMSG_MAIL_RETURN_TO_SENDER
+	CMSG_MAIL_DELETE
+	CMSG_MAIL_CREATE_TEXT_ITEM
+	SMSG_SPELLLOGMISS
+	SMSG_SPELLLOGEXECUTE
+	SMSG_DEBUGAURAPROC
+	SMSG_PERIODICAURALOG
+	SMSG_SPELLDAMAGESHIELD
+	SMSG_SPELLNONMELEEDAMAGELOG
+	CMSG_LEARN_TALENT
+	SMSG_RESURRECT_FAILED
+	CMSG_TOGGLE_PVP
+	SMSG_ZONE_UNDER_ATTACK
+	MSG_AUCTION_HELLO
+	CMSG_AUCTION_SELL_ITEM
+	CMSG_AUCTION_REMOVE_ITEM
+	CMSG_AUCTION_LIST_ITEMS
+	CMSG_AUCTION_LIST_OWNED_ITEMS
+	CMSG_AUCTION_PLACE_BID
+	SMSG_AUCTION_COMMAND_RESULT
+	SMSG_AUCTION_LIST_RESULT
+	SMSG_AUCTION_OWNER_LIST_RESULT
+	SMSG_AUCTION_BIDDER_NOTIFICATION
+	SMSG_AUCTION_OWNER_NOTIFICATION
+	SMSG_PROCRESIST
+	CMSG_AUCTION_SELL_COMMODITY
+	CMSG_AUCTION_SET_FAVORITE_ITEM
+	SMSG_COMBAT_EVENT_FAILED
+	SMSG_DISPEL_FAILED
+	SMSG_SPELLORDAMAGE_IMMUNE
+	CMSG_AUCTION_LIST_BIDDER_ITEMS
+	SMSG_AUCTION_BIDDER_LIST_RESULT
+	SMSG_SET_FLAT_SPELL_MODIFIER
+	SMSG_SET_PCT_SPELL_MODIFIER
+	CMSG_SET_AMMO
+	SMSG_CORPSE_RECLAIM_DELAY
+	CMSG_SET_ACTIVE_MOVER
+	CMSG_PET_CANCEL_AURA
+	CMSG_PLAYER_AI_CHEAT
+	CMSG_CANCEL_AUTO_REPEAT_SPELL
+	MSG_GM_ACCOUNT_ONLINE
+	MSG_LIST_STABLED_PETS
+	CMSG_STABLE_PET
+	CMSG_UNSTABLE_PET
+	CMSG_BUY_STABLE_SLOT
+	SMSG_STABLE_RESULT
+	CMSG_STABLE_REVIVE_PET
+	CMSG_STABLE_SWAP_PET
+	MSG_QUEST_PUSH_RESULT
+	SMSG_PLAY_MUSIC
+	SMSG_PLAY_OBJECT_SOUND
+	CMSG_REQUEST_PET_INFO
+	CMSG_FAR_SIGHT
+	SMSG_SPELLDISPELLOG
+	SMSG_DAMAGE_CALC_LOG
+	CMSG_ENABLE_DAMAGE_LOG
+	CMSG_GROUP_CHANGE_SUB_GROUP
+	CMSG_REQUEST_PARTY_MEMBER_STATS
+	CMSG_GROUP_SWAP_SUB_GROUP
+	CMSG_RESET_FACTION_CHEAT
+	CMSG_AUTOSTORE_BANK_ITEM
+	CMSG_AUTOBANK_ITEM
+	MSG_QUERY_NEXT_MAIL_TIME
+	SMSG_RECEIVED_MAIL
+	SMSG_RAID_GROUP_ONLY
+	CMSG_SET_DURABILITY_CHEAT
+	CMSG_SET_PVP_RANK_CHEAT
+	CMSG_ADD_PVP_MEDAL_CHEAT
+	CMSG_DEL_PVP_MEDAL_CHEAT
+	CMSG_SET_PVP_TITLE
+	SMSG_PVP_CREDIT
+	SMSG_AUCTION_REMOVED_NOTIFICATION
+	CMSG_GROUP_RAID_CONVERT
+	CMSG_GROUP_ASSISTANT_LEADER
+	CMSG_BUYBACK_ITEM
+	SMSG_SERVER_MESSAGE
+	CMSG_SET_SAVED_INSTANCE_EXTEND
+	SMSG_LFG_OFFER_CONTINUE
+	CMSG_TEST_DROP_RATE
+	SMSG_TEST_DROP_RATE_RESULT
+	CMSG_LFG_GET_STATUS
+	SMSG_SHOW_MAILBOX
+	SMSG_RESET_RANGED_COMBAT_TIMER
+	SMSG_CHAT_NOT_IN_PARTY
+	CMSG_GMTICKETSYSTEM_TOGGLE
+	CMSG_CANCEL_GROWTH_AURA
+	SMSG_CANCEL_AUTO_REPEAT
+	SMSG_STANDSTATE_UPDATE
+	SMSG_LOOT_ALL_PASSED
+	SMSG_LOOT_ROLL_WON
+	CMSG_LOOT_ROLL
+	SMSG_LOOT_START_ROLL
+	SMSG_LOOT_ROLL
+	CMSG_LOOT_MASTER_GIVE
+	SMSG_LOOT_MASTER_LIST
+	SMSG_SET_FORCED_REACTIONS
+	SMSG_SPELL_FAILED_OTHER
+	SMSG_GAMEOBJECT_RESET_STATE
+	CMSG_REPAIR_ITEM
+	SMSG_CHAT_PLAYER_NOT_FOUND
+	MSG_TALENT_WIPE_CONFIRM
+	SMSG_SUMMON_REQUEST
+	CMSG_SUMMON_RESPONSE
+	MSG_DEV_SHOWLABEL
+	SMSG_MONSTER_MOVE_TRANSPORT
+	SMSG_PET_BROKEN
+	MSG_MOVE_FEATHER_FALL
+	MSG_MOVE_WATER_WALK
+	CMSG_SERVER_BROADCAST
+	CMSG_SELF_RES
+	SMSG_FEIGN_DEATH_RESISTED
+	CMSG_RUN_SCRIPT
+	SMSG_SCRIPT_MESSAGE
+	SMSG_DUEL_COUNTDOWN
+	SMSG_AREA_TRIGGER_MESSAGE
+	CMSG_SHOWING_HELM
+	CMSG_SHOWING_CLOAK
+	SMSG_LFG_ROLE_CHOSEN
+	SMSG_PLAYER_SKINNED
+	SMSG_DURABILITY_DAMAGE_DEATH
+	CMSG_SET_EXPLORATION
+	CMSG_SET_ACTIONBAR_TOGGLES
+	UMSG_DELETE_GUILD_CHARTER
+	MSG_PETITION_RENAME
+	SMSG_INIT_WORLD_STATES
+	SMSG_UPDATE_WORLD_STATE
+	CMSG_ITEM_NAME_QUERY
+	SMSG_ITEM_NAME_QUERY_RESPONSE
+	SMSG_PET_ACTION_FEEDBACK
+	CMSG_CHAR_RENAME
+	SMSG_CHAR_RENAME
+	CMSG_MOVE_SPLINE_DONE
+	CMSG_MOVE_FALL_RESET
+	SMSG_INSTANCE_SAVE_CREATED
+	SMSG_RAID_INSTANCE_INFO
+	CMSG_REQUEST_RAID_INFO
+	CMSG_MOVE_TIME_SKIPPED
+	CMSG_MOVE_FEATHER_FALL_ACK
+	CMSG_MOVE_WATER_WALK_ACK
+	CMSG_MOVE_NOT_ACTIVE_MOVER
+	SMSG_PLAY_SOUND
+	CMSG_BATTLEFIELD_STATUS
+	SMSG_BATTLEFIELD_STATUS
+	CMSG_BATTLEFIELD_PORT
+	MSG_INSPECT_HONOR_STATS
+	CMSG_BATTLEMASTER_HELLO
+	CMSG_MOVE_START_SWIM_CHEAT
+	CMSG_MOVE_STOP_SWIM_CHEAT
+	SMSG_FORCE_WALK_SPEED_CHANGE
+	CMSG_FORCE_WALK_SPEED_CHANGE_ACK
+	SMSG_FORCE_SWIM_BACK_SPEED_CHANGE
+	CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK
+	SMSG_FORCE_TURN_RATE_CHANGE
+	CMSG_FORCE_TURN_RATE_CHANGE_ACK
+	MSG_PVP_LOG_DATA
+	CMSG_LEAVE_BATTLEFIELD
+	CMSG_AREA_SPIRIT_HEALER_QUERY
+	CMSG_AREA_SPIRIT_HEALER_QUEUE
+	SMSG_AREA_SPIRIT_HEALER_TIME
+	CMSG_GM_UNTEACH
+	SMSG_WARDEN_DATA
+	CMSG_WARDEN_DATA
+	SMSG_GROUP_JOINED_BATTLEGROUND
+	MSG_BATTLEGROUND_PLAYER_POSITIONS
+	CMSG_PET_STOP_ATTACK
+	SMSG_BINDER_CONFIRM
+	SMSG_BATTLEGROUND_PLAYER_JOINED
+	SMSG_BATTLEGROUND_PLAYER_LEFT
+	CMSG_BATTLEMASTER_JOIN
+	SMSG_ADDON_INFO
+	CMSG_PET_UNLEARN
+	SMSG_PET_UNLEARN_CONFIRM
+	SMSG_PARTY_MEMBER_STATS_FULL
+	CMSG_PET_SPELL_AUTOCAST
+	SMSG_WEATHER
+	SMSG_PLAY_TIME_WARNING
+	SMSG_MINIGAME_SETUP
+	SMSG_MINIGAME_STATE
+	CMSG_MINIGAME_MOVE
+	SMSG_MINIGAME_MOVE_FAILED
+	SMSG_RAID_INSTANCE_MESSAGE
+	SMSG_COMPRESSED_MOVES
+	CMSG_GUILD_INFO_TEXT
+	SMSG_CHAT_RESTRICTED
+	SMSG_SPLINE_SET_RUN_SPEED
+	SMSG_SPLINE_SET_RUN_BACK_SPEED
+	SMSG_SPLINE_SET_SWIM_SPEED
+	SMSG_SPLINE_SET_WALK_SPEED
+	SMSG_SPLINE_SET_SWIM_BACK_SPEED
+	SMSG_SPLINE_SET_TURN_RATE
+	SMSG_SPLINE_MOVE_UNROOT
+	SMSG_SPLINE_MOVE_FEATHER_FALL
+	SMSG_SPLINE_MOVE_NORMAL_FALL
+	SMSG_SPLINE_MOVE_SET_HOVER
+	SMSG_SPLINE_MOVE_UNSET_HOVER
+	SMSG_SPLINE_MOVE_WATER_WALK
+	SMSG_SPLINE_MOVE_LAND_WALK
+	SMSG_SPLINE_MOVE_START_SWIM
+	SMSG_SPLINE_MOVE_STOP_SWIM
+	SMSG_SPLINE_MOVE_SET_RUN_MODE
+	SMSG_SPLINE_MOVE_SET_WALK_MODE
+	CMSG_GM_NUKE_ACCOUNT
+	MSG_GM_DESTROY_CORPSE
+	CMSG_GM_DESTROY_ONLINE_CORPSE
+	CMSG_ACTIVATETAXIEXPRESS
+	SMSG_SET_FACTION_ATWAR
+	SMSG_GAMETIMEBIAS_SET
+	CMSG_DEBUG_ACTIONS_START
+	CMSG_DEBUG_ACTIONS_STOP
+	CMSG_SET_FACTION_INACTIVE
+	CMSG_SET_WATCHED_FACTION
+	MSG_MOVE_TIME_SKIPPED
+	SMSG_SPLINE_MOVE_ROOT
+	CMSG_SET_EXPLORATION_ALL
+	SMSG_INVALIDATE_PLAYER
+	CMSG_RESET_INSTANCES
+	SMSG_INSTANCE_RESET
+	SMSG_INSTANCE_RESET_FAILED
+	SMSG_UPDATE_LAST_INSTANCE
+	MSG_RAID_TARGET_UPDATE
+	MSG_RAID_READY_CHECK
+	CMSG_LUA_USAGE
+	SMSG_PET_ACTION_SOUND
+	SMSG_PET_DISMISS_SOUND
+	SMSG_GHOSTEE_GONE
+	CMSG_GM_UPDATE_TICKET_STATUS
+	SMSG_GM_TICKET_STATUS_UPDATE
+	MSG_SET_DUNGEON_DIFFICULTY
+	CMSG_GMSURVEY_SUBMIT
+	SMSG_UPDATE_INSTANCE_OWNERSHIP
+	CMSG_IGNORE_KNOCKBACK_CHEAT
+	SMSG_CHAT_PLAYER_AMBIGUOUS
+	MSG_DELAY_GHOST_TELEPORT
+	SMSG_SPELLINSTAKILLLOG
+	SMSG_SPELL_UPDATE_CHAIN_TARGETS
+	CMSG_CHAT_FILTERED
+	SMSG_EXPECTED_SPAM_RECORDS
+	SMSG_SPELLSTEALLOG
+	CMSG_LOTTERY_QUERY_OBSOLETE
+	SMSG_LOTTERY_QUERY_RESULT_OBSOLETE
+	CMSG_BUY_LOTTERY_TICKET_OBSOLETE
+	SMSG_LOTTERY_RESULT_OBSOLETE
+	SMSG_CHARACTER_PROFILE
+	SMSG_CHARACTER_PROFILE_REALM_CONNECTED
+	SMSG_DEFENSE_MESSAGE
+	SMSG_INSTANCE_DIFFICULTY
+	MSG_GM_RESETINSTANCELIMIT
+	SMSG_MOTD
+	SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY
+	SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY
+	CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK
+	MSG_MOVE_START_SWIM_CHEAT
+	MSG_MOVE_STOP_SWIM_CHEAT
+	SMSG_MOVE_SET_CAN_FLY
+	SMSG_MOVE_UNSET_CAN_FLY
+	CMSG_MOVE_SET_CAN_FLY_ACK
+	CMSG_MOVE_SET_FLY
+	CMSG_SOCKET_GEMS
+	SMSG_SOCKET_GEMS_RESULT
+	CMSG_ARENA_TEAM_CREATE
+	SMSG_ARENA_TEAM_COMMAND_RESULT
+	MSG_MOVE_UPDATE_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY
+	CMSG_ARENA_TEAM_QUERY
+	SMSG_ARENA_TEAM_QUERY_RESPONSE
+	CMSG_ARENA_TEAM_ROSTER
+	SMSG_ARENA_TEAM_ROSTER
+	CMSG_ARENA_TEAM_INVITE
+	SMSG_ARENA_TEAM_INVITE
+	CMSG_ARENA_TEAM_ACCEPT
+	CMSG_ARENA_TEAM_DECLINE
+	CMSG_ARENA_TEAM_LEAVE
+	CMSG_ARENA_TEAM_REMOVE
+	CMSG_ARENA_TEAM_DISBAND
+	CMSG_ARENA_TEAM_LEADER
+	SMSG_ARENA_TEAM_EVENT
+	CMSG_BATTLEMASTER_JOIN_ARENA
+	MSG_MOVE_START_ASCEND
+	MSG_MOVE_STOP_ASCEND
+	SMSG_ARENA_TEAM_STATS
+	CMSG_LFG_JOIN
+	CMSG_LFG_LEAVE
+	CMSG_SEARCH_LFG_JOIN
+	CMSG_SEARCH_LFG_LEAVE
+	SMSG_UPDATE_LFG_LIST
+	SMSG_LFG_PROPOSAL_UPDATE
+	CMSG_LFG_PROPOSAL_RESULT
+	SMSG_LFG_ROLE_CHECK_UPDATE
+	SMSG_LFG_JOIN_RESULT
+	SMSG_LFG_QUEUE_STATUS
+	CMSG_SET_LFG_COMMENT
+	SMSG_LFG_UPDATE_PLAYER
+	SMSG_LFG_UPDATE_PARTY
+	SMSG_LFG_UPDATE_SEARCH
+	CMSG_LFG_SET_ROLES
+	CMSG_LFG_SET_NEEDS
+	CMSG_LFG_SET_BOOT_VOTE
+	SMSG_LFG_BOOT_PROPOSAL_UPDATE
+	CMSG_LFD_PLAYER_LOCK_INFO_REQUEST
+	SMSG_LFG_PLAYER_INFO
+	CMSG_LFG_TELEPORT
+	CMSG_LFD_PARTY_LOCK_INFO_REQUEST
+	SMSG_LFG_PARTY_INFO
+	SMSG_TITLE_EARNED
+	CMSG_SET_TITLE
+	CMSG_CANCEL_MOUNT_AURA
+	SMSG_ARENA_ERROR
+	MSG_INSPECT_ARENA_TEAMS
+	SMSG_DEATH_RELEASE_LOC
+	CMSG_CANCEL_TEMP_ENCHANTMENT
+	SMSG_FORCED_DEATH_UPDATE
+	CMSG_CHEAT_SET_HONOR_CURRENCY
+	CMSG_CHEAT_SET_ARENA_CURRENCY
+	MSG_MOVE_SET_FLIGHT_SPEED_CHEAT
+	MSG_MOVE_SET_FLIGHT_SPEED
+	MSG_MOVE_SET_FLIGHT_BACK_SPEED_CHEAT
+	MSG_MOVE_SET_FLIGHT_BACK_SPEED
+	SMSG_FORCE_FLIGHT_SPEED_CHANGE
+	CMSG_FORCE_FLIGHT_SPEED_CHANGE_ACK
+	SMSG_FORCE_FLIGHT_BACK_SPEED_CHANGE
+	CMSG_FORCE_FLIGHT_BACK_SPEED_CHANGE_ACK
+	SMSG_SPLINE_SET_FLIGHT_SPEED
+	SMSG_SPLINE_SET_FLIGHT_BACK_SPEED
+	CMSG_MAELSTROM_INVALIDATE_CACHE
+	SMSG_FLIGHT_SPLINE_SYNC
+	CMSG_SET_TAXI_BENCHMARK_MODE
+	SMSG_JOINED_BATTLEGROUND_QUEUE
+	SMSG_REALM_SPLIT
+	CMSG_REALM_SPLIT
+	CMSG_MOVE_CHNG_TRANSPORT
+	MSG_PARTY_ASSIGNMENT
+	SMSG_OFFER_PETITION_ERROR
+	SMSG_TIME_SYNC_REQ
+	CMSG_TIME_SYNC_RESP
+	CMSG_SEND_LOCAL_EVENT
+	CMSG_SEND_GENERAL_TRIGGER
+	CMSG_SEND_COMBAT_TRIGGER
+	CMSG_MAELSTROM_GM_SENT_MAIL
+	SMSG_RESET_FAILED_NOTIFY
+	SMSG_REAL_GROUP_UPDATE
+	SMSG_LFG_DISABLED
+	CMSG_ACTIVE_PVP_CHEAT
+	CMSG_CHEAT_DUMP_ITEMS_DEBUG_ONLY
+	SMSG_CHEAT_DUMP_ITEMS_DEBUG_ONLY_RESPONSE
+	SMSG_CHEAT_DUMP_ITEMS_DEBUG_ONLY_RESPONSE_WRITE_FILE
+	SMSG_UPDATE_COMBO_POINTS
+	SMSG_VOICE_SESSION_ROSTER_UPDATE
+	SMSG_VOICE_SESSION_LEAVE
+	SMSG_VOICE_SESSION_ADJUST_PRIORITY
+	CMSG_VOICE_SET_TALKER_MUTED_REQUEST
+	SMSG_VOICE_SET_TALKER_MUTED
+	SMSG_INIT_EXTRA_AURA_INFO_OBSOLETE
+	SMSG_SET_EXTRA_AURA_INFO_OBSOLETE
+	SMSG_SET_EXTRA_AURA_INFO_NEED_UPDATE_OBSOLETE
+	SMSG_CLEAR_EXTRA_AURA_INFO_OBSOLETE
+	MSG_MOVE_START_DESCEND
+	CMSG_IGNORE_REQUIREMENTS_CHEAT
+	SMSG_IGNORE_REQUIREMENTS_CHEAT
+	SMSG_SPELL_CHANCE_PROC_LOG
+	CMSG_MOVE_SET_RUN_SPEED
+	SMSG_DISMOUNT
+	MSG_MOVE_UPDATE_CAN_FLY
+	MSG_RAID_READY_CHECK_CONFIRM
+	CMSG_VOICE_SESSION_ENABLE
+	SMSG_VOICE_SESSION_ENABLE
+	SMSG_VOICE_PARENTAL_CONTROLS
+	CMSG_GM_WHISPER
+	SMSG_GM_MESSAGECHAT
+	MSG_GM_GEARRATING
+	CMSG_COMMENTATOR_ENABLE
+	SMSG_COMMENTATOR_STATE_CHANGED
+	CMSG_COMMENTATOR_GET_MAP_INFO
+	SMSG_COMMENTATOR_MAP_INFO
+	CMSG_COMMENTATOR_GET_PLAYER_INFO
+	SMSG_COMMENTATOR_GET_PLAYER_INFO
+	SMSG_COMMENTATOR_PLAYER_INFO
+	CMSG_COMMENTATOR_ENTER_INSTANCE
+	CMSG_COMMENTATOR_EXIT_INSTANCE
+	CMSG_COMMENTATOR_INSTANCE_COMMAND
+	SMSG_CLEAR_TARGET
+	CMSG_BOT_DETECTED
+	SMSG_CROSSED_INEBRIATION_THRESHOLD
+	CMSG_CHEAT_PLAYER_LOGIN
+	CMSG_CHEAT_PLAYER_LOOKUP
+	SMSG_CHEAT_PLAYER_LOOKUP
+	SMSG_KICK_REASON
+	MSG_RAID_READY_CHECK_FINISHED
+	CMSG_COMPLAIN
+	SMSG_COMPLAIN_RESULT
+	SMSG_FEATURE_SYSTEM_STATUS
+	CMSG_GM_SHOW_COMPLAINTS
+	CMSG_GM_UNSQUELCH
+	CMSG_CHANNEL_SILENCE_VOICE
+	CMSG_CHANNEL_SILENCE_ALL
+	CMSG_CHANNEL_UNSILENCE_VOICE
+	CMSG_CHANNEL_UNSILENCE_ALL
+	CMSG_TARGET_CAST
+	CMSG_TARGET_SCRIPT_CAST
+	CMSG_CHANNEL_DISPLAY_LIST
+	CMSG_SET_ACTIVE_VOICE_CHANNEL
+	CMSG_GET_CHANNEL_MEMBER_COUNT
+	SMSG_CHANNEL_MEMBER_COUNT
+	CMSG_CHANNEL_VOICE_ON
+	CMSG_CHANNEL_VOICE_OFF
+	CMSG_DEBUG_LIST_TARGETS
+	SMSG_DEBUG_LIST_TARGETS
+	SMSG_AVAILABLE_VOICE_CHANNEL
+	CMSG_ADD_VOICE_IGNORE
+	CMSG_DEL_VOICE_IGNORE
+	CMSG_PARTY_SILENCE
+	CMSG_PARTY_UNSILENCE
+	MSG_NOTIFY_PARTY_SQUELCH
+	SMSG_COMSAT_RECONNECT_TRY
+	SMSG_COMSAT_DISCONNECT
+	SMSG_COMSAT_CONNECT_FAIL
+	SMSG_VOICE_CHAT_STATUS
+	CMSG_REPORT_PVP_AFK
+	SMSG_REPORT_PVP_AFK_RESULT
+	CMSG_GUILD_BANKER_ACTIVATE
+	CMSG_GUILD_BANK_QUERY_TAB
+	SMSG_GUILD_BANK_LIST
+	CMSG_GUILD_BANK_SWAP_ITEMS
+	CMSG_GUILD_BANK_BUY_TAB
+	CMSG_GUILD_BANK_UPDATE_TAB
+	CMSG_GUILD_BANK_DEPOSIT_MONEY
+	CMSG_GUILD_BANK_WITHDRAW_MONEY
+	MSG_GUILD_BANK_LOG_QUERY
+	CMSG_SET_CHANNEL_WATCH
+	SMSG_USERLIST_ADD
+	SMSG_USERLIST_REMOVE
+	SMSG_USERLIST_UPDATE
+	CMSG_CLEAR_CHANNEL_WATCH
+	SMSG_INSPECT_TALENT
+	SMSG_GOGOGO_OBSOLETE
+	SMSG_ECHO_PARTY_SQUELCH
+	CMSG_SET_TITLE_SUFFIX
+	CMSG_SPELLCLICK
+	SMSG_LOOT_LIST
+	CMSG_GM_CHARACTER_RESTORE
+	CMSG_GM_CHARACTER_SAVE
+	SMSG_VOICESESSION_FULL
+	MSG_GUILD_PERMISSIONS
+	MSG_GUILD_BANK_MONEY_WITHDRAWN
+	MSG_GUILD_EVENT_LOG_QUERY
+	CMSG_MAELSTROM_RENAME_GUILD
+	CMSG_GET_MIRRORIMAGE_DATA
+	SMSG_MIRRORIMAGE_DATA
+	SMSG_FORCE_DISPLAY_UPDATE
+	SMSG_SPELL_CHANCE_RESIST_PUSHBACK
+	CMSG_IGNORE_DIMINISHING_RETURNS_CHEAT
+	SMSG_IGNORE_DIMINISHING_RETURNS_CHEAT
+	CMSG_KEEP_ALIVE
+	SMSG_RAID_READY_CHECK_ERROR
+	CMSG_OPT_OUT_OF_LOOT
+	MSG_QUERY_GUILD_BANK_TEXT
+	CMSG_SET_GUILD_BANK_TEXT
+	CMSG_SET_GRANTABLE_LEVELS
+	CMSG_GRANT_LEVEL
+	CMSG_REFER_A_FRIEND
+	MSG_GM_CHANGE_ARENA_RATING
+	CMSG_DECLINE_CHANNEL_INVITE
+	SMSG_GROUPACTION_THROTTLED
+	SMSG_OVERRIDE_LIGHT
+	SMSG_TOTEM_CREATED
+	CMSG_TOTEM_DESTROYED
+	CMSG_EXPIRE_RAID_INSTANCE
+	CMSG_NO_SPELL_VARIANCE
+	CMSG_QUESTGIVER_STATUS_MULTIPLE_QUERY
+	SMSG_QUESTGIVER_STATUS_MULTIPLE
+	CMSG_SET_PLAYER_DECLINED_NAMES
+	SMSG_SET_PLAYER_DECLINED_NAMES_RESULT
+	CMSG_QUERY_SERVER_BUCK_DATA
+	CMSG_CLEAR_SERVER_BUCK_DATA
+	SMSG_SERVER_BUCK_DATA
+	SMSG_SEND_UNLEARN_SPELLS
+	SMSG_PROPOSE_LEVEL_GRANT
+	CMSG_ACCEPT_LEVEL_GRANT
+	SMSG_REFER_A_FRIEND_FAILURE
+	SMSG_SPLINE_MOVE_SET_FLYING
+	SMSG_SPLINE_MOVE_UNSET_FLYING
+	SMSG_SUMMON_CANCEL
+	CMSG_CHANGE_PERSONAL_ARENA_RATING
+	CMSG_ALTER_APPEARANCE
+	SMSG_ENABLE_BARBER_SHOP
+	SMSG_BARBER_SHOP_RESULT
+	CMSG_CALENDAR_GET_CALENDAR
+	CMSG_CALENDAR_GET_EVENT
+	CMSG_CALENDAR_GUILD_FILTER
+	CMSG_CALENDAR_ARENA_TEAM
+	CMSG_CALENDAR_ADD_EVENT
+	CMSG_CALENDAR_UPDATE_EVENT
+	CMSG_CALENDAR_REMOVE_EVENT
+	CMSG_CALENDAR_COPY_EVENT
+	CMSG_CALENDAR_EVENT_INVITE
+	CMSG_CALENDAR_EVENT_RSVP
+	CMSG_CALENDAR_EVENT_REMOVE_INVITE
+	CMSG_CALENDAR_EVENT_STATUS
+	CMSG_CALENDAR_EVENT_MODERATOR_STATUS
+	SMSG_CALENDAR_SEND_CALENDAR
+	SMSG_CALENDAR_SEND_EVENT
+	SMSG_CALENDAR_FILTER_GUILD
+	SMSG_CALENDAR_ARENA_TEAM
+	SMSG_CALENDAR_EVENT_INVITE
+	SMSG_CALENDAR_EVENT_INVITE_REMOVED
+	SMSG_CALENDAR_EVENT_STATUS
+	SMSG_CALENDAR_COMMAND_RESULT
+	SMSG_CALENDAR_RAID_LOCKOUT_ADDED
+	SMSG_CALENDAR_RAID_LOCKOUT_REMOVED
+	SMSG_CALENDAR_EVENT_INVITE_ALERT
+	SMSG_CALENDAR_EVENT_INVITE_REMOVED_ALERT
+	SMSG_CALENDAR_EVENT_INVITE_STATUS_ALERT
+	SMSG_CALENDAR_EVENT_REMOVED_ALERT
+	SMSG_CALENDAR_EVENT_UPDATED_ALERT
+	SMSG_CALENDAR_EVENT_MODERATOR_STATUS_ALERT
+	CMSG_CALENDAR_COMPLAIN
+	CMSG_CALENDAR_GET_NUM_PENDING
+	SMSG_CALENDAR_SEND_NUM_PENDING
+	CMSG_SAVE_DANCE
+	SMSG_NOTIFY_DANCE
+	CMSG_PLAY_DANCE
+	SMSG_PLAY_DANCE
+	CMSG_LOAD_DANCES
+	CMSG_STOP_DANCE
+	SMSG_STOP_DANCE
+	CMSG_SYNC_DANCE
+	CMSG_DANCE_QUERY
+	SMSG_DANCE_QUERY_RESPONSE
+	SMSG_INVALIDATE_DANCE
+	CMSG_DELETE_DANCE
+	SMSG_LEARNED_DANCE_MOVES
+	CMSG_LEARN_DANCE_MOVE
+	CMSG_UNLEARN_DANCE_MOVE
+	CMSG_SET_RUNE_COUNT
+	CMSG_SET_RUNE_COOLDOWN
+	MSG_MOVE_SET_PITCH_RATE_CHEAT
+	MSG_MOVE_SET_PITCH_RATE
+	SMSG_FORCE_PITCH_RATE_CHANGE
+	CMSG_FORCE_PITCH_RATE_CHANGE_ACK
+	SMSG_SPLINE_SET_PITCH_RATE
+	CMSG_CALENDAR_EVENT_INVITE_NOTES
+	SMSG_CALENDAR_EVENT_INVITE_NOTES
+	SMSG_CALENDAR_EVENT_INVITE_NOTES_ALERT
+	CMSG_UPDATE_MISSILE_TRAJECTORY
+	SMSG_UPDATE_ACCOUNT_DATA_COMPLETE
+	SMSG_TRIGGER_MOVIE
+	CMSG_COMPLETE_MOVIE
+	CMSG_SET_GLYPH_SLOT
+	CMSG_SET_GLYPH
+	SMSG_ACHIEVEMENT_EARNED
+	SMSG_DYNAMIC_DROP_ROLL_RESULT
+	SMSG_CRITERIA_UPDATE
+	CMSG_QUERY_INSPECT_ACHIEVEMENTS
+	SMSG_RESPOND_INSPECT_ACHIEVEMENTS
+	CMSG_DISMISS_CONTROLLED_VEHICLE
+	CMSG_COMPLETE_ACHIEVEMENT_CHEAT
+	SMSG_QUESTUPDATE_ADD_PVP_KILL
+	CMSG_SET_CRITERIA_CHEAT
+	SMSG_CALENDAR_RAID_LOCKOUT_UPDATED
+	CMSG_UNITANIMTIER_CHEAT
+	CMSG_CHAR_CUSTOMIZE
+	SMSG_CHAR_CUSTOMIZE
+	SMSG_PET_RENAMEABLE
+	CMSG_REQUEST_VEHICLE_EXIT
+	CMSG_REQUEST_VEHICLE_PREV_SEAT
+	CMSG_REQUEST_VEHICLE_NEXT_SEAT
+	CMSG_REQUEST_VEHICLE_SWITCH_SEAT
+	CMSG_PET_LEARN_TALENT
+	CMSG_PET_UNLEARN_TALENTS
+	SMSG_SET_PHASE_SHIFT
+	SMSG_ALL_ACHIEVEMENT_DATA
+	CMSG_FORCE_SAY_CHEAT
+	SMSG_HEALTH_UPDATE
+	SMSG_POWER_UPDATE
+	CMSG_GAMEOBJ_REPORT_USE
+	SMSG_HIGHEST_THREAT_UPDATE
+	SMSG_THREAT_UPDATE
+	SMSG_THREAT_REMOVE
+	SMSG_THREAT_CLEAR
+	SMSG_CONVERT_RUNE
+	SMSG_RESYNC_RUNES
+	SMSG_ADD_RUNE_POWER
+	CMSG_START_QUEST
+	CMSG_REMOVE_GLYPH
+	CMSG_DUMP_OBJECTS
+	SMSG_DUMP_OBJECTS_DATA
+	CMSG_DISMISS_CRITTER
+	SMSG_NOTIFY_DEST_LOC_SPELL_CAST
+	CMSG_AUCTION_LIST_PENDING_SALES
+	SMSG_AUCTION_LIST_PENDING_SALES
+	SMSG_MODIFY_COOLDOWN
+	SMSG_PET_UPDATE_COMBO_POINTS
+	CMSG_ENABLETAXI
+	SMSG_PRE_RESURRECT
+	SMSG_AURA_UPDATE_ALL
+	SMSG_AURA_UPDATE
+	CMSG_FLOOD_GRACE_CHEAT
+	SMSG_SERVER_FIRST_ACHIEVEMENT
+	SMSG_PET_LEARNED_SPELL
+	SMSG_PET_REMOVED_SPELL
+	CMSG_CHANGE_REALM_TICKET
+	CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE
+	CMSG_HEARTH_AND_RESURRECT
+	SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA
+	SMSG_CRITERIA_DELETED
+	SMSG_ACHIEVEMENT_DELETED
+	CMSG_SERVER_INFO_QUERY
+	SMSG_SERVER_INFO_RESPONSE
+	CMSG_CHECK_LOGIN_CRITERIA
+	SMSG_SERVER_BUCK_DATA_START
+	CMSG_SET_BREATH
+	CMSG_QUERY_VEHICLE_STATUS
+	SMSG_BATTLEGROUND_INFO_THROTTLED
+	SMSG_PLAYER_VEHICLE_DATA
+	CMSG_PLAYER_VEHICLE_ENTER
+	CMSG_CONTROLLER_EJECT_PASSENGER
+	SMSG_PET_GUIDS
+	SMSG_CLIENTCACHE_VERSION
+	CMSG_CHANGE_GDF_ARENA_RATING
+	CMSG_SET_ARENA_TEAM_RATING_BY_INDEX
+	CMSG_SET_ARENA_TEAM_WEEKLY_GAMES
+	CMSG_SET_ARENA_TEAM_SEASON_GAMES
+	CMSG_SET_ARENA_MEMBER_WEEKLY_GAMES
+	CMSG_SET_ARENA_MEMBER_SEASON_GAMES
+	SMSG_ITEM_REFUND_INFO_RESPONSE
+	CMSG_ITEM_REFUND_INFO
+	CMSG_ITEM_REFUND
+	SMSG_ITEM_REFUND_RESULT
+	CMSG_CORPSE_MAP_POSITION_QUERY
+	SMSG_CORPSE_MAP_POSITION_QUERY_RESPONSE
+	CMSG_UNUSED5
+	CMSG_UNUSED6
+	CMSG_CALENDAR_EVENT_SIGN_UP
+	SMSG_CALENDAR_CLEAR_PENDING_ACTION
+	SMSG_EQUIPMENT_SET_LIST
+	CMSG_EQUIPMENT_SET_SAVE
+	CMSG_UPDATE_PROJECTILE_POSITION
+	SMSG_SET_PROJECTILE_POSITION
+	SMSG_TALENTS_INFO
+	CMSG_LEARN_PREVIEW_TALENTS
+	CMSG_LEARN_PREVIEW_TALENTS_PET
+	CMSG_SET_ACTIVE_TALENT_GROUP_OBSOLETE
+	CMSG_GM_GRANT_ACHIEVEMENT
+	CMSG_GM_REMOVE_ACHIEVEMENT
+	CMSG_GM_SET_CRITERIA_FOR_PLAYER
+	SMSG_ARENA_UNIT_DESTROYED
+	SMSG_ARENA_TEAM_CHANGE_FAILED_QUEUED
+	CMSG_PROFILEDATA_REQUEST
+	SMSG_PROFILEDATA_RESPONSE
+	CMSG_START_BATTLEFIELD_CHEAT
+	CMSG_END_BATTLEFIELD_CHEAT
+	SMSG_MULTIPLE_PACKETS
+	SMSG_MOVE_GRAVITY_DISABLE
+	CMSG_MOVE_GRAVITY_DISABLE_ACK
+	SMSG_MOVE_GRAVITY_ENABLE
+	CMSG_MOVE_GRAVITY_ENABLE_ACK
+	MSG_MOVE_GRAVITY_CHNG
+	SMSG_SPLINE_MOVE_GRAVITY_DISABLE
+	SMSG_SPLINE_MOVE_GRAVITY_ENABLE
+	CMSG_EQUIPMENT_SET_USE
+	SMSG_EQUIPMENT_SET_USE_RESULT
+	CMSG_FORCE_ANIM
+	SMSG_FORCE_ANIM
+	CMSG_CHAR_FACTION_CHANGE
+	SMSG_CHAR_FACTION_CHANGE
+	CMSG_PVP_QUEUE_STATS_REQUEST
+	SMSG_PVP_QUEUE_STATS
+	CMSG_SET_PAID_SERVICE_CHEAT
+	SMSG_BATTLEFIELD_MGR_ENTRY_INVITE
+	CMSG_BATTLEFIELD_MGR_ENTRY_INVITE_RESPONSE
+	SMSG_BATTLEFIELD_MGR_ENTERED
+	SMSG_BATTLEFIELD_MGR_QUEUE_INVITE
+	CMSG_BATTLEFIELD_MGR_QUEUE_INVITE_RESPONSE
+	CMSG_BATTLEFIELD_MGR_QUEUE_REQUEST
+	SMSG_BATTLEFIELD_MGR_QUEUE_REQUEST_RESPONSE
+	SMSG_BATTLEFIELD_MGR_EJECT_PENDING
+	SMSG_BATTLEFIELD_MGR_EJECTED
+	CMSG_BATTLEFIELD_MGR_EXIT_REQUEST
+	SMSG_BATTLEFIELD_MGR_STATE_CHANGE
+	CMSG_BATTLEFIELD_MANAGER_ADVANCE_STATE
+	CMSG_BATTLEFIELD_MANAGER_SET_NEXT_TRANSITION_TIME
+	MSG_SET_RAID_DIFFICULTY
+	CMSG_TOGGLE_XP_GAIN
+	SMSG_TOGGLE_XP_GAIN
+	SMSG_GMRESPONSE_DB_ERROR
+	SMSG_GMRESPONSE_RECEIVED
+	CMSG_GMRESPONSE_RESOLVE
+	SMSG_GMRESPONSE_STATUS_UPDATE
+	SMSG_GMRESPONSE_CREATE_TICKET
+	CMSG_GMRESPONSE_CREATE_TICKET
+	CMSG_SERVERINFO
+	SMSG_SERVERINFO
+	CMSG_WORLD_STATE_UI_TIMER_UPDATE
+	SMSG_WORLD_STATE_UI_TIMER_UPDATE
+	CMSG_CHAR_RACE_CHANGE
+	MSG_VIEW_PHASE_SHIFT
+	SMSG_TALENTS_INVOLUNTARILY_RESET
+	CMSG_DEBUG_SERVER_GEO
+	SMSG_DEBUG_SERVER_GEO
+	SMSG_LOOT_SLOT_CHANGED
+	UMSG_UPDATE_GROUP_INFO
+	CMSG_READY_FOR_ACCOUNT_DATA_TIMES
+	CMSG_QUERY_QUESTS_COMPLETED
+	SMSG_QUERY_QUESTS_COMPLETED_RESPONSE
+	CMSG_GM_REPORT_LAG
+	CMSG_AFK_MONITOR_INFO_REQUEST
+	SMSG_AFK_MONITOR_INFO_RESPONSE
+	CMSG_AFK_MONITOR_INFO_CLEAR
+	SMSG_CORPSE_NOT_IN_INSTANCE
+	CMSG_GM_NUKE_CHARACTER
+	CMSG_SET_ALLOW_LOW_LEVEL_RAID1
+	CMSG_SET_ALLOW_LOW_LEVEL_RAID2
+	SMSG_CAMERA_SHAKE
+	CMSG_SET_CHARACTER_MODEL
+	SMSG_REDIRECT_CLIENT
+	CMSG_REDIRECTION_FAILED
+	SMSG_SUSPEND_COMMS
+	CMSG_SUSPEND_COMMS_ACK
+	SMSG_FORCE_SEND_QUEUED_PACKETS
+	CMSG_REDIRECTION_AUTH_PROOF
+	CMSG_DROP_NEW_CONNECTION
+	SMSG_SEND_ALL_COMBAT_LOG
+	SMSG_OPEN_LFG_DUNGEON_FINDER
+	SMSG_MOVE_SET_COLLISION_HGT
+	CMSG_MOVE_SET_COLLISION_HGT_ACK
+	MSG_MOVE_SET_COLLISION_HGT
+	CMSG_CLEAR_RANDOM_BG_WIN_TIME
+	CMSG_CLEAR_HOLIDAY_BG_WIN_TIME
+	CMSG_COMMENTATOR_SKIRMISH_QUEUE_COMMAND
+	SMSG_COMMENTATOR_SKIRMISH_QUEUE_RESULT1
+	SMSG_COMMENTATOR_SKIRMISH_QUEUE_RESULT2
+	SMSG_MULTIPLE_MOVES
+	// Start "modern" opcodes
+	CMSG_ACCEPT_GUILD_INVITE
+	CMSG_ACCEPT_WARGAME_INVITE
+	CMSG_ACTIVATE_TAXI
+	CMSG_ADDON_LIST
+	CMSG_ADD_BATTLENET_FRIEND
+	CMSG_ADD_TOY
+	CMSG_ADVENTURE_JOURNAL_OPEN_QUEST
+	CMSG_ADVENTURE_JOURNAL_START_QUEST
+	CMSG_ADVENTURE_MAP_POI_QUERY
+	CMSG_AREA_TRIGGER
+	CMSG_ARTIFACT_ADD_POWER
+	CMSG_ARTIFACT_SET_APPEARANCE
+	CMSG_ASSIGN_EQUIPMENT_SET_SPEC
+	CMSG_ATTACK_STOP
+	CMSG_ATTACK_SWING
+	CMSG_AUCTIONABLE_TOKEN_SELL
+	CMSG_AUCTIONABLE_TOKEN_SELL_AT_MARKET_PRICE
+	CMSG_AUCTION_BROWSE_QUERY
+	CMSG_AUCTION_CANCEL_COMMODITIES_PURCHASE
+	CMSG_AUCTION_CONFIRM_COMMODITIES_PURCHASE
+	CMSG_AUCTION_GET_COMMODITY_QUOTE
+	CMSG_AUCTION_HELLO_REQUEST
+	CMSG_AUCTION_LIST_BIDDED_ITEMS
+	CMSG_AUCTION_LIST_BUCKETS_BY_BUCKET_KEYS
+	CMSG_AUCTION_LIST_ITEMS_BY_BUCKET_KEY
+	CMSG_AUCTION_LIST_ITEMS_BY_ITEM_ID
+	CMSG_AUCTION_REPLICATE_ITEMS
+	CMSG_AUTH_CONTINUED_SESSION
+	CMSG_AUTOBANK_REAGENT
+	CMSG_AUTOSTORE_BANK_REAGENT
+	CMSG_AUTO_EQUIP_ITEM
+	CMSG_AUTO_EQUIP_ITEM_SLOT
+	CMSG_AUTO_STORE_BAG_ITEM
+	CMSG_AZERITE_EMPOWERED_ITEM_SELECT_POWER
+	CMSG_AZERITE_EMPOWERED_ITEM_VIEWED
+	CMSG_AZERITE_ESSENCE_ACTIVATE_ESSENCE
+	CMSG_AZERITE_ESSENCE_UNLOCK_MILESTONE
+	CMSG_BATTLEFIELD_LEAVE
+	CMSG_BATTLEMASTER_JOIN_BRAWL
+	CMSG_BATTLEMASTER_JOIN_SKIRMISH
+	CMSG_BATTLENET_CHALLENGE_RESPONSE
+	CMSG_BATTLENET_REQUEST
+	CMSG_BATTLE_PAY_ACK_FAILED_RESPONSE
+	CMSG_BATTLE_PAY_CANCEL_OPEN_CHECKOUT
+	CMSG_BATTLE_PAY_CONFIRM_PURCHASE_RESPONSE
+	CMSG_BATTLE_PAY_DISTRIBUTION_ASSIGN_TO_TARGET
+	CMSG_BATTLE_PAY_GET_PRODUCT_LIST
+	CMSG_BATTLE_PAY_GET_PURCHASE_LIST
+	CMSG_BATTLE_PAY_OPEN_CHECKOUT
+	CMSG_BATTLE_PAY_QUERY_CLASS_TRIAL_BOOST_RESULT
+	CMSG_BATTLE_PAY_REQUEST_CHARACTER_BOOST_UNREVOKE
+	CMSG_BATTLE_PAY_REQUEST_PRICE_INFO
+	CMSG_BATTLE_PAY_START_PURCHASE
+	CMSG_BATTLE_PAY_START_VAS_PURCHASE
+	CMSG_BATTLE_PAY_TRIAL_BOOST_CHARACTER
+	CMSG_BATTLE_PET_CLEAR_FANFARE
+	CMSG_BATTLE_PET_DELETE_PET
+	CMSG_BATTLE_PET_DELETE_PET_CHEAT
+	CMSG_BATTLE_PET_MODIFY_NAME
+	CMSG_BATTLE_PET_REQUEST_JOURNAL
+	CMSG_BATTLE_PET_REQUEST_JOURNAL_LOCK
+	CMSG_BATTLE_PET_SET_BATTLE_SLOT
+	CMSG_BATTLE_PET_SET_FLAGS
+	CMSG_BATTLE_PET_SUMMON
+	CMSG_BATTLE_PET_UPDATE_DISPLAY_NOTIFY
+	CMSG_BATTLE_PET_UPDATE_NOTIFY
+	CMSG_BLACK_MARKET_BID_ON_ITEM
+	CMSG_BLACK_MARKET_OPEN
+	CMSG_BLACK_MARKET_REQUEST_ITEMS
+	CMSG_BONUS_ROLL
+	CMSG_BUG_REPORT
+	CMSG_BUY_BACK_ITEM
+	CMSG_BUY_REAGENT_BANK
+	CMSG_CAGE_BATTLE_PET
+	CMSG_CALENDAR_COMMUNITY_FILTER
+	CMSG_CALENDAR_GET
+	CMSG_CALENDAR_REMOVE_INVITE
+	CMSG_CANCEL_MASTER_LOOT_ROLL
+	CMSG_CANCEL_MOD_SPEED_NO_CONTROL_AURAS
+	CMSG_CANCEL_QUEUED_SPELL
+	CMSG_CAN_DUEL
+	CMSG_CHALLENGE_MODE_REQUEST_LEADERS
+	CMSG_CHALLENGE_MODE_REQUEST_MAP_STATS
+	CMSG_CHANGE_BAG_SLOT_FLAG
+	CMSG_CHANGE_BANK_BAG_SLOT_FLAG
+	CMSG_CHANGE_MONUMENT_APPEARANCE
+	CMSG_CHANGE_SUB_GROUP
+	CMSG_CHARACTER_RENAME_REQUEST
+	CMSG_CHAR_RACE_OR_FACTION_CHANGE
+	CMSG_CHAT_ADDON_MESSAGE
+	CMSG_CHAT_ADDON_MESSAGE_TARGETED
+	CMSG_CHAT_CHANNEL_ANNOUNCEMENTS
+	CMSG_CHAT_CHANNEL_BAN
+	CMSG_CHAT_CHANNEL_DECLINE_INVITE
+	CMSG_CHAT_CHANNEL_DISPLAY_LIST
+	CMSG_CHAT_CHANNEL_INVITE
+	CMSG_CHAT_CHANNEL_KICK
+	CMSG_CHAT_CHANNEL_LIST
+	CMSG_CHAT_CHANNEL_MODERATOR
+	CMSG_CHAT_CHANNEL_OWNER
+	CMSG_CHAT_CHANNEL_PASSWORD
+	CMSG_CHAT_CHANNEL_SET_OWNER
+	CMSG_CHAT_CHANNEL_SILENCE_ALL
+	CMSG_CHAT_CHANNEL_UNBAN
+	CMSG_CHAT_CHANNEL_UNMODERATOR
+	CMSG_CHAT_CHANNEL_UNSILENCE_ALL
+	CMSG_CHAT_JOIN_CHANNEL
+	CMSG_CHAT_LEAVE_CHANNEL
+	CMSG_CHAT_MESSAGE_AFK
+	CMSG_CHAT_MESSAGE_CHANNEL
+	CMSG_CHAT_MESSAGE_DND
+	CMSG_CHAT_MESSAGE_EMOTE
+	CMSG_CHAT_MESSAGE_GUILD
+	CMSG_CHAT_MESSAGE_INSTANCE_CHAT
+	CMSG_CHAT_MESSAGE_OFFICER
+	CMSG_CHAT_MESSAGE_PARTY
+	CMSG_CHAT_MESSAGE_RAID
+	CMSG_CHAT_MESSAGE_RAID_WARNING
+	CMSG_CHAT_MESSAGE_SAY
+	CMSG_CHAT_MESSAGE_WHISPER
+	CMSG_CHAT_MESSAGE_YELL
+	CMSG_CHAT_REGISTER_ADDON_PREFIXES
+	CMSG_CHAT_REPORT_FILTERED
+	CMSG_CHAT_REPORT_IGNORED
+	CMSG_CHAT_UNREGISTER_ALL_ADDON_PREFIXES
+	CMSG_CHOICE_RESPONSE
+	CMSG_CLEAR_NEW_APPEARANCE
+	CMSG_CLEAR_RAID_MARKER
+	CMSG_CLIENT_PORT_GRAVEYARD
+	CMSG_CLOSE_INTERACTION
+	CMSG_CLOSE_QUEST_CHOICE
+	CMSG_CLUB_FINDER_APPLICATION_RESPONSE
+	CMSG_CLUB_FINDER_GET_APPLICANTS_LIST
+	CMSG_CLUB_FINDER_POST
+	CMSG_CLUB_FINDER_REQUEST_CLUBS_DATA
+	CMSG_CLUB_FINDER_REQUEST_CLUBS_LIST
+	CMSG_CLUB_FINDER_REQUEST_MEMBERSHIP_TO_CLUB
+	CMSG_CLUB_FINDER_REQUEST_PENDING_CLUBS_LIST
+	CMSG_CLUB_FINDER_REQUEST_SUBSCRIBED_CLUB_POSTING_IDS
+	CMSG_CLUB_FINDER_RESPOND_TO_APPLICANT
+	CMSG_CLUB_INVITE
+	CMSG_COLLECTION_ITEM_SET_FAVORITE
+	CMSG_COMMENTATOR_GET_PLAYER_COOLDOWNS
+	CMSG_COMMENTATOR_START_WARGAME
+	CMSG_COMMERCE_TOKEN_GET_COUNT
+	CMSG_COMMERCE_TOKEN_GET_LOG
+	CMSG_COMMERCE_TOKEN_GET_MARKET_PRICE
+	CMSG_COMPLAINT
+	CMSG_CONFIRM_ARTIFACT_RESPEC
+	CMSG_CONFIRM_RESPEC_WIPE
+	CMSG_CONNECT_TO_FAILED
+	CMSG_CONSUMABLE_TOKEN_BUY
+	CMSG_CONSUMABLE_TOKEN_BUY_AT_MARKET_PRICE
+	CMSG_CONSUMABLE_TOKEN_CAN_VETERAN_BUY
+	CMSG_CONSUMABLE_TOKEN_REDEEM
+	CMSG_CONSUMABLE_TOKEN_REDEEM_CONFIRMATION
+	CMSG_CONTRIBUTION_CONTRIBUTE
+	CMSG_CONTRIBUTION_LAST_UPDATE_REQUEST
+	CMSG_CONVERSATION_LINE_STARTED
+	CMSG_CONVERT_RAID
+	CMSG_CREATE_CHARACTER
+	CMSG_CREATE_SHIPMENT
+	CMSG_DB_QUERY_BULK
+	CMSG_DECLINE_GUILD_INVITES
+	CMSG_DECLINE_PETITION
+	CMSG_DELETE_EQUIPMENT_SET
+	CMSG_DEPOSIT_REAGENT_BANK
+	CMSG_DESTROY_ITEM
+	CMSG_DF_BOOT_PLAYER_VOTE
+	CMSG_DF_GET_JOIN_STATUS
+	CMSG_DF_GET_SYSTEM_INFO
+	CMSG_DF_JOIN
+	CMSG_DF_LEAVE
+	CMSG_DF_PROPOSAL_RESPONSE
+	CMSG_DF_READY_CHECK_RESPONSE
+	CMSG_DF_SET_ROLES
+	CMSG_DF_TELEPORT
+	CMSG_DISCARDED_TIME_SYNC_ACKS
+	CMSG_DO_MASTER_LOOT_ROLL
+	CMSG_DO_READY_CHECK
+	CMSG_DUEL_RESPONSE
+	CMSG_EJECT_PASSENGER
+	CMSG_ENABLE_NAGLE
+	CMSG_ENABLE_TAXI_NODE
+	CMSG_ENGINE_SURVEY
+	CMSG_ENTER_ENCRYPTED_MODE_ACK
+	CMSG_ENUM_CHARACTERS
+	CMSG_ENUM_CHARACTERS_DELETED_BY_CLIENT
+	CMSG_GAME_EVENT_DEBUG_DISABLE
+	CMSG_GAME_EVENT_DEBUG_ENABLE
+	CMSG_GAME_OBJ_REPORT_USE
+	CMSG_GAME_OBJ_USE
+	CMSG_GARRISON_ASSIGN_FOLLOWER_TO_BUILDING
+	CMSG_GARRISON_CANCEL_CONSTRUCTION
+	CMSG_GARRISON_CHECK_UPGRADEABLE
+	CMSG_GARRISON_COMPLETE_MISSION
+	CMSG_GARRISON_GENERATE_RECRUITS
+	CMSG_GARRISON_GET_BUILDING_LANDMARKS
+	CMSG_GARRISON_GET_MISSION_REWARD
+	CMSG_GARRISON_MISSION_BONUS_ROLL
+	CMSG_GARRISON_PURCHASE_BUILDING
+	CMSG_GARRISON_RECRUIT_FOLLOWER
+	CMSG_GARRISON_REMOVE_FOLLOWER
+	CMSG_GARRISON_REMOVE_FOLLOWER_FROM_BUILDING
+	CMSG_GARRISON_RENAME_FOLLOWER
+	CMSG_GARRISON_REQUEST_BLUEPRINT_AND_SPECIALIZATION_DATA
+	CMSG_GARRISON_REQUEST_CLASS_SPEC_CATEGORY_INFO
+	CMSG_GARRISON_REQUEST_LANDING_PAGE_SHIPMENT_INFO
+	CMSG_GARRISON_REQUEST_SHIPMENT_INFO
+	CMSG_GARRISON_RESEARCH_TALENT
+	CMSG_GARRISON_SET_BUILDING_ACTIVE
+	CMSG_GARRISON_SET_FOLLOWER_FAVORITE
+	CMSG_GARRISON_SET_FOLLOWER_INACTIVE
+	CMSG_GARRISON_SET_RECRUITMENT_PREFERENCES
+	CMSG_GARRISON_START_MISSION
+	CMSG_GARRISON_SWAP_BUILDINGS
+	CMSG_GENERATE_RANDOM_CHARACTER_NAME
+	CMSG_GET_ACCOUNT_CHARACTER_LIST
+	CMSG_GET_CHALLENGE_MODE_REWARDS
+	CMSG_GET_GARRISON_INFO
+	CMSG_GET_ITEM_PURCHASE_DATA
+	CMSG_GET_MIRROR_IMAGE_DATA
+	CMSG_GET_PVP_OPTIONS_ENABLED
+	CMSG_GET_RAF_ACCOUNT_INFO
+	CMSG_GET_REMAINING_GAME_TIME
+	CMSG_GET_TROPHY_LIST
+	CMSG_GET_UNDELETE_CHARACTER_COOLDOWN_STATUS
+	CMSG_GET_VAS_ACCOUNT_CHARACTER_LIST
+	CMSG_GET_VAS_TRANSFER_TARGET_REALM_LIST
+	CMSG_GM_TICKET_ACKNOWLEDGE_SURVEY
+	CMSG_GM_TICKET_GET_CASE_STATUS
+	CMSG_GM_TICKET_GET_SYSTEM_STATUS
+	CMSG_GUILD_ADD_BATTLENET_FRIEND
+	CMSG_GUILD_ASSIGN_MEMBER_RANK
+	CMSG_GUILD_AUTO_DECLINE_INVITATION
+	CMSG_GUILD_BANK_ACTIVATE
+	CMSG_GUILD_BANK_LOG_QUERY
+	CMSG_GUILD_BANK_REMAINING_WITHDRAW_MONEY_QUERY
+	CMSG_GUILD_BANK_SET_TAB_TEXT
+	CMSG_GUILD_BANK_TEXT_QUERY
+	CMSG_GUILD_CHALLENGE_UPDATE_REQUEST
+	CMSG_GUILD_CHANGE_NAME_REQUEST
+	CMSG_GUILD_DECLINE_INVITATION
+	CMSG_GUILD_DELETE
+	CMSG_GUILD_DELETE_RANK
+	CMSG_GUILD_DEMOTE_MEMBER
+	CMSG_GUILD_EVENT_LOG_QUERY
+	CMSG_GUILD_GET_ACHIEVEMENT_MEMBERS
+	CMSG_GUILD_GET_RANKS
+	CMSG_GUILD_GET_ROSTER
+	CMSG_GUILD_INVITE_BY_NAME
+	CMSG_GUILD_NEWS_UPDATE_STICKY
+	CMSG_GUILD_OFFICER_REMOVE_MEMBER
+	CMSG_GUILD_PERMISSIONS_QUERY
+	CMSG_GUILD_PROMOTE_MEMBER
+	CMSG_GUILD_QUERY_MEMBERS_FOR_RECIPE
+	CMSG_GUILD_QUERY_MEMBER_RECIPES
+	CMSG_GUILD_QUERY_NEWS
+	CMSG_GUILD_QUERY_RECIPES
+	CMSG_GUILD_REPLACE_GUILD_MASTER
+	CMSG_GUILD_SET_ACHIEVEMENT_TRACKING
+	CMSG_GUILD_SET_FOCUSED_ACHIEVEMENT
+	CMSG_GUILD_SET_GUILD_MASTER
+	CMSG_GUILD_SET_MEMBER_NOTE
+	CMSG_GUILD_SET_RANK_PERMISSIONS
+	CMSG_GUILD_SHIFT_RANK
+	CMSG_GUILD_UPDATE_INFO_TEXT
+	CMSG_GUILD_UPDATE_MOTD_TEXT
+	CMSG_HOTFIX_REQUEST
+	CMSG_INITIATE_ROLE_POLL
+	CMSG_ISLAND_QUEUE
+	CMSG_ITEM_PURCHASE_REFUND
+	CMSG_JOIN_PET_BATTLE_QUEUE
+	CMSG_JOIN_RATED_BATTLEGROUND
+	CMSG_KEYBOUND_OVERRIDE
+	CMSG_LEARN_PVP_TALENTS
+	CMSG_LEARN_TALENTS
+	CMSG_LEAVE_GROUP
+	CMSG_LEAVE_PET_BATTLE_QUEUE
+	CMSG_LFG_LIST_APPLY_TO_GROUP
+	CMSG_LFG_LIST_CANCEL_APPLICATION
+	CMSG_LFG_LIST_DECLINE_APPLICANT
+	CMSG_LFG_LIST_GET_STATUS
+	CMSG_LFG_LIST_INVITE_APPLICANT
+	CMSG_LFG_LIST_INVITE_RESPONSE
+	CMSG_LFG_LIST_JOIN
+	CMSG_LFG_LIST_LEAVE
+	CMSG_LFG_LIST_SEARCH
+	CMSG_LFG_LIST_UPDATE_REQUEST
+	CMSG_LF_GUILD_ADD_RECRUIT
+	CMSG_LF_GUILD_BROWSE
+	CMSG_LF_GUILD_DECLINE_RECRUIT
+	CMSG_LF_GUILD_GET_APPLICATIONS
+	CMSG_LF_GUILD_GET_GUILD_POST
+	CMSG_LF_GUILD_GET_RECRUITS
+	CMSG_LF_GUILD_REMOVE_RECRUIT
+	CMSG_LF_GUILD_SET_GUILD_POST
+	CMSG_LIVE_REGION_ACCOUNT_RESTORE
+	CMSG_LIVE_REGION_CHARACTER_COPY
+	CMSG_LIVE_REGION_GET_ACCOUNT_CHARACTER_LIST
+	CMSG_LOADING_SCREEN_NOTIFY
+	CMSG_LOAD_SELECTED_TROPHY
+	CMSG_LOGOUT_INSTANT
+	CMSG_LOG_DISCONNECT
+	CMSG_LOG_STREAMING_ERROR
+	CMSG_LOOT_ITEM
+	CMSG_LOOT_UNIT
+	CMSG_LOW_LEVEL_RAID1
+	CMSG_LOW_LEVEL_RAID2
+	CMSG_MAIL_GET_LIST
+	CMSG_MAKE_CONTITIONAL_APPEARANCE_PERMANENT
+	CMSG_MASTER_LOOT_ITEM
+	CMSG_MINIMAP_PING
+	CMSG_MISSILE_TRAJECTORY_COLLISION
+	CMSG_MOUNT_CLEAR_FANFARE
+	CMSG_MOUNT_SET_FAVORITE
+	CMSG_MOUNT_SPECIAL_ANIM
+	CMSG_MOVE_APPLY_MOVEMENT_FORCE_ACK
+	CMSG_MOVE_CHANGE_TRANSPORT
+	CMSG_MOVE_CHANGE_VEHICLE_SEATS
+	CMSG_MOVE_DISMISS_VEHICLE
+	CMSG_MOVE_DOUBLE_JUMP
+	CMSG_MOVE_ENABLE_DOUBLE_JUMP_ACK
+	CMSG_MOVE_ENABLE_SWIM_TO_FLY_TRANS_ACK
+	CMSG_MOVE_FALL_LAND
+	CMSG_MOVE_FORCE_FLIGHT_BACK_SPEED_CHANGE_ACK
+	CMSG_MOVE_FORCE_FLIGHT_SPEED_CHANGE_ACK
+	CMSG_MOVE_FORCE_PITCH_RATE_CHANGE_ACK
+	CMSG_MOVE_FORCE_ROOT_ACK
+	CMSG_MOVE_FORCE_RUN_BACK_SPEED_CHANGE_ACK
+	CMSG_MOVE_FORCE_RUN_SPEED_CHANGE_ACK
+	CMSG_MOVE_FORCE_SWIM_BACK_SPEED_CHANGE_ACK
+	CMSG_MOVE_FORCE_SWIM_SPEED_CHANGE_ACK
+	CMSG_MOVE_FORCE_TURN_RATE_CHANGE_ACK
+	CMSG_MOVE_FORCE_UNROOT_ACK
+	CMSG_MOVE_FORCE_WALK_SPEED_CHANGE_ACK
+	CMSG_MOVE_HEARTBEAT
+	CMSG_MOVE_JUMP
+	CMSG_MOVE_REMOVE_MOVEMENT_FORCES
+	CMSG_MOVE_REMOVE_MOVEMENT_FORCE_ACK
+	CMSG_MOVE_SEAMLESS_TRANSFER_COMPLETE
+	CMSG_MOVE_SET_CAN_TURN_WHILE_FALLING_ACK
+	CMSG_MOVE_SET_COLLISION_HEIGHT_ACK
+	CMSG_MOVE_SET_FACING
+	CMSG_MOVE_SET_IGNORE_MOVEMENT_FORCES_ACK
+	CMSG_MOVE_SET_MOD_MOVEMENT_FORCE_MAGNITUDE_ACK
+	CMSG_MOVE_SET_PITCH
+	CMSG_MOVE_SET_RUN_MODE
+	CMSG_MOVE_SET_VEHICLE_REC_ID_ACK
+	CMSG_MOVE_SET_WALK_MODE
+	CMSG_MOVE_START_ASCEND
+	CMSG_MOVE_START_BACKWARD
+	CMSG_MOVE_START_DESCEND
+	CMSG_MOVE_START_FORWARD
+	CMSG_MOVE_START_PITCH_DOWN
+	CMSG_MOVE_START_PITCH_UP
+	CMSG_MOVE_START_STRAFE_LEFT
+	CMSG_MOVE_START_STRAFE_RIGHT
+	CMSG_MOVE_START_SWIM
+	CMSG_MOVE_START_TURN_LEFT
+	CMSG_MOVE_START_TURN_RIGHT
+	CMSG_MOVE_STOP
+	CMSG_MOVE_STOP_ASCEND
+	CMSG_MOVE_STOP_PITCH
+	CMSG_MOVE_STOP_STRAFE
+	CMSG_MOVE_STOP_SWIM
+	CMSG_MOVE_STOP_TURN
+	CMSG_MOVE_TELEPORT_ACK
+	CMSG_MOVE_TOGGLE_COLLISION_CHEAT
+	CMSG_MOVE_UPDATE_FALL_SPEED
+	CMSG_NEUTRAL_PLAYER_SELECT_FACTION
+	CMSG_OBJECT_UPDATE_FAILED
+	CMSG_OBJECT_UPDATE_RESCUED
+	CMSG_OPEN_MISSION_NPC
+	CMSG_OPEN_SHIPMENT_NPC
+	CMSG_OPEN_TRADESKILL_NPC
+	CMSG_PARTY_INVITE
+	CMSG_PARTY_INVITE_RESPONSE
+	CMSG_PARTY_UNINVITE
+	CMSG_PETITION_RENAME_GUILD
+	CMSG_PETITION_SHOW_LIST
+	CMSG_PET_BATTLE_FINAL_NOTIFY
+	CMSG_PET_BATTLE_INPUT
+	CMSG_PET_BATTLE_QUEUE_PROPOSE_MATCH_RESULT
+	CMSG_PET_BATTLE_QUIT_NOTIFY
+	CMSG_PET_BATTLE_REPLACE_FRONT_PET
+	CMSG_PET_BATTLE_REQUEST_PVP
+	CMSG_PET_BATTLE_REQUEST_UPDATE
+	CMSG_PET_BATTLE_REQUEST_WILD
+	CMSG_PET_BATTLE_SCRIPT_ERROR_NOTIFY
+	CMSG_PET_BATTLE_WILD_LOCATION_FAIL
+	CMSG_PUSH_QUEST_TO_PARTY
+	CMSG_PVP_LOG_DATA
+	CMSG_QUERY_BATTLE_PET_NAME
+	CMSG_QUERY_COMMUNITY_NAME
+	CMSG_QUERY_CORPSE_LOCATION_FROM_CLIENT
+	CMSG_QUERY_CORPSE_TRANSPORT
+	CMSG_QUERY_COUNTDOWN_TIMER
+	CMSG_QUERY_CREATURE
+	CMSG_QUERY_GAME_OBJECT
+	CMSG_QUERY_GARRISON_CREATURE_NAME
+	CMSG_QUERY_GUILD_INFO
+	CMSG_QUERY_NEXT_MAIL_TIME
+	CMSG_QUERY_NPC_TEXT
+	CMSG_QUERY_PAGE_TEXT
+	CMSG_QUERY_PETITION
+	CMSG_QUERY_PET_NAME
+	CMSG_QUERY_PLAYER_NAME
+	CMSG_QUERY_QUEST_COMPLETION_NPCS
+	CMSG_QUERY_QUEST_INFO
+	CMSG_QUERY_REALM_NAME
+	CMSG_QUERY_SCENARIO_POI
+	CMSG_QUERY_TREASURE_PICKER
+	CMSG_QUERY_VOID_STORAGE
+	CMSG_QUEST_GIVER_ACCEPT_QUEST
+	CMSG_QUEST_GIVER_CHOOSE_REWARD
+	CMSG_QUEST_GIVER_COMPLETE_QUEST
+	CMSG_QUEST_GIVER_HELLO
+	CMSG_QUEST_GIVER_QUERY_QUEST
+	CMSG_QUEST_GIVER_REQUEST_REWARD
+	CMSG_QUEST_GIVER_STATUS_MULTIPLE_QUERY
+	CMSG_QUEST_GIVER_STATUS_QUERY
+	CMSG_QUEST_LOG_REMOVE_QUEST
+	CMSG_QUEST_PUSH_RESULT
+	CMSG_QUEST_SESSION_BEGIN_RESPONSE
+	CMSG_QUEST_SESSION_REQUEST_START
+	CMSG_QUEST_SESSION_REQUEST_STOP
+	CMSG_QUEUED_MESSAGES_END
+	CMSG_QUICK_JOIN_AUTO_ACCEPT_REQUESTS
+	CMSG_QUICK_JOIN_REQUEST_INVITE
+	CMSG_QUICK_JOIN_REQUEST_INVITE_WITH_CONFIRMATION
+	CMSG_QUICK_JOIN_RESPOND_TO_INVITE
+	CMSG_QUICK_JOIN_SIGNAL_TOAST_DISPLAYED
+	CMSG_RAF_CLAIM_ACTIVITY_REWARD
+	CMSG_RAF_CLAIM_NEXT_REWARD
+	CMSG_RAF_GENERATE_RECRUITMENT_LINK
+	CMSG_RAF_UPDATE_RECRUITMENT_INFO
+	CMSG_RAID_OR_BATTLEGROUND_ENGINE_SURVEY
+	CMSG_RANDOM_ROLL
+	CMSG_READY_CHECK_RESPONSE
+	CMSG_REMOVE_NEW_ITEM
+	CMSG_REMOVE_RAF_RECRUIT
+	CMSG_REORDER_CHARACTERS
+	CMSG_REPLACE_TROPHY
+	CMSG_REPORT_CLIENT_VARIABLES
+	CMSG_REPORT_ENABLED_ADDONS
+	CMSG_REPORT_KEYBINDING_EXECUTION_COUNTS
+	CMSG_REPORT_PVP_PLAYER_AFK
+	CMSG_REPORT_SERVER_LAG
+	CMSG_REQUEST_AREA_POI_UPDATE
+	CMSG_REQUEST_BATTLEFIELD_STATUS
+	CMSG_REQUEST_CATEGORY_COOLDOWNS
+	CMSG_REQUEST_CEMETERY_LIST
+	CMSG_REQUEST_CHALLENGE_MODE_AFFIXES
+	CMSG_REQUEST_CHARACTER_GUILD_FOLLOW_INFO
+	CMSG_REQUEST_CONQUEST_FORMULA_CONSTANTS
+	CMSG_REQUEST_CROWD_CONTROL_SPELL
+	CMSG_REQUEST_FORCED_REACTIONS
+	CMSG_REQUEST_GUILD_PARTY_STATE
+	CMSG_REQUEST_GUILD_REWARDS_LIST
+	CMSG_REQUEST_LFG_LIST_BLACKLIST
+	CMSG_REQUEST_PARTY_JOIN_UPDATES
+	CMSG_REQUEST_PLAYED_TIME
+	CMSG_REQUEST_PVP_BRAWL_INFO
+	CMSG_REQUEST_PVP_REWARDS
+	CMSG_REQUEST_QUEST_LINES_FOR_MAP
+	CMSG_REQUEST_RATED_BATTLEFIELD_INFO
+	CMSG_REQUEST_REALM_GUILD_MASTER_INFO
+	CMSG_REQUEST_RESEARCH_HISTORY
+	CMSG_REQUEST_STABLED_PETS
+	CMSG_REQUEST_WORLD_QUEST_UPDATE
+	CMSG_RESET_CHALLENGE_MODE
+	CMSG_RESET_CHALLENGE_MODE_CHEAT
+	CMSG_REVERT_MONUMENT_APPEARANCE
+	CMSG_RIDE_VEHICLE_INTERACT
+	CMSG_SAVE_CUF_PROFILES
+	CMSG_SAVE_EQUIPMENT_SET
+	CMSG_SAVE_GUILD_EMBLEM
+	CMSG_SCENE_PLAYBACK_CANCELED
+	CMSG_SCENE_PLAYBACK_COMPLETE
+	CMSG_SCENE_TRIGGER_EVENT
+	CMSG_SEND_CONTACT_LIST
+	CMSG_SEND_TEXT_EMOTE
+	CMSG_SERVER_TIME_OFFSET_REQUEST
+	CMSG_SET_ACHIEVEMENTS_HIDDEN
+	CMSG_SET_ACTION_BAR_TOGGLES
+	CMSG_SET_ADVANCED_COMBAT_LOGGING
+	CMSG_SET_ASSISTANT_LEADER
+	CMSG_SET_BACKPACK_AUTOSORT_DISABLED
+	CMSG_SET_BANK_AUTOSORT_DISABLED
+	CMSG_SET_CURRENCY_FLAGS
+	CMSG_SET_DIFFICULTY_ID
+	CMSG_SET_DUNGEON_DIFFICULTY
+	CMSG_SET_EVERYONE_IS_ASSISTANT
+	CMSG_SET_FACTION_AT_WAR
+	CMSG_SET_FACTION_NOT_AT_WAR
+	CMSG_SET_GAME_EVENT_DEBUG_VIEW_STATE
+	CMSG_SET_INSERT_ITEMS_LEFT_TO_RIGHT
+	CMSG_SET_LFG_BONUS_FACTION_ID
+	CMSG_SET_LOOT_METHOD
+	CMSG_SET_LOOT_SPECIALIZATION
+	CMSG_SET_PARTY_ASSIGNMENT
+	CMSG_SET_PARTY_LEADER
+	CMSG_SET_PET_SLOT
+	CMSG_SET_PREFERRED_CEMETERY
+	CMSG_SET_PVP
+	CMSG_SET_RAID_DIFFICULTY
+	CMSG_SET_ROLE
+	CMSG_SET_SHEATHED
+	CMSG_SET_SORT_BAGS_RIGHT_TO_LEFT
+	CMSG_SET_TRADE_CURRENCY
+	CMSG_SET_USING_PARTY_GARRISON
+	CMSG_SET_WAR_MODE
+	CMSG_SHOW_TRADE_SKILL
+	CMSG_SIGN_PETITION
+	CMSG_SILENCE_PARTY_TALKER
+	CMSG_SORT_BAGS
+	CMSG_SORT_BANK_BAGS
+	CMSG_SORT_REAGENT_BANK_BAGS
+	CMSG_SPELL_CLICK
+	CMSG_STAND_STATE_CHANGE
+	CMSG_START_CHALLENGE_MODE
+	CMSG_START_SPECTATOR_WAR_GAME
+	CMSG_START_WAR_GAME
+	CMSG_SUPPORT_TICKET_SUBMIT_BUG
+	CMSG_SUPPORT_TICKET_SUBMIT_COMPLAINT
+	CMSG_SUPPORT_TICKET_SUBMIT_SUGGESTION
+	CMSG_SURRENDER_ARENA
+	CMSG_SUSPEND_TOKEN_RESPONSE
+	CMSG_SWAP_SUB_GROUPS
+	CMSG_SWAP_VOID_ITEM
+	CMSG_TABARD_VENDOR_ACTIVATE
+	CMSG_TALK_TO_GOSSIP
+	CMSG_TAXI_NODE_STATUS_QUERY
+	CMSG_TAXI_QUERY_AVAILABLE_NODES
+	CMSG_TAXI_REQUEST_EARLY_LANDING
+	CMSG_TIME_ADJUSTMENT_RESPONSE
+	CMSG_TIME_SYNC_RESPONSE
+	CMSG_TIME_SYNC_RESPONSE_DROPPED
+	CMSG_TIME_SYNC_RESPONSE_FAILED
+	CMSG_TOGGLE_DIFFICULTY
+	CMSG_TOY_CLEAR_FANFARE
+	CMSG_TRADE_SKILL_SET_FAVORITE
+	CMSG_TRANSMOGRIFY_ITEMS
+	CMSG_TUTORIAL
+	CMSG_TWITTER_CHECK_STATUS
+	CMSG_TWITTER_CONNECT
+	CMSG_TWITTER_DISCONNECT
+	CMSG_TWITTER_POST
+	CMSG_UNDELETE_CHARACTER
+	CMSG_UNLEARN_SPECIALIZATION
+	CMSG_UNLOCK_VOID_STORAGE
+	CMSG_UPDATE_AREA_TRIGGER_VISUAL
+	CMSG_UPDATE_CLIENT_SETTINGS
+	CMSG_UPDATE_RAID_TARGET
+	CMSG_UPDATE_SPELL_VISUAL
+	CMSG_UPDATE_VAS_PURCHASE_STATES
+	CMSG_UPGRADE_GARRISON
+	CMSG_USED_FOLLOW
+	CMSG_USE_CRITTER_ITEM
+	CMSG_USE_EQUIPMENT_SET
+	CMSG_USE_TOY
+	CMSG_VAS_CHECK_TRANSFER_OK
+	CMSG_VAS_GET_QUEUE_MINUTES
+	CMSG_VAS_GET_SERVICE_STATUS
+	CMSG_VIOLENCE_LEVEL
+	CMSG_VOICE_CHAT_JOIN_CHANNEL
+	CMSG_VOICE_CHAT_LOGIN
+	CMSG_VOID_STORAGE_TRANSFER
+	CMSG_WHO_IS
+	CMSG_WORLD_PORT_RESPONSE
+
+	CMSG_BF_MGR_ENTRY_INVITE_RESPONSE
+	CMSG_BF_MGR_QUEUE_INVITE_RESPONSE
+	CMSG_BF_MGR_QUEUE_EXIT_REQUEST
+
+	SMSG_ABORT_NEW_WORLD
+	SMSG_ACCOUNT_CRITERIA_UPDATE
+	SMSG_ACCOUNT_MOUNT_UPDATE
+	SMSG_ACCOUNT_TOY_UPDATE
+	SMSG_ACCOUNT_TRANSMOG_SET_FAVORITES_UPDATE
+	SMSG_ACCOUNT_TRANSMOG_UPDATE
+	SMSG_ACTIVATE_ESSENCE_FAILED
+	SMSG_ACTIVATE_TAXI_REPLY
+	SMSG_ACTIVE_GLYPHS
+	SMSG_ADDON_LIST_REQUEST
+	SMSG_ADD_BATTLENET_FRIEND_RESPONSE
+	SMSG_ADD_ITEM_PASSIVE
+	SMSG_ADD_LOSS_OF_CONTROL
+	SMSG_ADJUST_SPLINE_DURATION
+	SMSG_ADVENTURE_MAP_OPEN_NPC
+	SMSG_AE_LOOT_TARGETS
+	SMSG_AE_LOOT_TARGET_ACK
+	SMSG_ALLIED_RACE_DETAILS
+	SMSG_ALL_ACCOUNT_CRITERIA
+	SMSG_ALL_GUILD_ACHIEVEMENTS
+	SMSG_APPLY_MOUNT_EQUIPMENT_RESULT
+	SMSG_ARCHAEOLOGY_SURVERY_CAST
+	SMSG_AREA_POI_UPDATE_RESPONSE
+	SMSG_AREA_TRIGGER_DENIED
+	SMSG_AREA_TRIGGER_FORCE_SET_POSITION_AND_FACING
+	SMSG_AREA_TRIGGER_NO_CORPSE
+	SMSG_AREA_TRIGGER_PLAY_SPELL_VISUAL
+	SMSG_AREA_TRIGGER_RE_PATH
+	SMSG_AREA_TRIGGER_RE_SHAPE
+	SMSG_AREA_TRIGGER_SET_VISUAL_ANIM
+	SMSG_AREA_TRIGGER_UNATTACH
+	SMSG_ARENA_CROWD_CONTROL_SPELL_RESULT
+	SMSG_ARENA_PREP_OPPONENT_SPECIALIZATIONS
+	SMSG_ARTIFACT_ENDGAME_POWERS_REFUNDED
+	SMSG_ARTIFACT_FORGE_ERROR
+	SMSG_ARTIFACT_RESPEC_PROMPT
+	SMSG_ARTIFACT_XP_GAIN
+	SMSG_ATTACKER_STATE_UPDATE
+	SMSG_ATTACK_START
+	SMSG_ATTACK_STOP
+	SMSG_ATTACK_SWING_ERROR
+	SMSG_ATTACK_SWING_LANDED_LOG
+	SMSG_AUCTIONABLE_TOKEN_AUCTION_SOLD
+	SMSG_AUCTIONABLE_TOKEN_SELL_AT_MARKET_PRICE_RESPONSE
+	SMSG_AUCTIONABLE_TOKEN_SELL_CONFIRM_REQUIRED
+	SMSG_AUCTION_CLOSED_NOTIFICATION
+	SMSG_AUCTION_FAVORITE_LIST
+	SMSG_AUCTION_GET_COMMODITY_QUOTE_RESULT
+	SMSG_AUCTION_HELLO_RESPONSE
+	SMSG_AUCTION_LIST_BIDDED_ITEMS_RESULT
+	SMSG_AUCTION_LIST_BUCKETS_RESULT
+	SMSG_AUCTION_LIST_ITEMS_RESULT
+	SMSG_AUCTION_LIST_OWNED_ITEMS_RESULT
+	SMSG_AUCTION_OUTBID_NOTIFICATION
+	SMSG_AUCTION_OWNER_BID_NOTIFICATION
+	SMSG_AUCTION_REPLICATE_RESPONSE
+	SMSG_AUCTION_WON_NOTIFICATION
+	SMSG_AURA_POINTS_DEPLETED
+	SMSG_AUTH_FAILED
+	SMSG_AVAILABLE_HOTFIXES
+	SMSG_AZERITE_RESPEC_NPC
+	SMSG_BAG_CLEANUP_FINISHED
+	SMSG_BATCH_PRESENCE_SUBSCRIPTION
+	SMSG_BATTLEFIELD_STATUS_ACTIVE
+	SMSG_BATTLEFIELD_STATUS_FAILED
+	SMSG_BATTLEFIELD_STATUS_NEED_CONFIRMATION
+	SMSG_BATTLEFIELD_STATUS_NONE
+	SMSG_BATTLEFIELD_STATUS_QUEUED
+	SMSG_BATTLEFIELD_STATUS_WAIT_FOR_GROUPS
+	SMSG_BATTLEGROUND_INIT
+	SMSG_BATTLEGROUND_PLAYER_POSITIONS
+	SMSG_BATTLEGROUND_POINTS
+	SMSG_BATTLENET_CHALLENGE_ABORT
+	SMSG_BATTLENET_CHALLENGE_START
+	SMSG_BATTLENET_NOTIFICATION
+	SMSG_BATTLENET_RESPONSE
+	SMSG_BATTLE_NET_CONNECTION_STATUS
+	SMSG_BATTLE_PAY_ACK_FAILED
+	SMSG_BATTLE_PAY_BATTLE_PET_DELIVERED
+	SMSG_BATTLE_PAY_COLLECTION_ITEM_DELIVERED
+	SMSG_BATTLE_PAY_CONFIRM_PURCHASE
+	SMSG_BATTLE_PAY_DELIVERY_ENDED
+	SMSG_BATTLE_PAY_DELIVERY_STARTED
+	SMSG_BATTLE_PAY_DISTRIBUTION_UNREVOKED
+	SMSG_BATTLE_PAY_DISTRIBUTION_UPDATE
+	SMSG_BATTLE_PAY_GET_DISTRIBUTION_LIST_RESPONSE
+	SMSG_BATTLE_PAY_GET_PRODUCT_LIST_RESPONSE
+	SMSG_BATTLE_PAY_GET_PURCHASE_LIST_RESPONSE
+	SMSG_BATTLE_PAY_MOUNT_DELIVERED
+	SMSG_BATTLE_PAY_PURCHASE_UPDATE
+	SMSG_BATTLE_PAY_START_CHECKOUT
+	SMSG_BATTLE_PAY_START_DISTRIBUTION_ASSIGN_TO_TARGET_RESPONSE
+	SMSG_BATTLE_PAY_START_PURCHASE_RESPONSE
+	SMSG_BATTLE_PAY_VALIDATE_PURCHASE_RESPONSE
+	SMSG_BATTLE_PAY_VAS_GUILD_FOLLOW_INFO
+	SMSG_BATTLE_PAY_VAS_GUILD_MASTER_LIST
+	SMSG_BATTLE_PETS_HEALED
+	SMSG_BATTLE_PET_CAGE_DATE_ERROR
+	SMSG_BATTLE_PET_DELETED
+	SMSG_BATTLE_PET_ERROR
+	SMSG_BATTLE_PET_JOURNAL
+	SMSG_BATTLE_PET_JOURNAL_LOCK_ACQUIRED
+	SMSG_BATTLE_PET_JOURNAL_LOCK_DENIED
+	SMSG_BATTLE_PET_LICENSE_CHANGED
+	SMSG_BATTLE_PET_RESTORED
+	SMSG_BATTLE_PET_REVOKED
+	SMSG_BATTLE_PET_SET_MAX_PETS
+	SMSG_BATTLE_PET_TRAP_LEVEL
+	SMSG_BATTLE_PET_UPDATES
+	SMSG_BIND_POINT_UPDATE
+	SMSG_BLACK_MARKET_BID_ON_ITEM_RESULT
+	SMSG_BLACK_MARKET_OPEN_RESULT
+	SMSG_BLACK_MARKET_OUTBID
+	SMSG_BLACK_MARKET_REQUEST_ITEMS_RESULT
+	SMSG_BLACK_MARKET_WON
+	SMSG_BONUS_ROLL_EMPTY
+	SMSG_BOSS_KILL
+	SMSG_BROADCAST_ACHIEVEMENT
+	SMSG_BROADCAST_SUMMON_CAST
+	SMSG_BROADCAST_SUMMON_RESPONSE
+	SMSG_BUY_SUCCEEDED
+	SMSG_CACHE_INFO
+	SMSG_CACHE_VERSION
+	SMSG_CALENDAR_COMMUNITY_INVITE
+	SMSG_CALENDAR_INVITE_ADDED
+	SMSG_CALENDAR_INVITE_ALERT
+	SMSG_CALENDAR_INVITE_NOTES
+	SMSG_CALENDAR_INVITE_NOTES_ALERT
+	SMSG_CALENDAR_INVITE_REMOVED
+	SMSG_CALENDAR_INVITE_REMOVED_ALERT
+	SMSG_CALENDAR_INVITE_STATUS
+	SMSG_CALENDAR_INVITE_STATUS_ALERT
+	SMSG_CALENDAR_MODERATOR_STATUS
+	SMSG_CAMERA_EFFECT
+	SMSG_CANCEL_ORPHAN_SPELL_VISUAL
+	SMSG_CANCEL_SCENE
+	SMSG_CANCEL_SPELL_VISUAL
+	SMSG_CANCEL_SPELL_VISUAL_KIT
+	SMSG_CAN_DUEL_RESULT
+	SMSG_CAN_REDEEM_TOKEN_FOR_BALANCE_RESPONSE
+	SMSG_CAPTURE_POINT_REMOVED
+	SMSG_CATEGORY_COOLDOWN
+	SMSG_CHALLENGE_MODE_COMPLETE
+	SMSG_CHALLENGE_MODE_REQUEST_LEADERS_RESULT
+	SMSG_CHALLENGE_MODE_RESET
+	SMSG_CHALLENGE_MODE_START
+	SMSG_CHALLENGE_MODE_UPDATE_DEATH_COUNT
+	SMSG_CHANGE_PLAYER_DIFFICULTY_RESULT
+	SMSG_CHANGE_REALM_TICKET_RESPONSE
+	SMSG_CHANNEL_NOTIFY_JOINED
+	SMSG_CHANNEL_NOTIFY_LEFT
+	SMSG_CHARACTER_CHECK_UPGRADE_RESULT
+	SMSG_CHARACTER_OBJECT_TEST_RESPONSE
+	SMSG_CHARACTER_RENAME_RESULT
+	SMSG_CHARACTER_UPGRADE_ABORTED
+	SMSG_CHARACTER_UPGRADE_COMPLETE
+	SMSG_CHARACTER_UPGRADE_MANUAL_UNREVOKE_RESULT
+	SMSG_CHARACTER_UPGRADE_STARTED
+	SMSG_CHAR_CUSTOMIZE_FAILURE
+	SMSG_CHAR_CUSTOMIZE_SUCCESS
+	SMSG_CHAR_FACTION_CHANGE_RESULT
+	SMSG_CHAT
+	SMSG_CHAT_AUTO_RESPONDED
+	SMSG_CHAT_DOWN
+	SMSG_CHAT_IGNORED_ACCOUNT_MUTED
+	SMSG_CHAT_IS_DOWN
+	SMSG_CHAT_PLAYER_NOTFOUND
+	SMSG_CHAT_RECONNECT
+	SMSG_CHAT_SERVER_MESSAGE
+	SMSG_CHEAT_IGNORE_DIMISHING_RETURNS
+	SMSG_CHECK_WARGAME_ENTRY
+	SMSG_CLAIM_RAF_REWARD_RESPONSE
+	SMSG_CLEAR_ALL_SPELL_CHARGES
+	SMSG_CLEAR_BOSS_EMOTES
+	SMSG_CLEAR_COOLDOWNS
+	SMSG_CLEAR_LOSS_OF_CONTROL
+	SMSG_CLEAR_RESURRECT
+	SMSG_CLEAR_SPELL_CHARGES
+	SMSG_CLOSE_ARTIFACT_FORGE
+	SMSG_CLOSE_HEART_FORGE
+	SMSG_CLUB_FINDER_ERROR_MESSAGE
+	SMSG_CLUB_FINDER_GET_CLUB_POSTING_IDS_RESPONSE
+	SMSG_CLUB_FINDER_LOOKUP_CLUB_POSTINGS_LIST
+	SMSG_CLUB_FINDER_RESPONSE_CHARACTER_APPLICATION_LIST
+	SMSG_CLUB_FINDER_RESPONSE_POST_RECRUITMENT_MESSAGE
+	SMSG_CLUB_FINDER_UPDATE_APPLICATIONS
+	SMSG_COIN_REMOVED
+	SMSG_COMMERCE_TOKEN_GET_COUNT_RESPONSE
+	SMSG_COMMERCE_TOKEN_GET_LOG_RESPONSE
+	SMSG_COMMERCE_TOKEN_GET_MARKET_PRICE_RESPONSE
+	SMSG_COMMERCE_TOKEN_UPDATE
+	SMSG_COMPLAINT_RESULT
+	SMSG_COMPLETE_SHIPMENT_RESPONSE
+	SMSG_CONFIRM_PARTY_INVITE
+	SMSG_CONNECT_TO
+	SMSG_CONQUEST_FORMULA_CONSTANTS
+	SMSG_CONSOLE_WRITE
+	SMSG_CONSUMABLE_TOKEN_BUY_AT_MARKET_PRICE_RESPONSE
+	SMSG_CONSUMABLE_TOKEN_BUY_CHOICE_REQUIRED
+	SMSG_CONSUMABLE_TOKEN_CAN_VETERAN_BUY_RESPONSE
+	SMSG_CONSUMABLE_TOKEN_REDEEM_CONFIRM_REQUIRED
+	SMSG_CONSUMABLE_TOKEN_REDEEM_RESPONSE
+	SMSG_CONTRIBUTION_LAST_UPDATE_RESPONSE
+	SMSG_CONTROL_UPDATE
+	SMSG_CORPSE_LOCATION
+	SMSG_CORPSE_TRANSPORT_QUERY
+	SMSG_CREATE_CHAR
+	SMSG_CREATE_SHIPMENT_RESPONSE
+	SMSG_CUSTOM_LOAD_SCREEN
+	SMSG_DAILY_QUESTS_RESET
+	SMSG_DB_REPLY
+	SMSG_DEBUG_MENU_MANAGER_FULL_UPDATE
+	SMSG_DELETE_CHAR
+	SMSG_DESTROY_ARENA_UNIT
+	SMSG_DIFFERENT_INSTANCE_FROM_PARTY
+	SMSG_DISCONNECT_REASON
+	SMSG_DISENCHANT_CREDIT
+	SMSG_DISMOUNT_RESULT
+	SMSG_DISPLAY_GAME_ERROR
+	SMSG_DISPLAY_PLAYER_CHOICE
+	SMSG_DISPLAY_PROMOTION
+	SMSG_DISPLAY_QUEST_POPUP
+	SMSG_DISPLAY_TOAST
+	SMSG_DISPLAY_WORLD_TEXT
+	SMSG_DONT_AUTO_PUSH_SPELLS_TO_ACTION_BAR
+	SMSG_DROP_NEW_CONNECTION
+	SMSG_DUEL_ARRANGED
+	SMSG_DUEL_IN_BOUNDS
+	SMSG_DUEL_OUT_OF_BOUNDS
+	SMSG_ENCHANTMENT_LOG
+	SMSG_ENCOUNTER_END
+	SMSG_ENCOUNTER_START
+	SMSG_END_LIGHTNING_STORM
+	SMSG_ENTER_ENCRYPTED_MODE
+	SMSG_ENUM_CHARACTERS_RESULT
+	SMSG_ENUM_VAS_PURCHASE_STATES_RESPONSE
+	SMSG_ENVIRONMENTAL_DAMAGE_LOG
+	SMSG_EQUIPMENT_SET_ID
+	SMSG_FACTION_BONUS_INFO
+	SMSG_FAILED_PLAYER_CONDITION
+	SMSG_FAILED_QUEST_TURN_IN
+	SMSG_FEATURE_SYSTEM_STATUS_GLUE_SCREEN
+	SMSG_FORCE_OBJECT_RELINK
+	SMSG_GAME_OBJECT_ACTIVATE_ANIM_KIT
+	SMSG_GAME_OBJECT_BASE
+	SMSG_GAME_OBJECT_CUSTOM_ANIM
+	SMSG_GAME_OBJECT_DESPAWN
+	SMSG_GAME_OBJECT_PLAY_SPELL_VISUAL
+	SMSG_GAME_OBJECT_PLAY_SPELL_VISUAL_KIT
+	SMSG_GAME_OBJECT_RESET_STATE
+	SMSG_GAME_OBJECT_SET_STATE_LOCAL
+	SMSG_GAME_OBJECT_UI_LINK
+	SMSG_GAME_SPEED_SET
+	SMSG_GAME_TIME_SET
+	SMSG_GAME_TIME_UPDATE
+	SMSG_GARRISON_ADD_FOLLOWER_RESULT
+	SMSG_GARRISON_ADD_MISSION_RESULT
+	SMSG_GARRISON_ASSIGN_FOLLOWER_TO_BUILDING_RESULT
+	SMSG_GARRISON_BUILDING_ACTIVATED
+	SMSG_GARRISON_BUILDING_LANDMARKS
+	SMSG_GARRISON_BUILDING_REMOVED
+	SMSG_GARRISON_BUILDING_SET_ACTIVE_SPECIALIZATION_RESULT
+	SMSG_GARRISON_CLEAR_ALL_FOLLOWERS_EXHAUSTION
+	SMSG_GARRISON_COMPLETE_MISSION_RESULT
+	SMSG_GARRISON_CREATE_RESULT
+	SMSG_GARRISON_DELETE_RESULT
+	SMSG_GARRISON_FOLLOWER_CATEGORIES
+	SMSG_GARRISON_FOLLOWER_CHANGED_ABILITIES
+	SMSG_GARRISON_FOLLOWER_CHANGED_DURABILITY
+	SMSG_GARRISON_FOLLOWER_CHANGED_ITEM_LEVEL
+	SMSG_GARRISON_FOLLOWER_CHANGED_STATUS
+	SMSG_GARRISON_FOLLOWER_CHANGED_XP
+	SMSG_GARRISON_IS_UPGRADEABLE_RESULT
+	SMSG_GARRISON_LEARN_BLUEPRINT_RESULT
+	SMSG_GARRISON_LEARN_SPECIALIZATION_RESULT
+	SMSG_GARRISON_LIST_FOLLOWERS_CHEAT_RESULT
+	SMSG_GARRISON_LIST_MISSIONS_CHEAT_RESULT
+	SMSG_GARRISON_MISSION_AREA_BONUS_ADDED
+	SMSG_GARRISON_MISSION_BONUS_ROLL_RESULT
+	SMSG_GARRISON_MISSION_LIST_UPDATE
+	SMSG_GARRISON_MISSION_REWARD_RESPONSE
+	SMSG_GARRISON_MISSION_UPDATE_CAN_START
+	SMSG_GARRISON_NUM_FOLLOWER_ACTIVATIONS_REMAINING
+	SMSG_GARRISON_OPEN_ARCHITECT
+	SMSG_GARRISON_OPEN_MISSION_NPC
+	SMSG_GARRISON_OPEN_RECRUITMENT_NPC
+	SMSG_GARRISON_OPEN_TALENT_NPC
+	SMSG_GARRISON_OPEN_TRADESKILL_NPC
+	SMSG_GARRISON_PLACE_BUILDING_RESULT
+	SMSG_GARRISON_PLOT_PLACED
+	SMSG_GARRISON_PLOT_REMOVED
+	SMSG_GARRISON_RECALL_PORTAL_LAST_USED_TIME
+	SMSG_GARRISON_RECALL_PORTAL_USED
+	SMSG_GARRISON_RECRUITMENT_FOLLOWERS_GENERATED
+	SMSG_GARRISON_RECRUIT_FOLLOWER_RESULT
+	SMSG_GARRISON_REMOTE_INFO
+	SMSG_GARRISON_REMOVE_FOLLOWER_FROM_BUILDING_RESULT
+	SMSG_GARRISON_REMOVE_FOLLOWER_RESULT
+	SMSG_GARRISON_REQUEST_BLUEPRINT_AND_SPECIALIZATION_DATA_RESULT
+	SMSG_GARRISON_START_MISSION_RESULT
+	SMSG_GARRISON_UNLEARN_BLUEPRINT_RESULT
+	SMSG_GARRISON_UPGRADE_RESULT
+	SMSG_GENERATE_RANDOM_CHARACTER_NAME_RESULT
+	SMSG_GENERATE_SSO_TOKEN_RESPONSE
+	SMSG_GET_ACCOUNT_CHARACTER_LIST_RESULT
+	SMSG_GET_DISPLAYED_TROPHY_LIST_RESPONSE
+	SMSG_GET_GARRISON_INFO_RESULT
+	SMSG_GET_LANDING_PAGE_SHIPMENTS_RESPONSE
+	SMSG_GET_REMAINING_GAME_TIME_RESPONSE
+	SMSG_GET_SELECTED_TROPHY_ID_RESPONSE
+	SMSG_GET_SHIPMENTS_OF_TYPE_RESPONSE
+	SMSG_GET_SHIPMENT_INFO_RESPONSE
+	SMSG_GET_TROPHY_LIST_RESPONSE
+	SMSG_GET_VAS_ACCOUNT_CHARACTER_LIST_RESULT
+	SMSG_GET_VAS_TRANSFER_TARGET_REALM_LIST_RESULT
+	SMSG_GM_REQUEST_PLAYER_INFO
+	SMSG_GM_TICKET_CASE_STATUS
+	SMSG_GM_TICKET_SYSTEM_STATUS
+	SMSG_GOD_MODE
+	SMSG_GOSSIP_TEXT_UPDATE
+	SMSG_GROUP_ACTION_THROTTLED
+	SMSG_GROUP_AUTO_KICK
+	SMSG_GROUP_NEW_LEADER
+	SMSG_GUILD_ACHIEVEMENT_DELETED
+	SMSG_GUILD_ACHIEVEMENT_EARNED
+	SMSG_GUILD_ACHIEVEMENT_MEMBERS
+	SMSG_GUILD_BANK_LOG_QUERY_RESULTS
+	SMSG_GUILD_BANK_QUERY_RESULTS
+	SMSG_GUILD_BANK_REMAINING_WITHDRAW_MONEY
+	SMSG_GUILD_BANK_TEXT_QUERY_RESULT
+	SMSG_GUILD_CHALLENGE_COMPLETED
+	SMSG_GUILD_CHALLENGE_UPDATE
+	SMSG_GUILD_CHANGE_NAME_RESULT
+	SMSG_GUILD_CRITERIA_DELETED
+	SMSG_GUILD_CRITERIA_UPDATE
+	SMSG_GUILD_EVENT_AWAY_CHANGE
+	SMSG_GUILD_EVENT_BANK_CONTENTS_CHANGED
+	SMSG_GUILD_EVENT_BANK_MONEY_CHANGED
+	SMSG_GUILD_EVENT_DISBANDED
+	SMSG_GUILD_EVENT_LOG_QUERY_RESULTS
+	SMSG_GUILD_EVENT_MOTD
+	SMSG_GUILD_EVENT_NEW_LEADER
+	SMSG_GUILD_EVENT_PLAYER_JOINED
+	SMSG_GUILD_EVENT_PLAYER_LEFT
+	SMSG_GUILD_EVENT_PRESENCE_CHANGE
+	SMSG_GUILD_EVENT_RANKS_UPDATED
+	SMSG_GUILD_EVENT_RANK_CHANGED
+	SMSG_GUILD_EVENT_TAB_ADDED
+	SMSG_GUILD_EVENT_TAB_DELETED
+	SMSG_GUILD_EVENT_TAB_MODIFIED
+	SMSG_GUILD_EVENT_TAB_TEXT_CHANGED
+	SMSG_GUILD_FLAGGED_FOR_RENAME
+	SMSG_GUILD_INVITE_DECLINED
+	SMSG_GUILD_INVITE_EXPIRED
+	SMSG_GUILD_ITEM_LOOTED
+	SMSG_GUILD_KNOWN_RECIPES
+	SMSG_GUILD_MEMBERS_WITH_RECIPE
+	SMSG_GUILD_MEMBER_DAILY_RESET
+	SMSG_GUILD_MEMBER_RECIPES
+	SMSG_GUILD_MEMBER_UPDATE_NOTE
+	SMSG_GUILD_MOVED
+	SMSG_GUILD_MOVE_STARTING
+	SMSG_GUILD_NAME_CHANGED
+	SMSG_GUILD_NEWS
+	SMSG_GUILD_NEWS_DELETED
+	SMSG_GUILD_PARTY_STATE
+	SMSG_GUILD_PERMISSIONS_QUERY_RESULTS
+	SMSG_GUILD_RANKS
+	SMSG_GUILD_REPUTATION_REACTION_CHANGED
+	SMSG_GUILD_RESET
+	SMSG_GUILD_REWARD_LIST
+	SMSG_GUILD_ROSTER_UPDATE
+	SMSG_GUILD_SEND_RANK_CHANGE
+	SMSG_HOTFIX_CONNECT
+	SMSG_HOTFIX_MESSAGE
+	SMSG_INITIAL_SETUP
+	SMSG_INSPECT_RESULT
+	SMSG_INSTANCE_ENCOUNTER_CHANGE_PRIORITY
+	SMSG_INSTANCE_ENCOUNTER_DISENGAGE_UNIT
+	SMSG_INSTANCE_ENCOUNTER_END
+	SMSG_INSTANCE_ENCOUNTER_ENGAGE_UNIT
+	SMSG_INSTANCE_ENCOUNTER_GAIN_COMBAT_RESURRECTION_CHARGE
+	SMSG_INSTANCE_ENCOUNTER_IN_COMBAT_RESURRECTION
+	SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_COMPLETE
+	SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_START
+	SMSG_INSTANCE_ENCOUNTER_OBJECTIVE_UPDATE
+	SMSG_INSTANCE_ENCOUNTER_PHASE_SHIFT_CHANGED
+	SMSG_INSTANCE_ENCOUNTER_START
+	SMSG_INSTANCE_ENCOUNTER_TIMER_START
+	SMSG_INSTANCE_ENCOUNTER_UPDATE_ALLOW_RELEASE_IN_PROGRESS
+	SMSG_INSTANCE_ENCOUNTER_UPDATE_SUPPRESS_RELEASE
+	SMSG_INSTANCE_GROUP_SIZE_CHANGED
+	SMSG_INSTANCE_INFO
+	SMSG_INTERRUPT_POWER_REGEN
+	SMSG_INVALIDATE_PAGE_TEXT
+	SMSG_INVENTORY_FIXUP_COMPLETE
+	SMSG_INVENTORY_FULL_OVERFLOW
+	SMSG_ISLANDS_MISSION_NPC
+	SMSG_ISLAND_AZERITE_GAIN
+	SMSG_ISLAND_COMPLETE
+	SMSG_IS_QUEST_COMPLETE_RESPONSE
+	SMSG_ITEM_CHANGED
+	SMSG_ITEM_EXPIRE_PURCHASE_REFUND
+	SMSG_ITEM_INTERACTION_COMPLETE
+	SMSG_ITEM_PURCHASE_REFUND_RESULT
+	SMSG_LEARNED_SPELLS
+	SMSG_LEARN_PVP_TALENT_FAILED
+	SMSG_LEARN_TALENT_FAILED
+	SMSG_LEGACY_LOOT_RULES
+	SMSG_LEVEL_LINKING_RESULT
+	SMSG_LEVEL_UP_INFO
+	SMSG_LFG_BOOT_PLAYER
+	SMSG_LFG_INSTANCE_SHUTDOWN_COUNTDOWN
+	SMSG_LFG_LIST_APPLICANT_LIST_UPDATE
+	SMSG_LFG_LIST_APPLICATION_STATUS_UPDATE
+	SMSG_LFG_LIST_APPLY_TO_GROUP_RESULT
+	SMSG_LFG_LIST_JOIN_RESULT
+	SMSG_LFG_LIST_SEARCH_RESULTS
+	SMSG_LFG_LIST_SEARCH_RESULTS_UPDATE
+	SMSG_LFG_LIST_SEARCH_STATUS
+	SMSG_LFG_LIST_UPDATE_BLACKLIST
+	SMSG_LFG_LIST_UPDATE_EXPIRATION
+	SMSG_LFG_LIST_UPDATE_STATUS
+	SMSG_LFG_READY_CHECK_RESULT
+	SMSG_LFG_READY_CHECK_UPDATE
+	SMSG_LFG_UPDATE_STATUS
+	SMSG_LF_GUILD_APPLICANT_LIST_CHANGED
+	SMSG_LF_GUILD_APPLICATIONS
+	SMSG_LF_GUILD_APPLICATIONS_LIST_CHANGED
+	SMSG_LF_GUILD_BROWSE
+	SMSG_LF_GUILD_COMMAND_RESULT
+	SMSG_LF_GUILD_POST
+	SMSG_LF_GUILD_RECRUITS
+	SMSG_LIVE_REGION_ACCOUNT_RESTORE_RESULT
+	SMSG_LIVE_REGION_CHARACTER_COPY_RESULT
+	SMSG_LIVE_REGION_GET_ACCOUNT_CHARACTER_LIST_RESULT
+	SMSG_LOAD_CUF_PROFILES
+	SMSG_LOAD_EQUIPMENT_SET
+	SMSG_LOGIN_SET_TIME_SPEED
+	SMSG_LOG_XP_GAIN
+	SMSG_LOOT_RELEASE
+	SMSG_LOOT_RELEASE_ALL
+	SMSG_LOOT_ROLLS_COMPLETE
+	SMSG_LOSS_OF_CONTROL_AURA_UPDATE
+	SMSG_MAIL_COMMAND_RESULT
+	SMSG_MAIL_QUERY_NEXT_TIME_RESULT
+	SMSG_MAP_OBJECTIVES_INIT
+	SMSG_MAP_OBJ_EVENTS
+	SMSG_MASTER_LOOT_CANDIDATE_LIST
+	SMSG_MESSAGE_BOX
+	SMSG_MINIMAP_PING
+	SMSG_MIRROR_IMAGE_COMPONENTED_DATA
+	SMSG_MIRROR_IMAGE_CREATURE_DATA
+	SMSG_MISSILE_CANCEL
+	SMSG_MOUNT_RESULT
+	SMSG_MOVEMENT_ENFORCEMENT_ALERT
+	SMSG_MOVE_APPLY_MOVEMENT_FORCE
+	SMSG_MOVE_DISABLE_COLLISION
+	SMSG_MOVE_DISABLE_DOUBLE_JUMP
+	SMSG_MOVE_DISABLE_GRAVITY
+	SMSG_MOVE_DISABLE_TRANSITION_BETWEEN_SWIM_AND_FLY
+	SMSG_MOVE_ENABLE_COLLISION
+	SMSG_MOVE_ENABLE_DOUBLE_JUMP
+	SMSG_MOVE_ENABLE_GRAVITY
+	SMSG_MOVE_ENABLE_TRANSITION_BETWEEN_SWIM_AND_FLY
+	SMSG_MOVE_REMOVE_MOVEMENT_FORCE
+	SMSG_MOVE_ROOT
+	SMSG_MOVE_SET_ACTIVE_MOVER
+	SMSG_MOVE_SET_CAN_TURN_WHILE_FALLING
+	SMSG_MOVE_SET_COLLISION_HEIGHT
+	SMSG_MOVE_SET_COMPOUND_STATE
+	SMSG_MOVE_SET_FEATHER_FALL
+	SMSG_MOVE_SET_FLIGHT_BACK_SPEED
+	SMSG_MOVE_SET_FLIGHT_SPEED
+	SMSG_MOVE_SET_HOVERING
+	SMSG_MOVE_SET_IGNORE_MOVEMENT_FORCES
+	SMSG_MOVE_SET_LAND_WALK
+	SMSG_MOVE_SET_MOD_MOVEMENT_FORCE_MAGNITUDE
+	SMSG_MOVE_SET_NORMAL_FALL
+	SMSG_MOVE_SET_PITCH_RATE
+	SMSG_MOVE_SET_RUN_BACK_SPEED
+	SMSG_MOVE_SET_RUN_SPEED
+	SMSG_MOVE_SET_SWIM_BACK_SPEED
+	SMSG_MOVE_SET_SWIM_SPEED
+	SMSG_MOVE_SET_TURN_RATE
+	SMSG_MOVE_SET_VEHICLE_REC_ID
+	SMSG_MOVE_SET_WALK_SPEED
+	SMSG_MOVE_SET_WATER_WALK
+	SMSG_MOVE_SKIP_TIME
+	SMSG_MOVE_SPLINE_DISABLE_COLLISION
+	SMSG_MOVE_SPLINE_DISABLE_GRAVITY
+	SMSG_MOVE_SPLINE_ENABLE_COLLISION
+	SMSG_MOVE_SPLINE_ENABLE_GRAVITY
+	SMSG_MOVE_SPLINE_ROOT
+	SMSG_MOVE_SPLINE_SET_FEATHER_FALL
+	SMSG_MOVE_SPLINE_SET_FLIGHT_BACK_SPEED
+	SMSG_MOVE_SPLINE_SET_FLIGHT_SPEED
+	SMSG_MOVE_SPLINE_SET_FLYING
+	SMSG_MOVE_SPLINE_SET_HOVER
+	SMSG_MOVE_SPLINE_SET_LAND_WALK
+	SMSG_MOVE_SPLINE_SET_NORMAL_FALL
+	SMSG_MOVE_SPLINE_SET_PITCH_RATE
+	SMSG_MOVE_SPLINE_SET_RUN_BACK_SPEED
+	SMSG_MOVE_SPLINE_SET_RUN_MODE
+	SMSG_MOVE_SPLINE_SET_RUN_SPEED
+	SMSG_MOVE_SPLINE_SET_SWIM_BACK_SPEED
+	SMSG_MOVE_SPLINE_SET_SWIM_SPEED
+	SMSG_MOVE_SPLINE_SET_TURN_RATE
+	SMSG_MOVE_SPLINE_SET_WALK_MODE
+	SMSG_MOVE_SPLINE_SET_WALK_SPEED
+	SMSG_MOVE_SPLINE_SET_WATER_WALK
+	SMSG_MOVE_SPLINE_START_SWIM
+	SMSG_MOVE_SPLINE_STOP_SWIM
+	SMSG_MOVE_SPLINE_UNROOT
+	SMSG_MOVE_SPLINE_UNSET_FLYING
+	SMSG_MOVE_SPLINE_UNSET_HOVER
+	SMSG_MOVE_TELEPORT
+	SMSG_MOVE_UNROOT
+	SMSG_MOVE_UNSET_CAN_TURN_WHILE_FALLING
+	SMSG_MOVE_UNSET_HOVERING
+	SMSG_MOVE_UNSET_IGNORE_MOVEMENT_FORCES
+	SMSG_MOVE_UPDATE
+	SMSG_MOVE_UPDATE_APPLY_MOVEMENT_FORCE
+	SMSG_MOVE_UPDATE_COLLISION_HEIGHT
+	SMSG_MOVE_UPDATE_FLIGHT_BACK_SPEED
+	SMSG_MOVE_UPDATE_FLIGHT_SPEED
+	SMSG_MOVE_UPDATE_KNOCK_BACK
+	SMSG_MOVE_UPDATE_MOD_MOVEMENT_FORCE_MAGNITUDE
+	SMSG_MOVE_UPDATE_PITCH_RATE
+	SMSG_MOVE_UPDATE_REMOVE_MOVEMENT_FORCE
+	SMSG_MOVE_UPDATE_RUN_BACK_SPEED
+	SMSG_MOVE_UPDATE_RUN_SPEED
+	SMSG_MOVE_UPDATE_SWIM_BACK_SPEED
+	SMSG_MOVE_UPDATE_SWIM_SPEED
+	SMSG_MOVE_UPDATE_TELEPORT
+	SMSG_MOVE_UPDATE_TURN_RATE
+	SMSG_MOVE_UPDATE_WALK_SPEED
+	SMSG_MYTHIC_PLUS_ALL_MAP_STATS
+	SMSG_MYTHIC_PLUS_CURRENT_AFFIXES
+	SMSG_MYTHIC_PLUS_NEW_SEASON_RECORD
+	SMSG_MYTHIC_PLUS_NEW_WEEK_RECORD
+	SMSG_MYTHIC_PLUS_WEEKLY_REWARD_RESPONSE
+	SMSG_NEUTRAL_PLAYER_FACTION_SELECT_RESULT
+	SMSG_NOTIFY_MISSILE_TRAJECTORY_COLLISION
+	SMSG_NOTIFY_MONEY
+	SMSG_NOTIFY_RECEIVED_MAIL
+	SMSG_ON_MONSTER_MOVE
+	SMSG_OPEN_ARTIFACT_FORGE
+	SMSG_OPEN_HEART_FORGE
+	SMSG_OPEN_SHIPMENT_NPC_FROM_GOSSIP
+	SMSG_OPEN_SHIPMENT_NPC_RESULT
+	SMSG_PAGE_TEXT
+	SMSG_PARTY_INVITE
+	SMSG_PARTY_KILL_LOG
+	SMSG_PARTY_MEMBER_FULL_STATE
+	SMSG_PARTY_MEMBER_PARTIAL_STATE
+	SMSG_PARTY_NOTIFY_LFG_LEADER_CHANGE
+	SMSG_PARTY_UPDATE
+	SMSG_PENDING_RAID_LOCK
+	SMSG_PETITION_ALREADY_SIGNED
+	SMSG_PETITION_RENAME_GUILD_RESPONSE
+	SMSG_PETITION_SHOW_LIST
+	SMSG_PET_ADDED
+	SMSG_PET_BATTLE_CHAT_RESTRICTED
+	SMSG_PET_BATTLE_DEBUG_QUEUE_DUMP_RESPONSE
+	SMSG_PET_BATTLE_FINALIZE_LOCATION
+	SMSG_PET_BATTLE_FINAL_ROUND
+	SMSG_PET_BATTLE_FINISHED
+	SMSG_PET_BATTLE_FIRST_ROUND
+	SMSG_PET_BATTLE_INITIAL_UPDATE
+	SMSG_PET_BATTLE_MAX_GAME_LENGTH_WARNING
+	SMSG_PET_BATTLE_PVP_CHALLENGE
+	SMSG_PET_BATTLE_QUEUE_PROPOSE_MATCH
+	SMSG_PET_BATTLE_QUEUE_STATUS
+	SMSG_PET_BATTLE_REPLACEMENTS_MADE
+	SMSG_PET_BATTLE_REQUEST_FAILED
+	SMSG_PET_BATTLE_ROUND_RESULT
+	SMSG_PET_BATTLE_SLOT_UPDATES
+	SMSG_PET_CLEAR_SPELLS
+	SMSG_PET_GOD_MODE
+	SMSG_PET_LEARNED_SPELLS
+	SMSG_PET_NEWLY_TAMED
+	SMSG_PET_SLOT_UPDATED
+	SMSG_PET_SPELLS_MESSAGE
+	SMSG_PET_STABLE_LIST
+	SMSG_PET_STABLE_RESULT
+	SMSG_PET_UNLEARNED_SPELLS
+	SMSG_PHASE_SHIFT_CHANGE
+	SMSG_PLAYER_AZERITE_ITEM_EQUIPPED_STATUS_CHANGED
+	SMSG_PLAYER_AZERITE_ITEM_GAINS
+	SMSG_PLAYER_BONUS_ROLL_FAILED
+	SMSG_PLAYER_BOUND
+	SMSG_PLAYER_CONDITION_RESULT
+	SMSG_PLAYER_IS_ADVENTURE_MAP_POI_VALID
+	SMSG_PLAYER_SAVE_GUILD_EMBLEM
+	SMSG_PLAYER_TABARD_VENDOR_ACTIVATE
+	SMSG_PLAYER_TUTORIAL_HIGHLIGHT_SPELL
+	SMSG_PLAYER_TUTORIAL_UNHIGHLIGHT_SPELL
+	SMSG_PLAY_ONE_SHOT_ANIM_KIT
+	SMSG_PLAY_ORPHAN_SPELL_VISUAL
+	SMSG_PLAY_SCENE
+	SMSG_PLAY_SPEAKERBOT_SOUND
+	SMSG_PLAY_SPELL_VISUAL_KIT
+	SMSG_PRELOAD_CHILD_MAP
+	SMSG_PREPOPULATE_NAME_CACHE
+	SMSG_PRE_RESSURECT
+	SMSG_PRINT_NOTIFICATION
+	SMSG_PROC_RESIST
+	SMSG_PUSH_SPELL_TO_ACTION_BAR
+	SMSG_PVP_MATCH_COMPLETE
+	SMSG_PVP_MATCH_INITIALIZE
+	SMSG_PVP_MATCH_START
+	SMSG_PVP_MATCH_STATISTICS
+	SMSG_PVP_OPTIONS_ENABLED
+	SMSG_QUERY_BATTLE_PET_NAME_RESPONSE
+	SMSG_QUERY_COMMUNITY_NAME_RESPONSE
+	SMSG_QUERY_CREATURE_RESPONSE
+	SMSG_QUERY_GAME_OBJECT_RESPONSE
+	SMSG_QUERY_GARRISON_CREATURE_NAME_RESPONSE
+	SMSG_QUERY_GUILD_INFO_RESPONSE
+	SMSG_QUERY_ITEM_TEXT_RESPONSE
+	SMSG_QUERY_NPC_TEXT_RESPONSE
+	SMSG_QUERY_PAGE_TEXT_RESPONSE
+	SMSG_QUERY_PETITION_RESPONSE
+	SMSG_QUERY_PET_NAME_RESPONSE
+	SMSG_QUERY_PLAYER_NAME_RESPONSE
+	SMSG_QUERY_QUEST_INFO_RESPONSE
+	SMSG_QUEST_COMPLETION_NPC_RESPONSE
+	SMSG_QUEST_FORCE_REMOVED
+	SMSG_QUEST_GIVER_INVALID_QUEST
+	SMSG_QUEST_GIVER_OFFER_REWARD_MESSAGE
+	SMSG_QUEST_GIVER_QUEST_COMPLETE
+	SMSG_QUEST_GIVER_QUEST_DETAILS
+	SMSG_QUEST_GIVER_QUEST_FAILED
+	SMSG_QUEST_GIVER_QUEST_LIST_MESSAGE
+	SMSG_QUEST_GIVER_REQUEST_ITEMS
+	SMSG_QUEST_GIVER_STATUS
+	SMSG_QUEST_GIVER_STATUS_MULTIPLE
+	SMSG_QUEST_LINES_FOR_MAP_RESPONSE
+	SMSG_QUEST_LOG_FULL
+	SMSG_QUEST_POI_CHANGED
+	SMSG_QUEST_PUSH_RESULT
+	SMSG_QUEST_SESSION_INFO_RESPONSE
+	SMSG_QUEST_SESSION_READY_CHECK
+	SMSG_QUEST_SESSION_READY_CHECK_RESPONSE
+	SMSG_QUEST_SESSION_RESULT
+	SMSG_QUEST_SPAWN_TRACKING_UPDATE
+	SMSG_QUEST_UPDATE_ADD_CREDIT
+	SMSG_QUEST_UPDATE_ADD_CREDIT_SIMPLE
+	SMSG_QUEST_UPDATE_ADD_PVP_CREDIT
+	SMSG_QUEST_UPDATE_COMPLETE
+	SMSG_QUEST_UPDATE_COMPLETE_BY_SPELL
+	SMSG_QUEST_UPDATE_FAILED
+	SMSG_QUEST_UPDATE_FAILED_TIMER
+	SMSG_QUEUE_SUMMARY_UPDATE
+	SMSG_RAF_ACCOUNT_INFO
+	SMSG_RAF_ACTIVITY_STATE_CHANGED
+	SMSG_RAID_DIFFICULTY_SET
+	SMSG_RAID_MARKERS_CHANGED
+	SMSG_RANDOM_ROLL
+	SMSG_RATED_PVP_INFO
+	SMSG_READY_CHECK_COMPLETED
+	SMSG_READY_CHECK_RESPONSE
+	SMSG_READY_CHECK_STARTED
+	SMSG_READ_ITEM_RESULT_FAILED
+	SMSG_READ_ITEM_RESULT_OK
+	SMSG_REALM_LOOKUP_INFO
+	SMSG_REALM_QUERY_RESPONSE
+	SMSG_REATTACH_RESURRECT
+	SMSG_RECRUIT_A_FRIEND_FAILURE
+	SMSG_REFRESH_COMPONENT
+	SMSG_REFRESH_SPELL_HISTORY
+	SMSG_REMOVE_ITEM_PASSIVE
+	SMSG_REMOVE_LOSS_OF_CONTROL
+	SMSG_REPLACE_TROPHY_RESPONSE
+	SMSG_REPORT_PVP_PLAYER_AFK_RESULT
+	SMSG_REQUEST_CEMETERY_LIST_RESPONSE
+	SMSG_REQUEST_PVP_REWARDS_RESPONSE
+	SMSG_REQUEST_SCHEDULED_PVP_INFO_RESPONSE
+	SMSG_RESEARCH_COMPLETE
+	SMSG_RESET_COMPRESSION_CONTEXT
+	SMSG_RESET_WEEKLY_CURRENCY
+	SMSG_RESPEC_WIPE_CONFIRM
+	SMSG_RESTRICTED_ACCOUNT_WARNING
+	SMSG_RESUME_CAST
+	SMSG_RESUME_COMMS
+	SMSG_RESUME_TOKEN
+	SMSG_RETURN_APPLICANT_LIST
+	SMSG_RETURN_RECRUITING_CLUBS
+	SMSG_ROLE_CHANGED_INFORM
+	SMSG_ROLE_CHOSEN
+	SMSG_ROLE_POLL_INFORM
+	SMSG_RUNE_REGEN_DEBUG
+	SMSG_SCENARIO_COMPLETED
+	SMSG_SCENARIO_POIS
+	SMSG_SCENARIO_PROGRESS_UPDATE
+	SMSG_SCENARIO_SHOW_CRITERIA
+	SMSG_SCENARIO_STATE
+	SMSG_SCENARIO_UI_UPDATE
+	SMSG_SCENARIO_VACATE
+	SMSG_SCENE_OBJECT_EVENT
+	SMSG_SCENE_OBJECT_PET_BATTLE_FINAL_ROUND
+	SMSG_SCENE_OBJECT_PET_BATTLE_FINISHED
+	SMSG_SCENE_OBJECT_PET_BATTLE_FIRST_ROUND
+	SMSG_SCENE_OBJECT_PET_BATTLE_INITIAL_UPDATE
+	SMSG_SCENE_OBJECT_PET_BATTLE_REPLACEMENTS_MADE
+	SMSG_SCENE_OBJECT_PET_BATTLE_ROUND_RESULT
+	SMSG_SCRIPT_CAST
+	SMSG_SEASON_INFO
+	SMSG_SELL_RESPONSE
+	SMSG_SEND_ITEM_PASSIVES
+	SMSG_SEND_KNOWN_SPELLS
+	SMSG_SEND_RAID_TARGET_UPDATE_ALL
+	SMSG_SEND_RAID_TARGET_UPDATE_SINGLE
+	SMSG_SEND_SPELL_CHARGES
+	SMSG_SEND_SPELL_HISTORY
+	SMSG_SERVER_FIRST_ACHIEVEMENTS
+	SMSG_SERVER_TIME
+	SMSG_SERVER_TIME_OFFSET
+	SMSG_SETUP_CURRENCY
+	SMSG_SETUP_RESEARCH_HISTORY
+	SMSG_SET_AI_ANIM_KIT
+	SMSG_SET_ALL_TASK_PROGRESS
+	SMSG_SET_ANIM_TIER
+	SMSG_SET_CHR_UPGRADE_TIER
+	SMSG_SET_CURRENCY
+	SMSG_SET_DF_FAST_LAUNCH_RESULT
+	SMSG_SET_DUNGEON_DIFFICULTY
+	SMSG_SET_FACTION_AT_WAR
+	SMSG_SET_FACTION_NOT_VISIBLE
+	SMSG_SET_ITEM_PURCHASE_DATA
+	SMSG_SET_LOOT_METHOD_FAILED
+	SMSG_SET_MAX_WEEKLY_QUANTITY
+	SMSG_SET_MELEE_ANIM_KIT
+	SMSG_SET_MOVEMENT_ANIM_KIT
+	SMSG_SET_PET_SPECIALIZATION
+	SMSG_SET_PLAY_HOVER_ANIM
+	SMSG_SET_QUEST_REPLAY_COOLDOWN_OVERRIDE
+	SMSG_SET_SPELL_CHARGES
+	SMSG_SET_TASK_COMPLETE
+	SMSG_SET_TIME_ZONE_INFORMATION
+	SMSG_SET_VEHICLE_REC_ID
+	SMSG_SHOW_NEUTRAL_PLAYER_FACTION_SELECT_UI
+	SMSG_SHOW_TAXI_NODES
+	SMSG_SHOW_TRADE_SKILL_RESPONSE
+	SMSG_SOCKET_GEMS_FAILURE
+	SMSG_SOCKET_GEMS_SUCCESS
+	SMSG_SPECIAL_MOUNT_ANIM
+	SMSG_SPEC_INVOLUNTARILY_CHANGED
+	SMSG_SPELL_ABSORB_LOG
+	SMSG_SPELL_CATEGORY_COOLDOWN
+	SMSG_SPELL_CHANNEL_START
+	SMSG_SPELL_CHANNEL_UPDATE
+	SMSG_SPELL_DAMAGE_SHIELD
+	SMSG_SPELL_DISPELL_LOG
+	SMSG_SPELL_ENERGIZE_LOG
+	SMSG_SPELL_EXECUTE_LOG
+	SMSG_SPELL_FAILURE_MESSAGE
+	SMSG_SPELL_HEAL_ABSORB_LOG
+	SMSG_SPELL_HEAL_LOG
+	SMSG_SPELL_INSTAKILL_LOG
+	SMSG_SPELL_INTERRUPT_LOG
+	SMSG_SPELL_MISS_LOG
+	SMSG_SPELL_NON_MELEE_DAMAGE_LOG
+	SMSG_SPELL_OR_DAMAGE_IMMUNE
+	SMSG_SPELL_PERIODIC_AURA_LOG
+	SMSG_SPELL_PREPARE
+	SMSG_SPELL_VISUAL_LOAD_SCREEN
+	SMSG_STAND_STATE_UPDATE
+	SMSG_START_ELAPSED_TIMER
+	SMSG_START_ELAPSED_TIMERS
+	SMSG_START_LIGHTNING_STORM
+	SMSG_START_LOOT_ROLL
+	SMSG_START_TIMER
+	SMSG_STOP_ELAPSED_TIMER
+	SMSG_STOP_SPEAKERBOT_SOUND
+	SMSG_STREAMING_MOVIES
+	SMSG_SUMMON_RAID_MEMBER_VALIDATE_FAILED
+	SMSG_SUPERCEDED_SPELLS
+	SMSG_SUSPEND_TOKEN
+	SMSG_SYNC_WOW_ENTITLEMENTS
+	SMSG_TAXI_NODE_STATUS
+	SMSG_TIME_ADJUSTMENT
+	SMSG_TIME_SYNC_REQUEST
+	SMSG_TITLE_LOST
+	SMSG_TOTEM_DURATION_CHANGED
+	SMSG_TOTEM_MOVED
+	SMSG_TRADE_UPDATED
+	SMSG_TREASURE_PICKER_RESPONSE
+	SMSG_TURN_IN_PETITION_RESULT
+	SMSG_TWITTER_STATUS
+	SMSG_UI_TIME
+	SMSG_UI_HEALING_RANGE_MODIFIED
+	SMSG_UI_ITEM_INTERACTION_NPC
+	SMSG_UNDELETE_CHARACTER_RESPONSE
+	SMSG_UNDELETE_COOLDOWN_STATUS_RESPONSE
+	SMSG_UNLEARNED_SPELLS
+	SMSG_UNLOAD_CHILD_MAP
+	SMSG_UPDATE_ACTION_BUTTONS
+	SMSG_UPDATE_BNET_SESSION_KEY
+	SMSG_UPDATE_CAPTURE_POINT
+	SMSG_UPDATE_CELESTIAL_BODY
+	SMSG_UPDATE_CHARACTER_FLAGS
+	SMSG_UPDATE_CHARGE_CATEGORY_COOLDOWN
+	SMSG_UPDATE_COOLDOWN
+	SMSG_UPDATE_EXPANSION_LEVEL
+	SMSG_UPDATE_GAME_TIME_STATE
+	SMSG_UPDATE_PRIMARY_SPEC
+	SMSG_UPDATE_TALENT_DATA
+	SMSG_UPDATE_TASK_PROGRESS
+	SMSG_UPDATE_WEEKLY_SPELL_USAGE
+	SMSG_USE_EQUIPMENT_SET_RESULT
+	SMSG_VAS_CHECK_TRANSFER_OK_RESPONSE
+	SMSG_VAS_GET_QUEUE_MINUTES_RESPONSE
+	SMSG_VAS_GET_SERVICE_STATUS_RESPONSE
+	SMSG_VAS_PURCHASE_COMPLETE
+	SMSG_VAS_PURCHASE_STATE_UPDATE
+	SMSG_VENDOR_INVENTORY
+	SMSG_VIGNETTE_UPDATE
+	SMSG_VOICE_CHANNEL_INFO_RESPONSE
+	SMSG_VOICE_LOGIN_RESPONSE
+	SMSG_VOID_ITEM_SWAP_RESPONSE
+	SMSG_VOID_STORAGE_CONTENTS
+	SMSG_VOID_STORAGE_FAILED
+	SMSG_VOID_STORAGE_TRANSFER_CHANGES
+	SMSG_VOID_TRANSFER_RESULT
+	SMSG_WAIT_QUEUE_FINISH
+	SMSG_WAIT_QUEUE_UPDATE
+	SMSG_WARDEN3_DATA
+	SMSG_WARDEN3_DISABLED
+	SMSG_WARDEN3_ENABLED
+	SMSG_WARFRONT_COMPLETE
+	SMSG_WARGAME_REQUEST_SUCCESSFULLY_SENT_TO_OPPONENT
+	SMSG_WEEKLY_SPELL_USAGE
+	SMSG_WHO_IS
+	SMSG_WILL_BE_KICKED_FOR_ADDED_SUBSCRIPTION_TIME
+	SMSG_WORLD_MAP_OPEN_NPC
+	SMSG_WORLD_QUEST_UPDATE_RESPONSE
+	SMSG_WORLD_SERVER_INFO
+	SMSG_WOW_ENTITLEMENT_NOTIFICATION
+	SMSG_XP_GAIN_ABORTED
+	SMSG_XP_GAIN_ENABLED
+
 	// Opcodes that are not generated automatically
-	M_SMSG_ACCOUNT_HEIRLOOM_UPDATE WorldType = 0xBADD // no client handler
-	M_SMSG_COMPRESSED_PACKET       WorldType = 0x3052
-	M_SMSG_MULTIPLE_PACKETS        WorldType = 0x3051
+	SMSG_ACCOUNT_HEIRLOOM_UPDATE // no client handler
+	SMSG_COMPRESSED_PACKET
+
 	// Deleted opcodes, here only to allow compile
-	M_SMSG_ARENA_TEAM_STATS                                   WorldType = 0xBADD
-	M_SMSG_BUY_BANK_SLOT_RESULT                               WorldType = 0xBADD
-	M_SMSG_BF_MGR_EJECTED                                     WorldType = 0xBADD
-	M_SMSG_BF_MGR_ENTERING                                    WorldType = 0xBADD
-	M_SMSG_BF_MGR_ENTRY_INVITE                                WorldType = 0xBADD
-	M_SMSG_BF_MGR_QUEUE_INVITE                                WorldType = 0xBADD
-	M_SMSG_BF_MGR_QUEUE_REQUEST_RESPONSE                      WorldType = 0xBADD
-	M_CMSG_ACCEPT_GUILD_INVITE                                WorldType = 0x35FD
-	M_CMSG_ACCEPT_LEVEL_GRANT                                 WorldType = 0x34FA
-	M_CMSG_ACCEPT_TRADE                                       WorldType = 0x315A
-	M_CMSG_ACCEPT_WARGAME_INVITE                              WorldType = 0x35E1
-	M_CMSG_ACTIVATE_TAXI                                      WorldType = 0x34AB
-	M_CMSG_ADDON_LIST                                         WorldType = 0x35D8
-	M_CMSG_ADD_BATTLENET_FRIEND                               WorldType = 0x365C
-	M_CMSG_ADD_FRIEND                                         WorldType = 0x36D5
-	M_CMSG_ADD_IGNORE                                         WorldType = 0x36D9
-	M_CMSG_ADD_TOY                                            WorldType = 0x329A
-	M_CMSG_ADVENTURE_JOURNAL_OPEN_QUEST                       WorldType = 0x3204
-	M_CMSG_ADVENTURE_JOURNAL_START_QUEST                      WorldType = 0x3341
-	M_CMSG_ADVENTURE_MAP_POI_QUERY                            WorldType = 0x3248
-	M_CMSG_ALTER_APPEARANCE                                   WorldType = 0x34F6
-	M_CMSG_AREA_SPIRIT_HEALER_QUERY                           WorldType = 0x34B0
-	M_CMSG_AREA_SPIRIT_HEALER_QUEUE                           WorldType = 0x34B1
-	M_CMSG_AREA_TRIGGER                                       WorldType = 0x31D8
-	M_CMSG_ARTIFACT_ADD_POWER                                 WorldType = 0x31A9
-	M_CMSG_ARTIFACT_SET_APPEARANCE                            WorldType = 0x31AB
-	M_CMSG_ASSIGN_EQUIPMENT_SET_SPEC                          WorldType = 0x320C
-	M_CMSG_ATTACK_STOP                                        WorldType = 0x3257
-	M_CMSG_ATTACK_SWING                                       WorldType = 0x3256
-	M_CMSG_AUCTION_HELLO_REQUEST                              WorldType = 0x34CB
-	M_CMSG_AUCTION_LIST_BIDDER_ITEMS                          WorldType = 0x34D1
-	M_CMSG_AUCTION_LIST_ITEMS                                 WorldType = 0x34CE
-	M_CMSG_AUCTION_LIST_OWNER_ITEMS                           WorldType = 0x34D0
-	M_CMSG_AUCTION_LIST_PENDING_SALES                         WorldType = 0x34D3
-	M_CMSG_AUCTION_PLACE_BID                                  WorldType = 0x34D2
-	M_CMSG_AUCTION_REMOVE_ITEM                                WorldType = 0x34CD
-	M_CMSG_AUCTION_REPLICATE_ITEMS                            WorldType = 0x34CF
-	M_CMSG_AUCTION_SELL_ITEM                                  WorldType = 0x34CC
-	M_CMSG_AUTH_CONTINUED_SESSION                             WorldType = 0x3766
-	M_CMSG_AUTH_SESSION                                       WorldType = 0x3765
-	M_CMSG_AUTOBANK_ITEM                                      WorldType = 0x3996
-	M_CMSG_AUTOBANK_REAGENT                                   WorldType = 0x3998
-	M_CMSG_AUTOSTORE_BANK_ITEM                                WorldType = 0x3997
-	M_CMSG_AUTOSTORE_BANK_REAGENT                             WorldType = 0x3999
-	M_CMSG_AUTO_EQUIP_ITEM                                    WorldType = 0x399A
-	M_CMSG_AUTO_EQUIP_ITEM_SLOT                               WorldType = 0x399F
-	M_CMSG_AUTO_STORE_BAG_ITEM                                WorldType = 0x399B
-	M_CMSG_AZERITE_EMPOWERED_ITEM_SELECT_POWER                WorldType = 0x335F
-	M_CMSG_AZERITE_EMPOWERED_ITEM_VIEWED                      WorldType = 0x334B
-	M_CMSG_AZERITE_ESSENCE_ACTIVATE_ESSENCE                   WorldType = 0x3361
-	M_CMSG_AZERITE_ESSENCE_UNLOCK_MILESTONE                   WorldType = 0x3360
-	M_CMSG_BANKER_ACTIVATE                                    WorldType = 0x34B3
-	M_CMSG_BATTLEFIELD_LEAVE                                  WorldType = 0x3173
-	M_CMSG_BATTLEFIELD_LIST                                   WorldType = 0x317E
-	M_CMSG_BATTLEFIELD_PORT                                   WorldType = 0x3527
-	M_CMSG_BATTLEMASTER_HELLO                                 WorldType = 0x32B2
-	M_CMSG_BATTLEMASTER_JOIN                                  WorldType = 0x3522
-	M_CMSG_BATTLEMASTER_JOIN_ARENA                            WorldType = 0x3523
-	M_CMSG_BATTLEMASTER_JOIN_BRAWL                            WorldType = 0x3525
-	M_CMSG_BATTLEMASTER_JOIN_SKIRMISH                         WorldType = 0x3524
-	M_CMSG_BATTLENET_CHALLENGE_RESPONSE                       WorldType = 0x36D8
-	M_CMSG_BATTLENET_REQUEST                                  WorldType = 0x36FC
-	M_CMSG_BATTLENET_REQUEST_REALM_LIST_TICKET                WorldType = 0x3700
-	M_CMSG_BATTLE_PAY_ACK_FAILED_RESPONSE                     WorldType = 0x36D0
-	M_CMSG_BATTLE_PAY_CANCEL_OPEN_CHECKOUT                    WorldType = 0x3719
-	M_CMSG_BATTLE_PAY_CONFIRM_PURCHASE_RESPONSE               WorldType = 0x36CF
-	M_CMSG_BATTLE_PAY_DISTRIBUTION_ASSIGN_TO_TARGET           WorldType = 0x36C6
-	M_CMSG_BATTLE_PAY_GET_PRODUCT_LIST                        WorldType = 0x36BE
-	M_CMSG_BATTLE_PAY_GET_PURCHASE_LIST                       WorldType = 0x36BF
-	M_CMSG_BATTLE_PAY_OPEN_CHECKOUT                           WorldType = 0x3712
-	M_CMSG_BATTLE_PAY_QUERY_CLASS_TRIAL_BOOST_RESULT          WorldType = 0x36C9
-	M_CMSG_BATTLE_PAY_REQUEST_CHARACTER_BOOST_UNREVOKE        WorldType = 0x36C7
-	M_CMSG_BATTLE_PAY_REQUEST_CURRENT_VAS_TRANSFER_QUEUES     WorldType = 0x370F
-	M_CMSG_BATTLE_PAY_REQUEST_PRICE_INFO                      WorldType = 0x370E
-	M_CMSG_BATTLE_PAY_REQUEST_VAS_CHARACTER_QUEUE_TIME        WorldType = 0x3710
-	M_CMSG_BATTLE_PAY_START_PURCHASE                          WorldType = 0x36F8
-	M_CMSG_BATTLE_PAY_START_VAS_PURCHASE                      WorldType = 0x36F9
-	M_CMSG_BATTLE_PAY_TRIAL_BOOST_CHARACTER                   WorldType = 0x36C8
-	M_CMSG_BATTLE_PAY_VALIDATE_BNET_VAS_TRANSFER              WorldType = 0x3711
-	M_CMSG_BATTLE_PAY_VAS_PURCHASE_COMPLETE                   WorldType = 0x36F7
-	M_CMSG_BATTLE_PET_CLEAR_FANFARE                           WorldType = 0x312C
-	M_CMSG_BATTLE_PET_DELETE_PET                              WorldType = 0x3625
-	M_CMSG_BATTLE_PET_DELETE_PET_CHEAT                        WorldType = 0x3626
-	M_CMSG_BATTLE_PET_MODIFY_NAME                             WorldType = 0x3628
-	M_CMSG_BATTLE_PET_REQUEST_JOURNAL                         WorldType = 0x3624
-	M_CMSG_BATTLE_PET_REQUEST_JOURNAL_LOCK                    WorldType = 0x3623
-	M_CMSG_BATTLE_PET_SET_BATTLE_SLOT                         WorldType = 0x362D
-	M_CMSG_BATTLE_PET_SET_FLAGS                               WorldType = 0x3631
-	M_CMSG_BATTLE_PET_SUMMON                                  WorldType = 0x3629
-	M_CMSG_BATTLE_PET_UPDATE_DISPLAY_NOTIFY                   WorldType = 0x31E2
-	M_CMSG_BATTLE_PET_UPDATE_NOTIFY                           WorldType = 0x31E1
-	M_CMSG_BEGIN_TRADE                                        WorldType = 0x3157
-	M_CMSG_BINDER_ACTIVATE                                    WorldType = 0x34B2
-	M_CMSG_BLACK_MARKET_BID_ON_ITEM                           WorldType = 0x352F
-	M_CMSG_BLACK_MARKET_OPEN                                  WorldType = 0x352D
-	M_CMSG_BLACK_MARKET_REQUEST_ITEMS                         WorldType = 0x352E
-	M_CMSG_BONUS_ROLL                                         WorldType = 0x3362
-	M_CMSG_BUG_REPORT                                         WorldType = 0x3688
-	M_CMSG_BUSY_TRADE                                         WorldType = 0x3158
-	M_CMSG_BUY_BACK_ITEM                                      WorldType = 0x34A4
-	M_CMSG_BUY_BANK_SLOT                                      WorldType = 0x34B4
-	M_CMSG_BUY_ITEM                                           WorldType = 0x34A3
-	M_CMSG_BUY_REAGENT_BANK                                   WorldType = 0x34B5
-	M_CMSG_BUY_WOW_TOKEN_CONFIRM                              WorldType = 0x36F1
-	M_CMSG_BUY_WOW_TOKEN_START                                WorldType = 0x36F0
-	M_CMSG_CAGE_BATTLE_PET                                    WorldType = 0x31F3
-	M_CMSG_CALENDAR_ADD_EVENT                                 WorldType = 0x367F
-	M_CMSG_CALENDAR_COMMUNITY_FILTER                          WorldType = 0x3673
-	M_CMSG_CALENDAR_COMPLAIN                                  WorldType = 0x367B
-	M_CMSG_CALENDAR_COPY_EVENT                                WorldType = 0x367A
-	M_CMSG_CALENDAR_EVENT_INVITE                              WorldType = 0x3674
-	M_CMSG_CALENDAR_EVENT_MODERATOR_STATUS                    WorldType = 0x3678
-	M_CMSG_CALENDAR_EVENT_RSVP                                WorldType = 0x3676
-	M_CMSG_CALENDAR_EVENT_SIGN_UP                             WorldType = 0x367D
-	M_CMSG_CALENDAR_EVENT_STATUS                              WorldType = 0x3677
-	M_CMSG_CALENDAR_GET                                       WorldType = 0x3671
-	M_CMSG_CALENDAR_GET_EVENT                                 WorldType = 0x3672
-	M_CMSG_CALENDAR_GET_NUM_PENDING                           WorldType = 0x367C
-	M_CMSG_CALENDAR_REMOVE_EVENT                              WorldType = 0x3679
-	M_CMSG_CALENDAR_REMOVE_INVITE                             WorldType = 0x3675
-	M_CMSG_CALENDAR_UPDATE_EVENT                              WorldType = 0x3680
-	M_CMSG_CANCEL_AURA                                        WorldType = 0x31AD
-	M_CMSG_CANCEL_AUTO_REPEAT_SPELL                           WorldType = 0x34E8
-	M_CMSG_CANCEL_CAST                                        WorldType = 0x32A0
-	M_CMSG_CANCEL_CHANNELLING                                 WorldType = 0x326C
-	M_CMSG_CANCEL_GROWTH_AURA                                 WorldType = 0x3271
-	M_CMSG_CANCEL_MASTER_LOOT_ROLL                            WorldType = 0x3214
-	M_CMSG_CANCEL_MOD_SPEED_NO_CONTROL_AURAS                  WorldType = 0x31AC
-	M_CMSG_CANCEL_MOUNT_AURA                                  WorldType = 0x3282
-	M_CMSG_CANCEL_QUEUED_SPELL                                WorldType = 0x317F
-	M_CMSG_CANCEL_TEMP_ENCHANTMENT                            WorldType = 0x34F3
-	M_CMSG_CANCEL_TRADE                                       WorldType = 0x315C
-	M_CMSG_CAN_DUEL                                           WorldType = 0x3664
-	M_CMSG_CAN_REDEEM_WOW_TOKEN_FOR_BALANCE                   WorldType = 0x370D
-	M_CMSG_CAST_SPELL                                         WorldType = 0x329D
-	M_CMSG_CHALLENGE_MODE_REQUEST_LEADERS                     WorldType = 0x3090
-	M_CMSG_CHALLENGE_MODE_REQUEST_MAP_STATS                   WorldType = 0x308F
-	M_CMSG_CHANGE_BAG_SLOT_FLAG                               WorldType = 0x3323
-	M_CMSG_CHANGE_BANK_BAG_SLOT_FLAG                          WorldType = 0x3324
-	M_CMSG_CHANGE_MONUMENT_APPEARANCE                         WorldType = 0x3305
-	M_CMSG_CHANGE_SUB_GROUP                                   WorldType = 0x364E
-	M_CMSG_CHARACTER_RENAME_REQUEST                           WorldType = 0x36C4
-	M_CMSG_CHAR_CUSTOMIZE                                     WorldType = 0x3693
-	M_CMSG_CHAR_DELETE                                        WorldType = 0x36A0
-	M_CMSG_CHAR_RACE_OR_FACTION_CHANGE                        WorldType = 0x3699
-	M_CMSG_CHAT_ADDON_MESSAGE                                 WorldType = 0x37EE
-	M_CMSG_CHAT_ADDON_MESSAGE_TARGETED                        WorldType = 0x37EF
-	M_CMSG_CHAT_CHANNEL_ANNOUNCEMENTS                         WorldType = 0x37E3
-	M_CMSG_CHAT_CHANNEL_BAN                                   WorldType = 0x37E1
-	M_CMSG_CHAT_CHANNEL_DECLINE_INVITE                        WorldType = 0x37E6
-	M_CMSG_CHAT_CHANNEL_DISPLAY_LIST                          WorldType = 0x37D6
-	M_CMSG_CHAT_CHANNEL_INVITE                                WorldType = 0x37DF
-	M_CMSG_CHAT_CHANNEL_KICK                                  WorldType = 0x37E0
-	M_CMSG_CHAT_CHANNEL_LIST                                  WorldType = 0x37D5
-	M_CMSG_CHAT_CHANNEL_MODERATOR                             WorldType = 0x37DB
-	M_CMSG_CHAT_CHANNEL_OWNER                                 WorldType = 0x37D9
-	M_CMSG_CHAT_CHANNEL_PASSWORD                              WorldType = 0x37D7
-	M_CMSG_CHAT_CHANNEL_SET_OWNER                             WorldType = 0x37D8
-	M_CMSG_CHAT_CHANNEL_SILENCE_ALL                           WorldType = 0x37E4
-	M_CMSG_CHAT_CHANNEL_UNBAN                                 WorldType = 0x37E2
-	M_CMSG_CHAT_CHANNEL_UNMODERATOR                           WorldType = 0x37DC
-	M_CMSG_CHAT_CHANNEL_UNSILENCE_ALL                         WorldType = 0x37E5
-	M_CMSG_CHAT_JOIN_CHANNEL                                  WorldType = 0x37C8
-	M_CMSG_CHAT_LEAVE_CHANNEL                                 WorldType = 0x37C9
-	M_CMSG_CHAT_MESSAGE_AFK                                   WorldType = 0x37D3
-	M_CMSG_CHAT_MESSAGE_CHANNEL                               WorldType = 0x37CF
-	M_CMSG_CHAT_MESSAGE_DND                                   WorldType = 0x37D4
-	M_CMSG_CHAT_MESSAGE_EMOTE                                 WorldType = 0x37E8
-	M_CMSG_CHAT_MESSAGE_GUILD                                 WorldType = 0x37D1
-	M_CMSG_CHAT_MESSAGE_INSTANCE_CHAT                         WorldType = 0x37EC
-	M_CMSG_CHAT_MESSAGE_OFFICER                               WorldType = 0x37D2
-	M_CMSG_CHAT_MESSAGE_PARTY                                 WorldType = 0x37EA
-	M_CMSG_CHAT_MESSAGE_RAID                                  WorldType = 0x37EB
-	M_CMSG_CHAT_MESSAGE_RAID_WARNING                          WorldType = 0x37ED
-	M_CMSG_CHAT_MESSAGE_SAY                                   WorldType = 0x37E7
-	M_CMSG_CHAT_MESSAGE_WHISPER                               WorldType = 0x37D0
-	M_CMSG_CHAT_MESSAGE_YELL                                  WorldType = 0x37E9
-	M_CMSG_CHAT_REGISTER_ADDON_PREFIXES                       WorldType = 0x37CD
-	M_CMSG_CHAT_REPORT_FILTERED                               WorldType = 0x37CC
-	M_CMSG_CHAT_REPORT_IGNORED                                WorldType = 0x37CB
-	M_CMSG_CHAT_UNREGISTER_ALL_ADDON_PREFIXES                 WorldType = 0x37CE
-	M_CMSG_CHECK_RAF_EMAIL_ENABLED                            WorldType = 0x36D1
-	M_CMSG_CHECK_WOW_TOKEN_VETERAN_ELIGIBILITY                WorldType = 0x36EF
-	M_CMSG_CHOICE_RESPONSE                                    WorldType = 0x32A2
-	M_CMSG_CLEAR_RAID_MARKER                                  WorldType = 0x31A5
-	M_CMSG_CLEAR_TRADE_ITEM                                   WorldType = 0x315E
-	M_CMSG_CLIENT_PORT_GRAVEYARD                              WorldType = 0x3529
-	M_CMSG_CLOSE_INTERACTION                                  WorldType = 0x3493
-	M_CMSG_CLOSE_QUEST_CHOICE                                 WorldType = 0x32A3
-	M_CMSG_CLUB_FINDER_APPLICATION_RESPONSE                   WorldType = 0x3723
-	M_CMSG_CLUB_FINDER_GET_APPLICANTS_LIST                    WorldType = 0x3721
-	M_CMSG_CLUB_FINDER_POST                                   WorldType = 0x371E
-	M_CMSG_CLUB_FINDER_REQUEST_CLUBS_DATA                     WorldType = 0x3727
-	M_CMSG_CLUB_FINDER_REQUEST_CLUBS_LIST                     WorldType = 0x371F
-	M_CMSG_CLUB_FINDER_REQUEST_MEMBERSHIP_TO_CLUB             WorldType = 0x3720
-	M_CMSG_CLUB_FINDER_REQUEST_PENDING_CLUBS_LIST             WorldType = 0x3726
-	M_CMSG_CLUB_FINDER_RESPOND_TO_APPLICANT                   WorldType = 0x3722
-	M_CMSG_CLUB_INVITE                                        WorldType = 0x36FF
-	M_CMSG_COLLECTION_ITEM_SET_FAVORITE                       WorldType = 0x3634
-	M_CMSG_COMMENTATOR_ENABLE                                 WorldType = 0x35F1
-	M_CMSG_COMMENTATOR_ENTER_INSTANCE                         WorldType = 0x35F5
-	M_CMSG_COMMENTATOR_EXIT_INSTANCE                          WorldType = 0x35F6
-	M_CMSG_COMMENTATOR_GET_MAP_INFO                           WorldType = 0x35F2
-	M_CMSG_COMMENTATOR_GET_PLAYER_COOLDOWNS                   WorldType = 0x35F4
-	M_CMSG_COMMENTATOR_GET_PLAYER_INFO                        WorldType = 0x35F3
-	M_CMSG_COMMENTATOR_START_WARGAME                          WorldType = 0x35F0
-	M_CMSG_COMPLAINT                                          WorldType = 0x366E
-	M_CMSG_COMPLETE_CINEMATIC                                 WorldType = 0x3547
-	M_CMSG_COMPLETE_MOVIE                                     WorldType = 0x34DE
-	M_CMSG_CONFIRM_ARTIFACT_RESPEC                            WorldType = 0x31AA
-	M_CMSG_CONFIRM_RESPEC_WIPE                                WorldType = 0x320E
-	M_CMSG_CONNECT_TO_FAILED                                  WorldType = 0x35D4
-	M_CMSG_CONTRIBUTION_CONTRIBUTE                            WorldType = 0x3557
-	M_CMSG_CONTRIBUTION_GET_STATE                             WorldType = 0x3558
-	M_CMSG_CONVERSATION_LINE_STARTED                          WorldType = 0x3548
-	M_CMSG_CONVERT_RAID                                       WorldType = 0x3650
-	M_CMSG_CREATE_CHARACTER                                   WorldType = 0x3645
-	M_CMSG_CREATE_SHIPMENT                                    WorldType = 0x32F1
-	M_CMSG_DB_QUERY_BULK                                      WorldType = 0x35E5
-	M_CMSG_DECLINE_GUILD_INVITES                              WorldType = 0x3520
-	M_CMSG_DECLINE_PETITION                                   WorldType = 0x3536
-	M_CMSG_DELETE_EQUIPMENT_SET                               WorldType = 0x350D
-	M_CMSG_DEL_FRIEND                                         WorldType = 0x36D6
-	M_CMSG_DEL_IGNORE                                         WorldType = 0x36DA
-	M_CMSG_DEPOSIT_REAGENT_BANK                               WorldType = 0x332C
-	M_CMSG_DESTROY_ITEM                                       WorldType = 0x3294
-	M_CMSG_DF_BOOT_PLAYER_VOTE                                WorldType = 0x3616
-	M_CMSG_DF_GET_JOIN_STATUS                                 WorldType = 0x3614
-	M_CMSG_DF_GET_SYSTEM_INFO                                 WorldType = 0x3613
-	M_CMSG_DF_JOIN                                            WorldType = 0x3609
-	M_CMSG_DF_LEAVE                                           WorldType = 0x3612
-	M_CMSG_DF_PROPOSAL_RESPONSE                               WorldType = 0x3608
-	M_CMSG_DF_READY_CHECK_RESPONSE                            WorldType = 0x3619
-	M_CMSG_DF_SET_ROLES                                       WorldType = 0x3615
-	M_CMSG_DF_TELEPORT                                        WorldType = 0x3617
-	M_CMSG_DISCARDED_TIME_SYNC_ACKS                           WorldType = 0x3A3C
-	M_CMSG_DISMISS_CRITTER                                    WorldType = 0x34FC
-	M_CMSG_DO_MASTER_LOOT_ROLL                                WorldType = 0x3213
-	M_CMSG_DO_READY_CHECK                                     WorldType = 0x3635
-	M_CMSG_DUEL_RESPONSE                                      WorldType = 0x34E3
-	M_CMSG_EJECT_PASSENGER                                    WorldType = 0x323D
-	M_CMSG_EMOTE                                              WorldType = 0x3543
-	M_CMSG_ENABLE_ENCRYPTION_ACK                              WorldType = 0x3767
-	M_CMSG_ENABLE_NAGLE                                       WorldType = 0x376B
-	M_CMSG_ENABLE_TAXI_NODE                                   WorldType = 0x34A9
-	M_CMSG_ENGINE_SURVEY                                      WorldType = 0x36E9
-	M_CMSG_ENUM_CHARACTERS                                    WorldType = 0x35E9
-	M_CMSG_ENUM_CHARACTERS_DELETED_BY_CLIENT                  WorldType = 0x36E3
-	M_CMSG_FAR_SIGHT                                          WorldType = 0x34E9
-	M_CMSG_GAME_EVENT_DEBUG_DISABLE                           WorldType = 0x31B1
-	M_CMSG_GAME_EVENT_DEBUG_ENABLE                            WorldType = 0x31B0
-	M_CMSG_GAME_OBJ_REPORT_USE                                WorldType = 0x34F0
-	M_CMSG_GAME_OBJ_USE                                       WorldType = 0x34EF
-	M_CMSG_GARRISON_ASSIGN_FOLLOWER_TO_BUILDING               WorldType = 0x32DC
-	M_CMSG_GARRISON_CANCEL_CONSTRUCTION                       WorldType = 0x32CD
-	M_CMSG_GARRISON_CHECK_UPGRADEABLE                         WorldType = 0x331F
-	M_CMSG_GARRISON_COMPLETE_MISSION                          WorldType = 0x3312
-	M_CMSG_GARRISON_GENERATE_RECRUITS                         WorldType = 0x32DF
-	M_CMSG_GARRISON_GET_BUILDING_LANDMARKS                    WorldType = 0x32ED
-	M_CMSG_GARRISON_GET_MISSION_REWARD                        WorldType = 0x3345
-	M_CMSG_GARRISON_MISSION_BONUS_ROLL                        WorldType = 0x3314
-	M_CMSG_GARRISON_PURCHASE_BUILDING                         WorldType = 0x32C9
-	M_CMSG_GARRISON_RECRUIT_FOLLOWER                          WorldType = 0x32E1
-	M_CMSG_GARRISON_REMOVE_FOLLOWER                           WorldType = 0x3309
-	M_CMSG_GARRISON_REMOVE_FOLLOWER_FROM_BUILDING             WorldType = 0x32DD
-	M_CMSG_GARRISON_RENAME_FOLLOWER                           WorldType = 0x32DE
-	M_CMSG_GARRISON_REQUEST_BLUEPRINT_AND_SPECIALIZATION_DATA WorldType = 0x32C8
-	M_CMSG_GARRISON_REQUEST_CLASS_SPEC_CATEGORY_INFO          WorldType = 0x32E6
-	M_CMSG_GARRISON_REQUEST_LANDING_PAGE_SHIPMENT_INFO        WorldType = 0x32F0
-	M_CMSG_GARRISON_REQUEST_SHIPMENT_INFO                     WorldType = 0x32EF
-	M_CMSG_GARRISON_RESEARCH_TALENT                           WorldType = 0x32E2
-	M_CMSG_GARRISON_SET_BUILDING_ACTIVE                       WorldType = 0x32CA
-	M_CMSG_GARRISON_SET_FOLLOWER_FAVORITE                     WorldType = 0x32DA
-	M_CMSG_GARRISON_SET_FOLLOWER_INACTIVE                     WorldType = 0x32D6
-	M_CMSG_GARRISON_SET_RECRUITMENT_PREFERENCES               WorldType = 0x32E0
-	M_CMSG_GARRISON_START_MISSION                             WorldType = 0x3311
-	M_CMSG_GARRISON_SWAP_BUILDINGS                            WorldType = 0x32CE
-	M_CMSG_GENERATE_RANDOM_CHARACTER_NAME                     WorldType = 0x35E8
-	M_CMSG_GET_ACCOUNT_CHARACTER_LIST                         WorldType = 0x36BA
-	M_CMSG_GET_CHALLENGE_MODE_REWARDS                         WorldType = 0x3685
-	M_CMSG_GET_GARRISON_INFO                                  WorldType = 0x32C3
-	M_CMSG_GET_ITEM_PURCHASE_DATA                             WorldType = 0x3531
-	M_CMSG_GET_MIRROR_IMAGE_DATA                              WorldType = 0x3298
-	M_CMSG_GET_PVP_OPTIONS_ENABLED                            WorldType = 0x35EF
-	M_CMSG_GET_REMAINING_GAME_TIME                            WorldType = 0x36F2
-	M_CMSG_GET_TROPHY_LIST                                    WorldType = 0x3302
-	M_CMSG_GET_UNDELETE_CHARACTER_COOLDOWN_STATUS             WorldType = 0x36E5
-	M_CMSG_GM_TICKET_ACKNOWLEDGE_SURVEY                       WorldType = 0x3697
-	M_CMSG_GM_TICKET_GET_CASE_STATUS                          WorldType = 0x3696
-	M_CMSG_GM_TICKET_GET_SYSTEM_STATUS                        WorldType = 0x3695
-	M_CMSG_GOSSIP_SELECT_OPTION                               WorldType = 0x3494
-	M_CMSG_GRANT_LEVEL                                        WorldType = 0x34F8
-	M_CMSG_GUILD_ADD_BATTLENET_FRIEND                         WorldType = 0x308E
-	M_CMSG_GUILD_ADD_RANK                                     WorldType = 0x3065
-	M_CMSG_GUILD_ASSIGN_MEMBER_RANK                           WorldType = 0x3060
-	M_CMSG_GUILD_AUTO_DECLINE_INVITATION                      WorldType = 0x3062
-	M_CMSG_GUILD_BANK_ACTIVATE                                WorldType = 0x34B6
-	M_CMSG_GUILD_BANK_BUY_TAB                                 WorldType = 0x34C4
-	M_CMSG_GUILD_BANK_DEPOSIT_MONEY                           WorldType = 0x34C6
-	M_CMSG_GUILD_BANK_LOG_QUERY                               WorldType = 0x3083
-	M_CMSG_GUILD_BANK_QUERY_TAB                               WorldType = 0x34C3
-	M_CMSG_GUILD_BANK_REMAINING_WITHDRAW_MONEY_QUERY          WorldType = 0x3084
-	M_CMSG_GUILD_BANK_SET_TAB_TEXT                            WorldType = 0x3087
-	M_CMSG_GUILD_BANK_TEXT_QUERY                              WorldType = 0x3088
-	M_CMSG_GUILD_BANK_UPDATE_TAB                              WorldType = 0x34C5
-	M_CMSG_GUILD_BANK_WITHDRAW_MONEY                          WorldType = 0x34C7
-	M_CMSG_GUILD_CHALLENGE_UPDATE_REQUEST                     WorldType = 0x307C
-	M_CMSG_GUILD_CHANGE_NAME_REQUEST                          WorldType = 0x307F
-	M_CMSG_GUILD_DECLINE_INVITATION                           WorldType = 0x3061
-	M_CMSG_GUILD_DELETE                                       WorldType = 0x3069
-	M_CMSG_GUILD_DELETE_RANK                                  WorldType = 0x3066
-	M_CMSG_GUILD_DEMOTE_MEMBER                                WorldType = 0x305F
-	M_CMSG_GUILD_EVENT_LOG_QUERY                              WorldType = 0x3086
-	M_CMSG_GUILD_GET_ACHIEVEMENT_MEMBERS                      WorldType = 0x3072
-	M_CMSG_GUILD_GET_RANKS                                    WorldType = 0x306E
-	M_CMSG_GUILD_GET_ROSTER                                   WorldType = 0x3074
-	M_CMSG_GUILD_INVITE_BY_NAME                               WorldType = 0x3607
-	M_CMSG_GUILD_LEAVE                                        WorldType = 0x3063
-	M_CMSG_GUILD_MEMBER_SEND_SOR_REQUEST                      WorldType = 0x308D
-	M_CMSG_GUILD_NEWS_UPDATE_STICKY                           WorldType = 0x306F
-	M_CMSG_GUILD_OFFICER_REMOVE_MEMBER                        WorldType = 0x3064
-	M_CMSG_GUILD_PERMISSIONS_QUERY                            WorldType = 0x3085
-	M_CMSG_GUILD_PROMOTE_MEMBER                               WorldType = 0x305E
-	M_CMSG_GUILD_QUERY_MEMBERS_FOR_RECIPE                     WorldType = 0x306C
-	M_CMSG_GUILD_QUERY_MEMBER_RECIPES                         WorldType = 0x306A
-	M_CMSG_GUILD_QUERY_NEWS                                   WorldType = 0x306D
-	M_CMSG_GUILD_QUERY_RECIPES                                WorldType = 0x306B
-	M_CMSG_GUILD_REPLACE_GUILD_MASTER                         WorldType = 0x3089
-	M_CMSG_GUILD_SET_ACHIEVEMENT_TRACKING                     WorldType = 0x3070
-	M_CMSG_GUILD_SET_FOCUSED_ACHIEVEMENT                      WorldType = 0x3071
-	M_CMSG_GUILD_SET_GUILD_MASTER                             WorldType = 0x36CB
-	M_CMSG_GUILD_SET_MEMBER_NOTE                              WorldType = 0x3073
-	M_CMSG_GUILD_SET_RANK_PERMISSIONS                         WorldType = 0x3068
-	M_CMSG_GUILD_SHIFT_RANK                                   WorldType = 0x3067
-	M_CMSG_GUILD_UPDATE_INFO_TEXT                             WorldType = 0x3076
-	M_CMSG_GUILD_UPDATE_MOTD_TEXT                             WorldType = 0x3075
-	M_CMSG_HEARTH_AND_RESURRECT                               WorldType = 0x3509
-	M_CMSG_HOTFIX_REQUEST                                     WorldType = 0x35E6
-	M_CMSG_IGNORE_TRADE                                       WorldType = 0x3159
-	M_CMSG_INITIATE_ROLE_POLL                                 WorldType = 0x35DA
-	M_CMSG_INITIATE_TRADE                                     WorldType = 0x3156
-	M_CMSG_INSPECT                                            WorldType = 0x352B
-	M_CMSG_INSTANCE_LOCK_RESPONSE                             WorldType = 0x350E
-	M_CMSG_ISLAND_QUEUE                                       WorldType = 0x338E
-	M_CMSG_ITEM_PURCHASE_REFUND                               WorldType = 0x3532
-	M_CMSG_ITEM_TEXT_QUERY                                    WorldType = 0x3320
-	M_CMSG_JOIN_PET_BATTLE_QUEUE                              WorldType = 0x31DF
-	M_CMSG_JOIN_RATED_BATTLEGROUND                            WorldType = 0x3178
-	M_CMSG_KEEP_ALIVE                                         WorldType = 0x3681
-	M_CMSG_KEYBOUND_OVERRIDE                                  WorldType = 0x3225
-	M_CMSG_LEARN_PVP_TALENTS                                  WorldType = 0x3556
-	M_CMSG_LEARN_TALENTS                                      WorldType = 0x3554
-	M_CMSG_LEAVE_GROUP                                        WorldType = 0x364B
-	M_CMSG_LEAVE_PET_BATTLE_QUEUE                             WorldType = 0x31E0
-	M_CMSG_LFG_LIST_APPLY_TO_GROUP                            WorldType = 0x360D
-	M_CMSG_LFG_LIST_CANCEL_APPLICATION                        WorldType = 0x360E
-	M_CMSG_LFG_LIST_DECLINE_APPLICANT                         WorldType = 0x360F
-	M_CMSG_LFG_LIST_GET_STATUS                                WorldType = 0x360B
-	M_CMSG_LFG_LIST_INVITE_APPLICANT                          WorldType = 0x3610
-	M_CMSG_LFG_LIST_INVITE_RESPONSE                           WorldType = 0x3611
-	M_CMSG_LFG_LIST_JOIN                                      WorldType = 0x335D
-	M_CMSG_LFG_LIST_LEAVE                                     WorldType = 0x360A
-	M_CMSG_LFG_LIST_SEARCH                                    WorldType = 0x360C
-	M_CMSG_LFG_LIST_UPDATE_REQUEST                            WorldType = 0x335E
-	M_CMSG_LF_GUILD_ADD_RECRUIT                               WorldType = 0x361C
-	M_CMSG_LF_GUILD_BROWSE                                    WorldType = 0x361E
-	M_CMSG_LF_GUILD_DECLINE_RECRUIT                           WorldType = 0x3079
-	M_CMSG_LF_GUILD_GET_APPLICATIONS                          WorldType = 0x307A
-	M_CMSG_LF_GUILD_GET_GUILD_POST                            WorldType = 0x3077
-	M_CMSG_LF_GUILD_GET_RECRUITS                              WorldType = 0x3078
-	M_CMSG_LF_GUILD_REMOVE_RECRUIT                            WorldType = 0x307B
-	M_CMSG_LF_GUILD_SET_GUILD_POST                            WorldType = 0x361D
-	M_CMSG_LIST_INVENTORY                                     WorldType = 0x34A1
-	M_CMSG_LIVE_REGION_ACCOUNT_RESTORE                        WorldType = 0x36BD
-	M_CMSG_LIVE_REGION_CHARACTER_COPY                         WorldType = 0x36BC
-	M_CMSG_LIVE_REGION_GET_ACCOUNT_CHARACTER_LIST             WorldType = 0x36BB
-	M_CMSG_LOADING_SCREEN_NOTIFY                              WorldType = 0x35F9
-	M_CMSG_LOAD_SELECTED_TROPHY                               WorldType = 0x3303
-	M_CMSG_LOGOUT_CANCEL                                      WorldType = 0x34D9
-	M_CMSG_LOGOUT_INSTANT                                     WorldType = 0x34DA
-	M_CMSG_LOGOUT_REQUEST                                     WorldType = 0x34D7
-	M_CMSG_LOG_DISCONNECT                                     WorldType = 0x3769
-	M_CMSG_LOG_STREAMING_ERROR                                WorldType = 0x376D
-	M_CMSG_LOOT_ITEM                                          WorldType = 0x3211
-	M_CMSG_LOOT_MONEY                                         WorldType = 0x3210
-	M_CMSG_LOOT_RELEASE                                       WorldType = 0x3215
-	M_CMSG_LOOT_ROLL                                          WorldType = 0x3216
-	M_CMSG_LOOT_UNIT                                          WorldType = 0x320F
-	M_CMSG_LOW_LEVEL_RAID1                                    WorldType = 0x36A4
-	M_CMSG_LOW_LEVEL_RAID2                                    WorldType = 0x3515
-	M_CMSG_MAIL_CREATE_TEXT_ITEM                              WorldType = 0x353D
-	M_CMSG_MAIL_DELETE                                        WorldType = 0x3227
-	M_CMSG_MAIL_GET_LIST                                      WorldType = 0x3538
-	M_CMSG_MAIL_MARK_AS_READ                                  WorldType = 0x353C
-	M_CMSG_MAIL_RETURN_TO_SENDER                              WorldType = 0x3657
-	M_CMSG_MAIL_TAKE_ITEM                                     WorldType = 0x353A
-	M_CMSG_MAIL_TAKE_MONEY                                    WorldType = 0x3539
-	M_CMSG_MAKE_CONTITIONAL_APPEARANCE_PERMANENT              WorldType = 0x322A
-	M_CMSG_MASTER_LOOT_ITEM                                   WorldType = 0x3212
-	M_CMSG_MINIMAP_PING                                       WorldType = 0x364D
-	M_CMSG_MISSILE_TRAJECTORY_COLLISION                       WorldType = 0x318A
-	M_CMSG_MOUNT_CLEAR_FANFARE                                WorldType = 0x312D
-	M_CMSG_MOUNT_SET_FAVORITE                                 WorldType = 0x3633
-	M_CMSG_MOUNT_SPECIAL_ANIM                                 WorldType = 0x3283
-	M_CMSG_MOVE_APPLY_MOVEMENT_FORCE_ACK                      WorldType = 0x3A12
-	M_CMSG_MOVE_CHANGE_TRANSPORT                              WorldType = 0x3A2C
-	M_CMSG_MOVE_CHANGE_VEHICLE_SEATS                          WorldType = 0x3A31
-	M_CMSG_MOVE_DISMISS_VEHICLE                               WorldType = 0x3A30
-	M_CMSG_MOVE_DOUBLE_JUMP                                   WorldType = 0x39EB
-	M_CMSG_MOVE_ENABLE_DOUBLE_JUMP_ACK                        WorldType = 0x3A1B
-	M_CMSG_MOVE_ENABLE_SWIM_TO_FLY_TRANS_ACK                  WorldType = 0x3A21
-	M_CMSG_MOVE_FALL_LAND                                     WorldType = 0x39F9
-	M_CMSG_MOVE_FALL_RESET                                    WorldType = 0x3A16
-	M_CMSG_MOVE_FEATHER_FALL_ACK                              WorldType = 0x3A19
-	M_CMSG_MOVE_FORCE_FLIGHT_BACK_SPEED_CHANGE_ACK            WorldType = 0x3A2B
-	M_CMSG_MOVE_FORCE_FLIGHT_SPEED_CHANGE_ACK                 WorldType = 0x3A2A
-	M_CMSG_MOVE_FORCE_PITCH_RATE_CHANGE_ACK                   WorldType = 0x3A2F
-	M_CMSG_MOVE_FORCE_ROOT_ACK                                WorldType = 0x3A0B
-	M_CMSG_MOVE_FORCE_RUN_BACK_SPEED_CHANGE_ACK               WorldType = 0x3A09
-	M_CMSG_MOVE_FORCE_RUN_SPEED_CHANGE_ACK                    WorldType = 0x3A08
-	M_CMSG_MOVE_FORCE_SWIM_BACK_SPEED_CHANGE_ACK              WorldType = 0x3A1F
-	M_CMSG_MOVE_FORCE_SWIM_SPEED_CHANGE_ACK                   WorldType = 0x3A0A
-	M_CMSG_MOVE_FORCE_TURN_RATE_CHANGE_ACK                    WorldType = 0x3A20
-	M_CMSG_MOVE_FORCE_UNROOT_ACK                              WorldType = 0x3A0C
-	M_CMSG_MOVE_FORCE_WALK_SPEED_CHANGE_ACK                   WorldType = 0x3A1E
-	M_CMSG_MOVE_GRAVITY_DISABLE_ACK                           WorldType = 0x3A32
-	M_CMSG_MOVE_GRAVITY_ENABLE_ACK                            WorldType = 0x3A33
-	M_CMSG_MOVE_HEARTBEAT                                     WorldType = 0x3A0D
-	M_CMSG_MOVE_HOVER_ACK                                     WorldType = 0x3A10
-	M_CMSG_MOVE_JUMP                                          WorldType = 0x39EA
-	M_CMSG_MOVE_KNOCK_BACK_ACK                                WorldType = 0x3A0F
-	M_CMSG_MOVE_REMOVE_MOVEMENT_FORCES                        WorldType = 0x3A14
-	M_CMSG_MOVE_REMOVE_MOVEMENT_FORCE_ACK                     WorldType = 0x3A13
-	M_CMSG_MOVE_SEAMLESS_TRANSFER_COMPLETE                    WorldType = 0x3A3F
-	M_CMSG_MOVE_SET_CAN_FLY_ACK                               WorldType = 0x3A24
-	M_CMSG_MOVE_SET_CAN_TURN_WHILE_FALLING_ACK                WorldType = 0x3A22
-	M_CMSG_MOVE_SET_COLLISION_HEIGHT_ACK                      WorldType = 0x3A36
-	M_CMSG_MOVE_SET_FACING                                    WorldType = 0x3A06
-	M_CMSG_MOVE_SET_FLY                                       WorldType = 0x3A25
-	M_CMSG_MOVE_SET_IGNORE_MOVEMENT_FORCES_ACK                WorldType = 0x3A23
-	M_CMSG_MOVE_SET_MOD_MOVEMENT_FORCE_MAGNITUDE_ACK          WorldType = 0x3A3D
-	M_CMSG_MOVE_SET_PITCH                                     WorldType = 0x3A07
-	M_CMSG_MOVE_SET_RUN_MODE                                  WorldType = 0x39F2
-	M_CMSG_MOVE_SET_VEHICLE_REC_ID_ACK                        WorldType = 0x3A11
-	M_CMSG_MOVE_SET_WALK_MODE                                 WorldType = 0x39F3
-	M_CMSG_MOVE_SPLINE_DONE                                   WorldType = 0x3A15
-	M_CMSG_MOVE_START_ASCEND                                  WorldType = 0x3A26
-	M_CMSG_MOVE_START_BACKWARD                                WorldType = 0x39E5
-	M_CMSG_MOVE_START_DESCEND                                 WorldType = 0x3A2D
-	M_CMSG_MOVE_START_FORWARD                                 WorldType = 0x39E4
-	M_CMSG_MOVE_START_PITCH_DOWN                              WorldType = 0x39F0
-	M_CMSG_MOVE_START_PITCH_UP                                WorldType = 0x39EF
-	M_CMSG_MOVE_START_STRAFE_LEFT                             WorldType = 0x39E7
-	M_CMSG_MOVE_START_STRAFE_RIGHT                            WorldType = 0x39E8
-	M_CMSG_MOVE_START_SWIM                                    WorldType = 0x39FA
-	M_CMSG_MOVE_START_TURN_LEFT                               WorldType = 0x39EC
-	M_CMSG_MOVE_START_TURN_RIGHT                              WorldType = 0x39ED
-	M_CMSG_MOVE_STOP                                          WorldType = 0x39E6
-	M_CMSG_MOVE_STOP_ASCEND                                   WorldType = 0x3A27
-	M_CMSG_MOVE_STOP_PITCH                                    WorldType = 0x39F1
-	M_CMSG_MOVE_STOP_STRAFE                                   WorldType = 0x39E9
-	M_CMSG_MOVE_STOP_SWIM                                     WorldType = 0x39FB
-	M_CMSG_MOVE_STOP_TURN                                     WorldType = 0x39EE
-	M_CMSG_MOVE_TELEPORT_ACK                                  WorldType = 0x39F8
-	M_CMSG_MOVE_TIME_SKIPPED                                  WorldType = 0x3A18
-	M_CMSG_MOVE_TOGGLE_COLLISION_CHEAT                        WorldType = 0x3A05
-	M_CMSG_MOVE_UPDATE_FALL_SPEED                             WorldType = 0x3A17
-	M_CMSG_MOVE_WATER_WALK_ACK                                WorldType = 0x3A1A
-	M_CMSG_NEUTRAL_PLAYER_SELECT_FACTION                      WorldType = 0x31D5
-	M_CMSG_NEXT_CINEMATIC_CAMERA                              WorldType = 0x3546
-	M_CMSG_OBJECT_UPDATE_FAILED                               WorldType = 0x3180
-	M_CMSG_OBJECT_UPDATE_RESCUED                              WorldType = 0x3181
-	M_CMSG_OFFER_PETITION                                     WorldType = 0x36B3
-	M_CMSG_OPENING_CINEMATIC                                  WorldType = 0x3545
-	M_CMSG_OPEN_ITEM                                          WorldType = 0x3321
-	M_CMSG_OPEN_MISSION_NPC                                   WorldType = 0x32E8
-	M_CMSG_OPEN_SHIPMENT_NPC                                  WorldType = 0x32EE
-	M_CMSG_OPEN_TRADESKILL_NPC                                WorldType = 0x32F9
-	M_CMSG_OPT_OUT_OF_LOOT                                    WorldType = 0x34F7
-	M_CMSG_PARTY_INVITE                                       WorldType = 0x3603
-	M_CMSG_PARTY_INVITE_RESPONSE                              WorldType = 0x3604
-	M_CMSG_PARTY_UNINVITE                                     WorldType = 0x3649
-	M_CMSG_PETITION_BUY                                       WorldType = 0x34C9
-	M_CMSG_PETITION_RENAME_GUILD                              WorldType = 0x36CC
-	M_CMSG_PETITION_SHOW_LIST                                 WorldType = 0x34C8
-	M_CMSG_PETITION_SHOW_SIGNATURES                           WorldType = 0x34CA
-	M_CMSG_PET_ABANDON                                        WorldType = 0x348D
-	M_CMSG_PET_ACTION                                         WorldType = 0x348B
-	M_CMSG_PET_BATTLE_FINAL_NOTIFY                            WorldType = 0x31E4
-	M_CMSG_PET_BATTLE_INPUT                                   WorldType = 0x3642
-	M_CMSG_PET_BATTLE_QUEUE_PROPOSE_MATCH_RESULT              WorldType = 0x3226
-	M_CMSG_PET_BATTLE_QUIT_NOTIFY                             WorldType = 0x31E3
-	M_CMSG_PET_BATTLE_REPLACE_FRONT_PET                       WorldType = 0x3643
-	M_CMSG_PET_BATTLE_REQUEST_PVP                             WorldType = 0x31DD
-	M_CMSG_PET_BATTLE_REQUEST_UPDATE                          WorldType = 0x31DE
-	M_CMSG_PET_BATTLE_REQUEST_WILD                            WorldType = 0x31DB
-	M_CMSG_PET_BATTLE_SCRIPT_ERROR_NOTIFY                     WorldType = 0x31E5
-	M_CMSG_PET_CANCEL_AURA                                    WorldType = 0x348E
-	M_CMSG_PET_CAST_SPELL                                     WorldType = 0x329C
-	M_CMSG_PET_RENAME                                         WorldType = 0x3687
-	M_CMSG_PET_SET_ACTION                                     WorldType = 0x348A
-	M_CMSG_PET_SPELL_AUTOCAST                                 WorldType = 0x348F
-	M_CMSG_PET_STOP_ATTACK                                    WorldType = 0x348C
-	M_CMSG_PING                                               WorldType = 0x3768
-	M_CMSG_PLAYER_LOGIN                                       WorldType = 0x35EB
-	M_CMSG_PUSH_QUEST_TO_PARTY                                WorldType = 0x349F
-	M_CMSG_PVP_LOG_DATA                                       WorldType = 0x317B
-	M_CMSG_QUERY_BATTLE_PET_NAME                              WorldType = 0x3278
-	M_CMSG_QUERY_COMMUNITY_NAME                               WorldType = 0x368E
-	M_CMSG_QUERY_CORPSE_LOCATION_FROM_CLIENT                  WorldType = 0x3662
-	M_CMSG_QUERY_CORPSE_TRANSPORT                             WorldType = 0x3663
-	M_CMSG_QUERY_COUNTDOWN_TIMER                              WorldType = 0x31A8
-	M_CMSG_QUERY_CREATURE                                     WorldType = 0x3272
-	M_CMSG_QUERY_GAME_OBJECT                                  WorldType = 0x3273
-	M_CMSG_QUERY_GARRISON_CREATURE_NAME                       WorldType = 0x3279
-	M_CMSG_QUERY_GUILD_INFO                                   WorldType = 0x3691
-	M_CMSG_QUERY_INSPECT_ACHIEVEMENTS                         WorldType = 0x3503
-	M_CMSG_QUERY_NEXT_MAIL_TIME                               WorldType = 0x353B
-	M_CMSG_QUERY_NPC_TEXT                                     WorldType = 0x3274
-	M_CMSG_QUERY_PAGE_TEXT                                    WorldType = 0x3276
-	M_CMSG_QUERY_PETITION                                     WorldType = 0x327A
-	M_CMSG_QUERY_PET_NAME                                     WorldType = 0x3277
-	M_CMSG_QUERY_PLAYER_NAME                                  WorldType = 0x368D
-	M_CMSG_QUERY_QUEST_COMPLETION_NPCS                        WorldType = 0x3175
-	M_CMSG_QUERY_QUEST_INFO                                   WorldType = 0x3275
-	M_CMSG_QUERY_REALM_NAME                                   WorldType = 0x3690
-	M_CMSG_QUERY_SCENARIO_POI                                 WorldType = 0x3658
-	M_CMSG_QUERY_TIME                                         WorldType = 0x34D6
-	M_CMSG_QUERY_TREASURE_PICKER                              WorldType = 0x3347
-	M_CMSG_QUERY_VOID_STORAGE                                 WorldType = 0x31A1
-	M_CMSG_QUEST_CONFIRM_ACCEPT                               WorldType = 0x349E
-	M_CMSG_QUEST_GIVER_ACCEPT_QUEST                           WorldType = 0x3498
-	M_CMSG_QUEST_GIVER_CHOOSE_REWARD                          WorldType = 0x349A
-	M_CMSG_QUEST_GIVER_COMPLETE_QUEST                         WorldType = 0x3499
-	M_CMSG_QUEST_GIVER_HELLO                                  WorldType = 0x3496
-	M_CMSG_QUEST_GIVER_QUERY_QUEST                            WorldType = 0x3497
-	M_CMSG_QUEST_GIVER_REQUEST_REWARD                         WorldType = 0x349B
-	M_CMSG_QUEST_GIVER_STATUS_MULTIPLE_QUERY                  WorldType = 0x349D
-	M_CMSG_QUEST_GIVER_STATUS_QUERY                           WorldType = 0x349C
-	M_CMSG_QUEST_LOG_REMOVE_QUEST                             WorldType = 0x3530
-	M_CMSG_QUEST_POI_QUERY                                    WorldType = 0x36B4
-	M_CMSG_QUEST_PUSH_RESULT                                  WorldType = 0x34A0
-	M_CMSG_QUEUED_MESSAGES_END                                WorldType = 0x376C
-	M_CMSG_QUICK_JOIN_AUTO_ACCEPT_REQUESTS                    WorldType = 0x370C
-	M_CMSG_QUICK_JOIN_REQUEST_INVITE                          WorldType = 0x370B
-	M_CMSG_QUICK_JOIN_RESPOND_TO_INVITE                       WorldType = 0x370A
-	M_CMSG_QUICK_JOIN_SIGNAL_TOAST_DISPLAYED                  WorldType = 0x3709
-	M_CMSG_RAID_OR_BATTLEGROUND_ENGINE_SURVEY                 WorldType = 0x36EA
-	M_CMSG_RANDOM_ROLL                                        WorldType = 0x3656
-	M_CMSG_READY_CHECK_RESPONSE                               WorldType = 0x3636
-	M_CMSG_READ_ITEM                                          WorldType = 0x3322
-	M_CMSG_RECLAIM_CORPSE                                     WorldType = 0x34DC
-	M_CMSG_RECRUIT_A_FRIEND                                   WorldType = 0x36D2
-	M_CMSG_REDEEM_WOW_TOKEN_CONFIRM                           WorldType = 0x36F4
-	M_CMSG_REDEEM_WOW_TOKEN_START                             WorldType = 0x36F3
-	M_CMSG_REMOVE_NEW_ITEM                                    WorldType = 0x334A
-	M_CMSG_REORDER_CHARACTERS                                 WorldType = 0x35EA
-	M_CMSG_REPAIR_ITEM                                        WorldType = 0x34ED
-	M_CMSG_REPLACE_TROPHY                                     WorldType = 0x3304
-	M_CMSG_REPOP_REQUEST                                      WorldType = 0x3528
-	M_CMSG_REPORT_CLIENT_VARIABLES                            WorldType = 0x3706
-	M_CMSG_REPORT_ENABLED_ADDONS                              WorldType = 0x3705
-	M_CMSG_REPORT_KEYBINDING_EXECUTION_COUNTS                 WorldType = 0x3707
-	M_CMSG_REPORT_PVP_PLAYER_AFK                              WorldType = 0x34F5
-	M_CMSG_REPORT_SERVER_LAG                                  WorldType = 0x3394
-	M_CMSG_REQUEST_ACCOUNT_DATA                               WorldType = 0x369A
-	M_CMSG_REQUEST_AREA_POI_UPDATE                            WorldType = 0x3349
-	M_CMSG_REQUEST_BATTLEFIELD_STATUS                         WorldType = 0x35DD
-	M_CMSG_REQUEST_CATEGORY_COOLDOWNS                         WorldType = 0x317D
-	M_CMSG_REQUEST_CEMETERY_LIST                              WorldType = 0x3176
-	M_CMSG_REQUEST_CHALLENGE_MODE_AFFIXES                     WorldType = 0x3208
-	M_CMSG_REQUEST_CHARACTER_GUILD_FOLLOW_INFO                WorldType = 0x3692
-	M_CMSG_REQUEST_CONQUEST_FORMULA_CONSTANTS                 WorldType = 0x32B5
-	M_CMSG_REQUEST_CROWD_CONTROL_SPELL                        WorldType = 0x352C
-	M_CMSG_REQUEST_FORCED_REACTIONS                           WorldType = 0x320A
-	M_CMSG_REQUEST_GUILD_PARTY_STATE                          WorldType = 0x31A7
-	M_CMSG_REQUEST_GUILD_REWARDS_LIST                         WorldType = 0x31A6
-	M_CMSG_REQUEST_LFG_LIST_BLACKLIST                         WorldType = 0x32A5
-	M_CMSG_REQUEST_PARTY_JOIN_UPDATES                         WorldType = 0x35F8
-	M_CMSG_REQUEST_PARTY_MEMBER_STATS                         WorldType = 0x3655
-	M_CMSG_REQUEST_PET_INFO                                   WorldType = 0x3490
-	M_CMSG_REQUEST_PLAYED_TIME                                WorldType = 0x327D
-	M_CMSG_REQUEST_PVP_BRAWL_INFO                             WorldType = 0x3195
-	M_CMSG_REQUEST_PVP_REWARDS                                WorldType = 0x3194
-	M_CMSG_REQUEST_QUEST_LINES_FOR_MAP                        WorldType = 0x338F
-	M_CMSG_REQUEST_RAID_INFO                                  WorldType = 0x36CD
-	M_CMSG_REQUEST_RATED_BATTLEFIELD_INFO                     WorldType = 0x35E4
-	M_CMSG_REQUEST_REALM_GUILD_MASTER_INFO                    WorldType = 0x309B
-	M_CMSG_REQUEST_RESEARCH_HISTORY                           WorldType = 0x3167
-	M_CMSG_REQUEST_STABLED_PETS                               WorldType = 0x3491
-	M_CMSG_REQUEST_VEHICLE_EXIT                               WorldType = 0x3238
-	M_CMSG_REQUEST_VEHICLE_NEXT_SEAT                          WorldType = 0x323A
-	M_CMSG_REQUEST_VEHICLE_PREV_SEAT                          WorldType = 0x3239
-	M_CMSG_REQUEST_VEHICLE_SWITCH_SEAT                        WorldType = 0x323B
-	M_CMSG_REQUEST_WORLD_QUEST_UPDATE                         WorldType = 0x3348
-	M_CMSG_REQUEST_WOW_TOKEN_MARKET_PRICE                     WorldType = 0x36EC
-	M_CMSG_RESET_CHALLENGE_MODE                               WorldType = 0x3206
-	M_CMSG_RESET_CHALLENGE_MODE_CHEAT                         WorldType = 0x3207
-	M_CMSG_RESET_INSTANCES                                    WorldType = 0x366A
-	M_CMSG_RESURRECT_RESPONSE                                 WorldType = 0x3686
-	M_CMSG_REVERT_MONUMENT_APPEARANCE                         WorldType = 0x3306
-	M_CMSG_RIDE_VEHICLE_INTERACT                              WorldType = 0x323C
-	M_CMSG_SAVE_CUF_PROFILES                                  WorldType = 0x318B
-	M_CMSG_SAVE_EQUIPMENT_SET                                 WorldType = 0x350C
-	M_CMSG_SAVE_GUILD_EMBLEM                                  WorldType = 0x32A9
-	M_CMSG_SCENE_PLAYBACK_CANCELED                            WorldType = 0x3222
-	M_CMSG_SCENE_PLAYBACK_COMPLETE                            WorldType = 0x3221
-	M_CMSG_SCENE_TRIGGER_EVENT                                WorldType = 0x3223
-	M_CMSG_SELF_RES                                           WorldType = 0x3533
-	M_CMSG_SELL_ITEM                                          WorldType = 0x34A2
-	M_CMSG_SELL_WOW_TOKEN_CONFIRM                             WorldType = 0x36EE
-	M_CMSG_SELL_WOW_TOKEN_START                               WorldType = 0x36ED
-	M_CMSG_SEND_CONTACT_LIST                                  WorldType = 0x36D4
-	M_CMSG_SEND_MAIL                                          WorldType = 0x35FB
-	M_CMSG_SEND_SOR_REQUEST_VIA_ADDRESS                       WorldType = 0x3621
-	M_CMSG_SEND_TEXT_EMOTE                                    WorldType = 0x3488
-	M_CMSG_SET_ACHIEVEMENTS_HIDDEN                            WorldType = 0x3228
-	M_CMSG_SET_ACTION_BAR_TOGGLES                             WorldType = 0x3534
-	M_CMSG_SET_ACTION_BUTTON                                  WorldType = 0x3637
-	M_CMSG_SET_ACTIVE_MOVER                                   WorldType = 0x3A37
-	M_CMSG_SET_ADVANCED_COMBAT_LOGGING                        WorldType = 0x32B6
-	M_CMSG_SET_ASSISTANT_LEADER                               WorldType = 0x3651
-	M_CMSG_SET_BACKPACK_AUTOSORT_DISABLED                     WorldType = 0x3325
-	M_CMSG_SET_BANK_AUTOSORT_DISABLED                         WorldType = 0x3326
-	M_CMSG_SET_CONTACT_NOTES                                  WorldType = 0x36D7
-	M_CMSG_SET_CURRENCY_FLAGS                                 WorldType = 0x3169
-	M_CMSG_SET_DIFFICULTY_ID                                  WorldType = 0x3224
-	M_CMSG_SET_DUNGEON_DIFFICULTY                             WorldType = 0x3684
-	M_CMSG_SET_EVERYONE_IS_ASSISTANT                          WorldType = 0x3618
-	M_CMSG_SET_FACTION_AT_WAR                                 WorldType = 0x34DF
-	M_CMSG_SET_FACTION_INACTIVE                               WorldType = 0x34E1
-	M_CMSG_SET_FACTION_NOT_AT_WAR                             WorldType = 0x34E0
-	M_CMSG_SET_GAME_EVENT_DEBUG_VIEW_STATE                    WorldType = 0x31B9
-	M_CMSG_SET_INSERT_ITEMS_LEFT_TO_RIGHT                     WorldType = 0x3328
-	M_CMSG_SET_LFG_BONUS_FACTION_ID                           WorldType = 0x32A4
-	M_CMSG_SET_LOOT_METHOD                                    WorldType = 0x364A
-	M_CMSG_SET_LOOT_SPECIALIZATION                            WorldType = 0x3541
-	M_CMSG_SET_PARTY_ASSIGNMENT                               WorldType = 0x3653
-	M_CMSG_SET_PARTY_LEADER                                   WorldType = 0x364C
-	M_CMSG_SET_PET_SLOT                                       WorldType = 0x3168
-	M_CMSG_SET_PLAYER_DECLINED_NAMES                          WorldType = 0x368C
-	M_CMSG_SET_PREFERRED_CEMETERY                             WorldType = 0x3177
-	M_CMSG_SET_PVP                                            WorldType = 0x32AD
-	M_CMSG_SET_RAID_DIFFICULTY                                WorldType = 0x36E1
-	M_CMSG_SET_ROLE                                           WorldType = 0x35D9
-	M_CMSG_SET_SAVED_INSTANCE_EXTEND                          WorldType = 0x368A
-	M_CMSG_SET_SELECTION                                      WorldType = 0x352A
-	M_CMSG_SET_SHEATHED                                       WorldType = 0x3489
-	M_CMSG_SET_SORT_BAGS_RIGHT_TO_LEFT                        WorldType = 0x3327
-	M_CMSG_SET_TAXI_BENCHMARK_MODE                            WorldType = 0x34F4
-	M_CMSG_SET_TITLE                                          WorldType = 0x3281
-	M_CMSG_SET_TRADE_CURRENCY                                 WorldType = 0x3160
-	M_CMSG_SET_TRADE_GOLD                                     WorldType = 0x315F
-	M_CMSG_SET_TRADE_ITEM                                     WorldType = 0x315D
-	M_CMSG_SET_USING_PARTY_GARRISON                           WorldType = 0x32EA
-	M_CMSG_SET_WAR_MODE                                       WorldType = 0x32AE
-	M_CMSG_SET_WATCHED_FACTION                                WorldType = 0x34E2
-	M_CMSG_SHOW_TRADE_SKILL                                   WorldType = 0x36C5
-	M_CMSG_SIGN_PETITION                                      WorldType = 0x3535
-	M_CMSG_SILENCE_PARTY_TALKER                               WorldType = 0x3654
-	M_CMSG_SOCKET_GEMS                                        WorldType = 0x34EC
-	M_CMSG_SORT_BAGS                                          WorldType = 0x3329
-	M_CMSG_SORT_BANK_BAGS                                     WorldType = 0x332A
-	M_CMSG_SORT_REAGENT_BANK_BAGS                             WorldType = 0x332B
-	M_CMSG_SPELL_CLICK                                        WorldType = 0x3495
-	M_CMSG_SPIRIT_HEALER_ACTIVATE                             WorldType = 0x34AF
-	M_CMSG_SPLIT_ITEM                                         WorldType = 0x399E
-	M_CMSG_STAND_STATE_CHANGE                                 WorldType = 0x3189
-	M_CMSG_START_CHALLENGE_MODE                               WorldType = 0x354C
-	M_CMSG_START_SPECTATOR_WAR_GAME                           WorldType = 0x35E0
-	M_CMSG_START_WAR_GAME                                     WorldType = 0x35DF
-	M_CMSG_SUMMON_RESPONSE                                    WorldType = 0x366C
-	M_CMSG_SUPPORT_TICKET_SUBMIT_BUG                          WorldType = 0x3647
-	M_CMSG_SUPPORT_TICKET_SUBMIT_COMPLAINT                    WorldType = 0x3646
-	M_CMSG_SUPPORT_TICKET_SUBMIT_SUGGESTION                   WorldType = 0x3648
-	M_CMSG_SURRENDER_ARENA                                    WorldType = 0x3174
-	M_CMSG_SUSPEND_COMMS_ACK                                  WorldType = 0x3764
-	M_CMSG_SUSPEND_TOKEN_RESPONSE                             WorldType = 0x376A
-	M_CMSG_SWAP_INV_ITEM                                      WorldType = 0x399D
-	M_CMSG_SWAP_ITEM                                          WorldType = 0x399C
-	M_CMSG_SWAP_SUB_GROUPS                                    WorldType = 0x364F
-	M_CMSG_SWAP_VOID_ITEM                                     WorldType = 0x31A3
-	M_CMSG_TABARD_VENDOR_ACTIVATE                             WorldType = 0x32AA
-	M_CMSG_TALK_TO_GOSSIP                                     WorldType = 0x3492
-	M_CMSG_TAXI_NODE_STATUS_QUERY                             WorldType = 0x34A8
-	M_CMSG_TAXI_QUERY_AVAILABLE_NODES                         WorldType = 0x34AA
-	M_CMSG_TAXI_REQUEST_EARLY_LANDING                         WorldType = 0x34AC
-	M_CMSG_TIME_ADJUSTMENT_RESPONSE                           WorldType = 0x3A3B
-	M_CMSG_TIME_SYNC_RESPONSE                                 WorldType = 0x3A38
-	M_CMSG_TIME_SYNC_RESPONSE_DROPPED                         WorldType = 0x3A3A
-	M_CMSG_TIME_SYNC_RESPONSE_FAILED                          WorldType = 0x3A39
-	M_CMSG_TOGGLE_DIFFICULTY                                  WorldType = 0x3659
-	M_CMSG_TOGGLE_PVP                                         WorldType = 0x32AC
-	M_CMSG_TOTEM_DESTROYED                                    WorldType = 0x34FB
-	M_CMSG_TOY_CLEAR_FANFARE                                  WorldType = 0x312E
-	M_CMSG_TRADE_SKILL_SET_FAVORITE                           WorldType = 0x3346
-	M_CMSG_TRAINER_BUY_SPELL                                  WorldType = 0x34AE
-	M_CMSG_TRAINER_LIST                                       WorldType = 0x34AD
-	M_CMSG_TRANSMOGRIFY_ITEMS                                 WorldType = 0x3196
-	M_CMSG_TURN_IN_PETITION                                   WorldType = 0x3537
-	M_CMSG_TUTORIAL                                           WorldType = 0x36E2
-	M_CMSG_TWITTER_CHECK_STATUS                               WorldType = 0x312A
-	M_CMSG_TWITTER_CONNECT                                    WorldType = 0x3127
-	M_CMSG_TWITTER_DISCONNECT                                 WorldType = 0x312B
-	M_CMSG_TWITTER_POST                                       WorldType = 0x332D
-	M_CMSG_UI_TIME_REQUEST                                    WorldType = 0x369F
-	M_CMSG_UNACCEPT_TRADE                                     WorldType = 0x315B
-	M_CMSG_UNDELETE_CHARACTER                                 WorldType = 0x36E4
-	M_CMSG_UNLEARN_SKILL                                      WorldType = 0x34E6
-	M_CMSG_UNLEARN_SPECIALIZATION                             WorldType = 0x31A4
-	M_CMSG_UNLOCK_VOID_STORAGE                                WorldType = 0x31A0
-	M_CMSG_UPDATE_ACCOUNT_DATA                                WorldType = 0x369B
-	M_CMSG_UPDATE_AREA_TRIGGER_VISUAL                         WorldType = 0x329F
-	M_CMSG_UPDATE_CLIENT_SETTINGS                             WorldType = 0x3666
-	M_CMSG_UPDATE_MISSILE_TRAJECTORY                          WorldType = 0x3A3E
-	M_CMSG_UPDATE_RAID_TARGET                                 WorldType = 0x3652
-	M_CMSG_UPDATE_SPELL_VISUAL                                WorldType = 0x329E
-	M_CMSG_UPDATE_VAS_PURCHASE_STATES                         WorldType = 0x36FA
-	M_CMSG_UPDATE_WOW_TOKEN_AUCTIONABLE_LIST                  WorldType = 0x36F5
-	M_CMSG_UPDATE_WOW_TOKEN_COUNT                             WorldType = 0x36EB
-	M_CMSG_UPGRADE_GARRISON                                   WorldType = 0x32BE
-	M_CMSG_USED_FOLLOW                                        WorldType = 0x3186
-	M_CMSG_USE_CRITTER_ITEM                                   WorldType = 0x3242
-	M_CMSG_USE_EQUIPMENT_SET                                  WorldType = 0x3995
-	M_CMSG_USE_ITEM                                           WorldType = 0x3299
-	M_CMSG_USE_TOY                                            WorldType = 0x329B
-	M_CMSG_VIOLENCE_LEVEL                                     WorldType = 0x3184
-	M_CMSG_VOICE_CHAT_JOIN_CHANNEL                            WorldType = 0x3715
-	M_CMSG_VOICE_CHAT_LOGIN                                   WorldType = 0x3714
-	M_CMSG_VOID_STORAGE_TRANSFER                              WorldType = 0x31A2
-	M_CMSG_WARDEN_DATA                                        WorldType = 0x35ED
-	M_CMSG_WHO                                                WorldType = 0x3683
-	M_CMSG_WHO_IS                                             WorldType = 0x3682
-	M_CMSG_WORLD_PORT_RESPONSE                                WorldType = 0x35FA
-	M_CMSG_WRAP_ITEM                                          WorldType = 0x3994
-	M_CMSG_BF_MGR_ENTRY_INVITE_RESPONSE                       WorldType = 0xBADD
-	M_CMSG_BF_MGR_QUEUE_INVITE_RESPONSE                       WorldType = 0xBADD
-	M_CMSG_BF_MGR_QUEUE_EXIT_REQUEST                          WorldType = 0xBADD
+	SMSG_BF_MGR_EJECTED
+	SMSG_BF_MGR_ENTERING
+	SMSG_BF_MGR_ENTRY_INVITE
+	SMSG_BF_MGR_QUEUE_INVITE
+	SMSG_BF_MGR_QUEUE_REQUEST_RESPONSE
+	WorldType_Max
 )
 
 func (wt WorldType) Description() string {
@@ -3086,7 +2935,7 @@ func (wt WorldType) Predict(name string) []string {
 		return nil
 	}
 
-	var max WorldType = 0x4000
+	var max WorldType = WorldType_Max
 
 	var prediction []string
 	for x := WorldType(0); x < max; x++ {

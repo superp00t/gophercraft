@@ -21,6 +21,7 @@ type AuthFile struct {
 	AlphaRealmlistListen string
 	DBDriver             string
 	DBURL                string
+	Admin                map[string]string
 }
 
 type RealmsFile struct {
@@ -59,6 +60,21 @@ func (a *Auth) RealmsFile() (*RealmsFile, error) {
 	return realms, nil
 }
 
+func (a *Auth) SetRealm(id uint64, realm Realm) error {
+	rfile, err := a.RealmsFile()
+	if err != nil {
+		return err
+	}
+
+	rfile.Realms[id] = realm
+	data, err := text.Marshal(rfile)
+	if err != nil {
+		return err
+	}
+
+	return a.Path.Concat("Realms.txt").WriteAll(data)
+}
+
 func LoadAuth(at string) (*Auth, error) {
 	ac := new(Auth)
 	ac.Path = etc.ParseSystemPath(at)
@@ -89,8 +105,8 @@ func LoadAuth(at string) (*Auth, error) {
 }
 
 const DefaultAuth = `{
-	// the TCP/IP address to listen the Gophercraft HTTP API on.
-  // You can reverse proxy this however you like.
+	// the TCP/IP address to listen the Gophercraft website on.
+	// You can reverse proxy this however you like.
 	HTTPInternal 0.0.0.0:8086
 
 	// The public hostname of your Gophercraft API server.
@@ -107,13 +123,19 @@ const DefaultAuth = `{
 
 	// Database options
 	// the go-xorm SQL driver to use.
-	DBDriver mysql
+	DBDriver %s
 
 	// the go-xorm SQL URL to use.
-	DBURL root:password@/gcraft_auth
+	DBURL %s
 
 	// Alpha: uncomment this to use the Alpha protocol.
 	// AlphaRealmlistListen 0.0.0.0:9100
+
+	Admin
+	{
+		// Warning: Accounts created here will persist if username is replaced
+		"%s" "%s"
+	}
 }`
 
 func GenerateTLSKeyPair(at string) error {
@@ -123,7 +145,7 @@ func GenerateTLSKeyPair(at string) error {
 		dir.Concat("key.pem").Render())
 }
 
-func GenerateDefaultAuth(at string) error {
+func GenerateDefaultAuth(dbDriver, dbURL, user, pass, at string) error {
 	path := etc.ParseSystemPath(at)
 
 	if path.IsExtant() {
@@ -134,7 +156,7 @@ func GenerateDefaultAuth(at string) error {
 		return err
 	}
 
-	path.Concat("Auth.txt").WriteAll([]byte(DefaultAuth))
+	path.Concat("Auth.txt").WriteAll([]byte(fmt.Sprintf(DefaultAuth, dbDriver, dbURL, user, pass)))
 
 	return GenerateTLSKeyPair(path.Render())
 }

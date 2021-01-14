@@ -1,25 +1,66 @@
 package main
 
 import (
+	"archive/zip"
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 
+	"regexp"
+
 	"github.com/AlecAivazis/survey"
+	"github.com/fatih/color"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/superp00t/etc"
-	"github.com/superp00t/gophercraft/datapack"
 	"github.com/superp00t/gophercraft/format/content"
 	"github.com/superp00t/gophercraft/gcore/config"
+	"github.com/superp00t/gophercraft/gcore/dbsupport"
 	"github.com/superp00t/gophercraft/gcore/sys"
+	"google.golang.org/grpc"
 )
 
 var (
+	wiz          = ""
 	wizGamePool  content.Volume
 	wizWorldID   uint64
 	wizWorldPath string
-	wizPack      *datapack.Pack
+	wizWorldName string
+	wizPack      *zip.Writer
+	wizDBDriver  string
+	wizDBURL     string
+	wizUser      string
+	wizPassword  string
 )
+
+func wizWarn(args ...interface{}) {
+	color.Set(color.FgYellow)
+	fmt.Print(wiz)
+	fmt.Println(args...)
+	color.Unset()
+}
+
+func wizOk(args ...interface{}) {
+	fmt.Print(wiz)
+
+	for i, v := range args {
+		switch attr := v.(type) {
+		case color.Attribute:
+			color.Set(attr)
+		default:
+			if i > 0 {
+				fmt.Print(" ")
+			}
+
+			fmt.Print(v)
+		}
+	}
+
+	fmt.Println()
+	color.Unset()
+}
 
 // func wizConfirm(str string) bool {
 // 	fmt.Println(str, "[y/n]")
@@ -89,6 +130,11 @@ var (
 // 	}
 // }
 
+func wizValidate(str string) bool {
+	ok, _ := regexp.MatchString("^[[:alnum:]]{1,16}$", str)
+	return ok
+}
+
 func wizQuit(err error) {
 	if err == nil {
 		fmt.Println("exiting...")
@@ -98,35 +144,149 @@ func wizQuit(err error) {
 	os.Exit(0)
 }
 
-func wizGetGame() {
-	var line string
+func wizGetLogin() {
+	for {
+		if err := survey.AskOne(&survey.Input{
+			Message: "Enter your username (admin)",
+		}, &wizUser); err != nil {
+			wizQuit(err)
+		}
 
-	if err := survey.AskOne(&survey.Input{
-		Message: "Input your game directory to continue.",
-	},
-		&line); err != nil {
-		wizQuit(err)
+		if !wizValidate(wizUser) {
+			wizWarn("Invalid username. (max length 16 characters, alphanumeric)")
+			continue
+		}
+		break
 	}
 
-	if line == "" {
-		wizQuit(errors.New("Game files are needed to continue the wizard."))
+	for {
+		if err := survey.AskOne(&survey.Password{
+			Message: "Enter your password.",
+		}, &wizPassword); err != nil {
+			wizQuit(err)
+		}
+
+		if !wizValidate(wizPassword) {
+			wizWarn("Invalid password. (max length 16 characters, alphanumeric)")
+			continue
+		}
+
+		break
+	}
+}
+
+func wizGetGame() {
+	if wizGameDir == "" {
+		if err := survey.AskOne(&survey.Input{
+			Message: "Input your game directory to continue.",
+		},
+			&wizGameDir); err != nil {
+			wizQuit(err)
+		}
+
+		if wizGameDir == "" {
+			wizQuit(errors.New("Game files are needed to continue the wizard."))
+		}
 	}
 
 	var err error
-	wizGamePool, err = content.Open(line)
+	wizGamePool, err = content.Open(wizGameDir)
 	if err != nil {
 		wizQuit(err)
 	}
 }
 
+func wizGetServer() {
+	gcDir := etc.LocalDirectory().Concat("Gophercraft")
+
+	listServers, err := ioutil.ReadDir(gcDir.Render())
+	if err != nil {
+		wizQuit(err)
+	}
+
+	if len(listServers) == 0 {
+		return
+	}
+
+	opts := []string{
+		"Quit",
+		"New server configuration",
+	}
+
+	for _, srv := range listServers {
+		if gcDir.Concat(srv.Name()).Exists("World.txt") {
+			opts = append(opts, srv.Name())
+		}
+	}
+
+	qs := &survey.Select{
+		Message: "Modify an existing installation?",
+		Options: opts,
+	}
+
+	var opt int
+	err = survey.AskOne(qs, &opt)
+	if err != nil {
+		wizQuit(err)
+	}
+
+	switch {
+	case opt == 0:
+		wizQuit(nil)
+	case opt == 1:
+		return
+	case opt > 1:
+		wizWorldName = opts[opt]
+		wizWorldPath = gcDir.Concat(wizWorldName).Render()
+	}
+}
+
+func wizCreateDB(name string) {
+	for {
+		wizOk("Note: Gophercraft may in fact support databases not on this list. Check", color.FgGreen, "https://github.com/superp00t/gophercraft/wiki#databases", color.Reset, "for more info!")
+
+		qs := &survey.Select{
+			Message: fmt.Sprintf("Choose a database backend for %s.", name),
+			Options: append([]string{
+				"Quit",
+			}, dbsupport.Supported...),
+		}
+		err := survey.AskOne(qs, &wizDBDriver)
+		if wizDBDriver == "Quit" {
+			wizQuit(nil)
+		}
+
+		err = survey.AskOne(&survey.Input{
+			Message: fmt.Sprintf("Enter your database path. For %s the format is %s", wizDBDriver, dbsupport.PathFormat[wizDBDriver]),
+		}, &wizDBURL)
+		if err != nil {
+			wizQuit(err)
+		}
+
+		err = dbsupport.Create(wizDBDriver, wizDBURL)
+		if err != nil {
+			wizWarn(err)
+			continue
+		}
+
+		return
+	}
+}
+
 func wizStart() {
+	wizOk("Hello, I'm the", color.FgHiBlue, "Gophercraft Wizard!", color.Reset, "I will be your guide through the magical land of", color.FgGreen, "Gophercraft.", color.Reset)
+
+	etc.LocalDirectory().Concat("Gophercraft").MakeDir()
+
 	wizGetGame()
+	wizGetServer()
 
 	const (
-		justQuit  = "Quit"
-		packOnly  = "Continue without setting up server"
-		complete  = "Setup Gophercraft Auth and Worldserver on this computer"
-		worldOnly = "Setup Worldserver on this computer using remote Auth Server"
+		justQuit   = "Quit"
+		packOnly   = "Continue without setting up server"
+		complete   = "Setup Gophercraft Auth and Worldserver on this computer"
+		localWorld = "Setup a new Worldserver to use with a local Authserver"
+		worldOnly  = "Setup Worldserver on this computer using remote Auth Server"
 	)
 
 	qs := &survey.Select{
@@ -135,6 +295,7 @@ func wizStart() {
 			justQuit,
 			packOnly,
 			complete,
+			localWorld,
 			worldOnly,
 		},
 	}
@@ -151,36 +312,91 @@ func wizStart() {
 	case 1:
 		wizDatapack()
 	case 2:
-		wizSetupAllCores()
+		wizSetupLocal(true)
 		wizDatapack()
 	case 3:
+		wizSetupLocal(false)
+		wizDatapack()
+	case 4:
 		wizSetupWorldServerStandalone()
 		wizDatapack()
 	}
 }
 
-func wizSetupAllCores() {
-	var line string
-	authLoc := getLocal().Concat("gcraft_auth")
+func wizConfirmOrNew(message, newMessage, confirmString string) string {
+	var correct bool
 
+	wizOk(confirmString)
+
+	if err := survey.AskOne(&survey.Confirm{
+		Message: message,
+	}, &correct); err != nil {
+		wizQuit(err)
+	}
+
+	if correct {
+		return confirmString
+	}
+
+	var input string
 	err := survey.AskOne(&survey.Input{
-		Message: fmt.Sprint("Set auth core location? if left empty, I will use default: ", authLoc.Render()),
-	}, &line)
+		Message: fmt.Sprint(newMessage),
+	}, &input)
 	if err != nil {
 		wizQuit(err)
 	}
 
-	if line == "" {
+	return input
+}
+
+func wizAsk(args ...interface{}) bool {
+	correct := true
+
+	if err := survey.AskOne(&survey.Confirm{
+		Message: fmt.Sprintln(args...),
+		Default: true,
+	}, &correct); err != nil {
+		wizQuit(err)
+	}
+
+	return correct
+}
+
+func wizSetupLocal(setupAuth bool) {
+	var line string
+	authLoc := getFolder().Concat("Auth")
+	if setupAuth == false && !authLoc.IsExtant() || setupAuth {
+		line = wizConfirmOrNew("Is this where the auth server should be installed?", "Set authserver location.", authLoc.Render())
+	} else {
 		line = authLoc.Render()
 	}
 
+	// err := survey.AskOne(&survey.Input{
+	// 	Message: fmt.Sprint("Set auth core location? if left empty, I will use default: ", authLoc.Render()),
+	// }, &line)
+	// if err != nil {
+	// 	wizQuit(err)
+	// }
+
+	// if line == "" {
+	// 	line = authLoc.Render()
+	// }
+
 	authLoc = etc.ParseSystemPath(line)
 	if !authLoc.IsExtant() {
-		if err := config.GenerateDefaultAuth(authLoc.Render()); err != nil {
+		wizCreateDB("the auth server")
+
+		wizOk("Create an admin account for the auth server.")
+
+		wizGetLogin()
+
+		if err := config.GenerateDefaultAuth(wizDBDriver, wizDBURL, wizUser, wizPassword, authLoc.Render()); err != nil {
 			wizQuit(err)
 		}
 	} else {
-		wizQuit(fmt.Errorf("path %s already exists.", authLoc.Render()))
+		if setupAuth {
+			wizQuit(fmt.Errorf("path %s already exists.", authLoc.Render()))
+		}
 	}
 
 	authconfig, err := config.LoadAuth(authLoc.Render())
@@ -188,12 +404,39 @@ func wizSetupAllCores() {
 		wizQuit(err)
 	}
 
-	wizWorldID = 1
+	realm, err := authconfig.RealmsFile()
+	if err != nil {
+		panic(err)
+	}
 
-	worldLoc := getLocal().Concat("gcraft_world_1")
+	var last uint64 = 1
+	for k := range realm.Realms {
+		if k >= last {
+			last = k + 1
+		}
+	}
+
+	if wizWorldName == "" {
+		err = survey.AskOne(&survey.Input{
+			Message: "What would you like to name your new server?",
+		}, &wizWorldName)
+		if err != nil {
+			wizQuit(err)
+		}
+
+		if wizWorldName == "Auth" || wizWorldName == "" {
+			wizQuit(fmt.Errorf("You can't name your worldserver that"))
+		}
+	}
+
+	wizCreateDB(wizWorldName)
+
+	wizWorldID = last
+
+	worldLoc := getFolder().Concat(wizWorldName)
 	wizWorldPath = worldLoc.Render()
 
-	if err := authconfig.GenerateDefaultWorld(uint32(wizGamePool.Build()), 1, worldLoc.Render()); err != nil {
+	if err := authconfig.GenerateDefaultWorld(uint32(wizGamePool.Build()), wizWorldName, wizWorldID, wizDBDriver, wizDBURL, worldLoc.Render()); err != nil {
 		wizQuit(err)
 	}
 }
@@ -203,7 +446,6 @@ func wizSetupWorldServerStandalone() {
 
 	for {
 		fmt.Println("Enter the address to your auth server.")
-		var authAddress string
 
 		if err := survey.AskOne(&survey.Input{
 			Message: "Enter the address:port to your Gophercraft Auth server.",
@@ -235,23 +477,95 @@ func wizSetupWorldServerStandalone() {
 			wizQuit(err)
 		}
 
+		conn.Close()
+
 		if correct {
 			break
 		}
 	}
 
-	worldLoc := getLocal().Concat("gcraft_world_1")
-	wizWorldPath = worldLoc.Render()
-	wizWorldID = 1
+	// Query the server to get the next available realm ID
+	gc, err := grpc.Dial(
+		authAddress,
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		panic(err)
+	}
 
-	if err := config.GenerateDefaultWorld(uint32(wizGamePool.Build()), wizWorldID, wizWorldPath, authAddress, finger); err != nil {
+	cl := sys.NewAuthServiceClient(gc)
+
+	for {
+		wizOk("You need to enter your admin credentials to register a new world server.")
+
+		wizGetLogin()
+
+		creds, err := cl.CheckCredentials(context.Background(), &sys.Credentials{
+			Account:  wizUser,
+			Password: wizPassword,
+		})
+		if err != nil {
+			wizQuit(err)
+		}
+
+		if creds.Status != sys.Status_SysOK {
+			wizWarn("Your password is incorrect.")
+			continue
+		}
+
+		if creds.Tier < sys.Tier_Admin {
+			wizWarn("You have to be an admin to register a server remotely.")
+		}
+	}
+
+	nextRealm, err := cl.GetNextRealmID(context.Background(), &empty.Empty{})
+	if err != nil {
 		wizQuit(err)
 	}
+
+	wizOk("Next available Realm ID slot is", nextRealm.RealmID)
+
+	err = survey.AskOne(&survey.Input{
+		Message: "What would you like to name your new server?",
+	}, &wizWorldName)
+	if err != nil {
+		wizQuit(err)
+	}
+
+	if wizWorldName == "Auth" || wizWorldName == "" {
+		wizQuit(fmt.Errorf("You can't name your worldserver that"))
+	}
+
+	wizCreateDB(wizWorldName)
+
+	worldLoc := getFolder().Concat(wizWorldName)
+	wizWorldPath = worldLoc.Render()
+
+	if err := config.GenerateDefaultWorld(uint32(wizGamePool.Build()), wizWorldName, nextRealm.RealmID, wizDBDriver, wizDBURL, wizWorldPath, authAddress, finger); err != nil {
+		wizQuit(err)
+	}
+
+	nextRealm.RealmFingerprint, err = sys.GetCertFileFingerprint(worldLoc.Concat("cert.pem").Render())
+	if err != nil {
+		wizQuit(err)
+	}
+
+	status, err := cl.AddRealmToConfig(context.Background(), nextRealm)
+	if err != nil {
+		wizQuit(err)
+	}
+
+	if status.Status != sys.Status_SysUnauthorized {
+		panic("this should not happen: we checked credentials earlier: " + status.Status.String())
+	}
+
+	gc.Close()
 }
 
 func wizDatapack() {
 	if wizWorldPath == "" {
-		wizWorldPath = getLocal().Concat("gcraft_world_1").Render()
+		generateDatapack(etc.LocalDirectory().Concat(fmt.Sprintf("!base %s.zip", wizGamePool.Build())).Render())
+		return
 	}
 
 	generateDatapack(etc.ParseSystemPath(wizWorldPath).Concat("datapacks", "!base.zip").Render())

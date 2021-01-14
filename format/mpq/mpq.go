@@ -1,6 +1,5 @@
-package mpq
-
-/* package mpq supports extraction of compressed files from MPQ archive files.
+//Package mpq allows the reading of compressed data from MPQ archives.
+/*
 
    Based on http://www.zezula.net/en/mpq/mpqformat.html
    Cryptographic functions taken from https://github.com/aphistic/go.Zamara
@@ -9,6 +8,7 @@ package mpq
 		 - implement test files for MPQ versions 1-4
 		 - be memory efficient
 */
+package mpq
 
 import (
 	"fmt"
@@ -39,11 +39,10 @@ type MPQ struct {
 	Header     *Header
 	UserData   *UserData
 	File       io.ReadSeeker
+	GuardFile  sync.Mutex
 	HashTable  []*HashEntry
 	BlockTable []*BlockEntry
-
 	// Prevent access of multiple files at the same time
-	L *sync.Mutex
 }
 
 func pow(x, y int) int {
@@ -73,6 +72,14 @@ func Open(filename string) (*MPQ, error) {
 	return m, nil
 }
 
+func (m *MPQ) Close() error {
+	if file, ok := m.File.(*os.File); ok {
+		file.Close()
+		return nil
+	}
+	return fmt.Errorf("mpq: cannot close a non-file input")
+}
+
 func Decode(i io.ReadSeeker) (*MPQ, error) {
 	i.Seek(0, 0)
 
@@ -83,7 +90,6 @@ func Decode(i io.ReadSeeker) (*MPQ, error) {
 	m := new(MPQ)
 	m.Header = h
 	m.File = i
-	m.L = new(sync.Mutex)
 	switch string(s[:]) {
 	case MPQ_HEADER_DATA:
 		if e := m.ReadHeaderData(); e != nil {

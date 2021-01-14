@@ -22,8 +22,6 @@ type PresenceService interface {
 	Unsubscribe(*Conn, uint32, *v1.UnsubscribeRequest)
 	Update(*Conn, uint32, *v1.UpdateRequest)
 	Query(*Conn, uint32, *v1.QueryRequest)
-	Ownership(*Conn, uint32, *v1.OwnershipRequest)
-	SubscribeNotification(*Conn, uint32, *v1.SubscribeNotificationRequest)
 	BatchSubscribe(*Conn, uint32, *v1.BatchSubscribeRequest)
 	BatchUnsubscribe(*Conn, uint32, *v1.BatchUnsubscribeRequest)
 }
@@ -58,20 +56,6 @@ func DispatchPresenceService(conn *Conn, svc PresenceService, token uint32, meth
 			return err
 		}
 		svc.Query(conn, token, &args)
-	case 5:
-		var args v1.OwnershipRequest
-		err := proto.Unmarshal(data, &args)
-		if err != nil {
-			return err
-		}
-		svc.Ownership(conn, token, &args)
-	case 7:
-		var args v1.SubscribeNotificationRequest
-		err := proto.Unmarshal(data, &args)
-		if err != nil {
-			return err
-		}
-		svc.SubscribeNotification(conn, token, &args)
 	case 8:
 		var args v1.BatchSubscribeRequest
 		err := proto.Unmarshal(data, &args)
@@ -102,12 +86,6 @@ func (e EmptyPresenceService) Update(conn *Conn, token uint32, args *v1.UpdateRe
 	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
 }
 func (e EmptyPresenceService) Query(conn *Conn, token uint32, args *v1.QueryRequest) {
-	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
-}
-func (e EmptyPresenceService) Ownership(conn *Conn, token uint32, args *v1.OwnershipRequest) {
-	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
-}
-func (e EmptyPresenceService) SubscribeNotification(conn *Conn, token uint32, args *v1.SubscribeNotificationRequest) {
 	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
 }
 func (e EmptyPresenceService) BatchSubscribe(conn *Conn, token uint32, args *v1.BatchSubscribeRequest) {
@@ -164,28 +142,6 @@ func (c *Conn) PresenceService_Request_Query(args *v1.QueryRequest) (*v1.QueryRe
 		return nil, err
 	}
 	return &out, nil
-}
-
-func (c *Conn) PresenceService_Request_Ownership(args *v1.OwnershipRequest) error {
-	header, _, err := c.Request(PresenceServiceHash, 5, args)
-	if err != nil {
-		return err
-	}
-	if Status(header.GetStatus()) != ERROR_OK {
-		return fmt.Errorf("bnet: non-ok status 0x%08X", header.GetStatus())
-	}
-	return nil
-}
-
-func (c *Conn) PresenceService_Request_SubscribeNotification(args *v1.SubscribeNotificationRequest) error {
-	header, _, err := c.Request(PresenceServiceHash, 7, args)
-	if err != nil {
-		return err
-	}
-	if Status(header.GetStatus()) != ERROR_OK {
-		return fmt.Errorf("bnet: non-ok status 0x%08X", header.GetStatus())
-	}
-	return nil
 }
 
 func (c *Conn) PresenceService_Request_BatchSubscribe(args *v1.BatchSubscribeRequest) (*v1.BatchSubscribeResponse, error) {

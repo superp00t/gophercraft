@@ -3,6 +3,7 @@ package update
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/superp00t/gophercraft/guid"
 	"github.com/superp00t/gophercraft/vsn"
@@ -29,6 +30,8 @@ func NewValuesBlock(build vsn.Build, mask guid.TypeMask) (*ValuesBlock, error) {
 	if !ok {
 		return nil, fmt.Errorf("update: can not find descriptor for %s", build)
 	}
+
+	descriptor.Build = build
 
 	storageDescriptorType := descriptor.ObjectDescriptors[mask]
 	if storageDescriptorType == nil {
@@ -65,9 +68,13 @@ func (vb *ValuesBlock) ClearChangesAndUnlock() {
 
 func (vb *ValuesBlock) findValueOffset(offset, bitOffset *uint32, value reflect.Value, currentKeys, targetKeys []interface{}) (reflect.Value, error) {
 	// fmt.Println(currentKeys, "==", targetKeys)
-	if reflect.DeepEqual(currentKeys, targetKeys) {
-		return value, nil
+	if len(currentKeys) == len(targetKeys) {
+		if reflect.DeepEqual(currentKeys, targetKeys) {
+			return value, nil
+		}
 	}
+
+	// fmt.Println(currentKeys, targetKeys)
 
 	quit := true
 
@@ -90,6 +97,12 @@ func (vb *ValuesBlock) findValueOffset(offset, bitOffset *uint32, value reflect.
 	}
 
 	switch value.Kind() {
+	case reflect.Uint64:
+		nxtChunk(offset, bitOffset)
+		nxtChunk(offset, bitOffset)
+	case reflect.Uint16:
+		nxtByte(offset, bitOffset)
+		nxtByte(offset, bitOffset)
 	case reflect.Bool:
 		nxtBit(offset, bitOffset)
 	case reflect.Uint8:
@@ -135,6 +148,14 @@ func (vb *ValuesBlock) findValueOffset(offset, bitOffset *uint32, value reflect.
 }
 
 func (vb *ValuesBlock) FindValueOffset(keys ...interface{}) (uint32, reflect.Value, error) {
+	// check
+	// _ = vb.Get(keys...)
+
+	start := time.Now()
+	defer func() {
+		fmt.Println("took", time.Since(start), "to compute offset of", keys)
+	}()
+
 	sdesc := vb.StorageDescriptor.Elem()
 	var offset, bitOffset uint32
 	for x := 0; x < sdesc.NumField(); x++ {
@@ -148,7 +169,7 @@ func (vb *ValuesBlock) FindValueOffset(keys ...interface{}) (uint32, reflect.Val
 			return offset, value, nil
 		}
 	}
-	return 0, nilValue(), fmt.Errorf("could not find offset: %s", fmt.Sprintln(keys))
+	return 0, nilValue(), fmt.Errorf("could not find offset: %s", fmt.Sprintln(keys...))
 }
 
 func indexValue(value reflect.Value, index interface{}) reflect.Value {
@@ -319,60 +340,78 @@ func (vb *ValuesBlock) SetUint32ArrayValue(glob string, index int, value uint32)
 
 // Todo: Faster implementation would ignore the need to find offsets
 func (vb *ValuesBlock) GetGUID(keys ...interface{}) guid.GUID {
-	vb.Lock()
-
-	_, val, err := vb.FindValueOffset(keys...)
-	if err != nil {
-		panic(err)
-	}
-
-	id := val.Interface().(guid.GUID)
-	vb.Unlock()
-	return id
+	return vb.Get(keys...).Interface().(guid.GUID)
 }
 
 func (vb *ValuesBlock) GetUint32(keys ...interface{}) uint32 {
-	vb.Lock()
-
-	_, val, err := vb.FindValueOffset(keys...)
-	if err != nil {
-		panic(err)
-	}
-
-	value := val.Interface().(uint32)
-	vb.Unlock()
-	return value
+	return uint32(vb.Get(keys...).Uint())
 }
 
 func (vb *ValuesBlock) GetFloat32(keys ...interface{}) float32 {
-	vb.Lock()
+	return float32(vb.Get(keys...).Float())
+}
 
-	_, val, err := vb.FindValueOffset(keys...)
-	if err != nil {
-		panic(err)
+func getValue(value reflect.Value, keys []interface{}) (reflect.Value, bool, error) {
+	// fmt.Println("GET", keys, value)
+	if len(keys) == 0 {
+		return value, true, nil
 	}
 
-	value := val.Interface().(float32)
-	vb.Unlock()
-	return value
+	if value.Kind() == reflect.Array || value.Kind() == reflect.Slice {
+		idx := keys[0].(int)
+		return getValue(value.Index(idx), keys[1:])
+	}
+
+	if value.Kind() == reflect.Struct {
+		namedValue := value.FieldByName(keys[0].(string))
+		if namedValue.IsValid() == false {
+			return namedValue, false, nil
+		}
+		return getValue(namedValue, keys[1:])
+	}
+
+	panic(value.Kind())
 }
 
 func (vb *ValuesBlock) Get(keys ...interface{}) reflect.Value {
-	vb.Lock()
-
-	_, val, err := vb.FindValueOffset(keys...)
-	if err != nil {
-		panic(err)
+	if len(keys) == 0 {
+		return reflect.Zero(reflect.TypeOf(interface{}(nil)))
 	}
 
-	vb.Unlock()
-	return val
+	vb.Lock()
+	defer vb.Unlock()
+
+	storageType := vb.StorageDescriptor.Type().Elem()
+
+	for classIndex := 0; classIndex < storageType.NumField(); classIndex++ {
+		classValue := vb.StorageDescriptor.Elem().Field(classIndex)
+
+		field, found, err := getValue(classValue, keys)
+		if err != nil {
+			panic(err)
+		}
+
+		if !found {
+			continue
+		}
+
+		return field
+	}
+
+	panic(fmt.Sprintln(keys, "not found"))
+	return vb.StorageDescriptor
 }
 
 func (vb *ValuesBlock) GetUint32Slice(keys ...interface{}) []uint32 {
 	val := vb.Get(keys...)
 	sli := val.Slice(0, val.Len())
 	return sli.Interface().([]uint32)
+}
+
+func (vb *ValuesBlock) GetGUIDSlice(keys ...interface{}) []guid.GUID {
+	val := vb.Get(keys...)
+	sli := val.Slice(0, val.Len())
+	return sli.Interface().([]guid.GUID)
 }
 
 // func parseString(runes []rune) (runes []rune, out string, err error) string {

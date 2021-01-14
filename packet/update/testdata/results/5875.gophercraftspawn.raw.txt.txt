@@ -1,0 +1,90 @@
+(*update.CreateBlock)(0xc0003fe540)({
+ BlockType: (update.BlockType) CreateObject,
+ ObjectType: (guid.TypeID) TypeItem,
+ MovementBlock: (*update.MovementBlock)(0xc000107dc0)({
+  ID: (guid.GUID) Nil,
+  UpdateFlags: (update.UpdateFlags) ,
+  Info: (*update.MovementInfo)(<nil>),
+  Speeds: (update.Speeds) <nil>,
+  Spline: (*update.MoveSpline)(<nil>),
+  Position: (update.Position) {
+   Point3: (update.Point3) {
+    X: (float32) 0,
+    Y: (float32) 0,
+    Z: (float32) 0
+   },
+   O: (float32) 0
+  },
+  All: (uint32) 0,
+  LowGUID: (uint32) 0,
+  HighGUID: (uint32) 0,
+  Victim: (guid.GUID) Nil,
+  WorldTime: (uint32) 0
+ }),
+ ValuesBlock: (*update.ValuesBlock)(0xc00018bd00)({
+  Mutex: (sync.Mutex) {
+   state: (int32) 0,
+   sema: (uint32) 0
+  },
+  TypeMask: (guid.TypeMask) ,
+  Descriptor: (*update.Descriptor)(<nil>),
+  ChangeMask: (*update.Bitmask)(0xc0003fe560)((len=2 cap=2) (len: 2) 0x0000 0x0001 0x0002 0x0003 0x0004 0x0006 0x0008 0x000E 0x002E 0x002F),
+  StorageDescriptor: (reflect.Value) <*d5875.ItemDescriptor Value>
+ })
+})
+
+
+(*d5875.ItemDescriptor)(0xc00012dd10)({
+ ObjectData: (d5875.ObjectData) {
+  GUID: (guid.GUID) Item-0-000000B2,
+  Type: (uint32) 3,
+  Entry: (uint32) 2509,
+  ScaleX: (float32) 1,
+  ChunkPad: (update.ChunkPad) {
+  }
+ },
+ ItemData: (d5875.ItemData) {
+  Owner: (guid.GUID) Player-0-00000017,
+  Contained: (guid.GUID) Player-0-00000017,
+  Creator: (guid.GUID) Nil,
+  GiftCreator: (guid.GUID) Nil,
+  StackCount: (uint32) 1,
+  Duration: (uint32) 0,
+  SpellCharges: ([5]int32) (len=5 cap=5) {
+   (int32) 0,
+   (int32) 0,
+   (int32) 0,
+   (int32) 0,
+   (int32) 0
+  },
+  Flags: (uint32) 0,
+  Enchantment: ([21]uint32) (len=21 cap=21) {
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0,
+   (uint32) 0
+  },
+  PropertySeed: (uint32) 0,
+  RandomPropertiesID: (uint32) 0,
+  TextID: (uint32) 0,
+  Durability: (uint32) 30,
+  MaxDurability: (uint32) 30
+ }
+})

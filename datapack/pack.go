@@ -5,7 +5,7 @@
 //   3d objects/textures
 //   Map geometry
 //   Sound files
-//   JSON files for patching the server and client databases
+//   files for patching the server and client databases
 package datapack
 
 import (
@@ -15,6 +15,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sort"
+	"time"
 
 	"github.com/superp00t/etc"
 	"github.com/superp00t/gophercraft/datapack/text"
@@ -239,4 +240,8 @@ func (p *Pack) Delete() error {
 	default:
 		return fmt.Errorf("unknown pack type")
 	}
+}
+
+func Timestamp() string {
+	return time.Now().Format("Mon Jan 2 15:04:05 MST 2006")
 }

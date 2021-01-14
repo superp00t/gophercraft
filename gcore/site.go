@@ -10,7 +10,7 @@ import (
 	"github.com/superp00t/etc"
 
 	"github.com/superp00t/etc/yo"
-	"github.com/superp00t/gophercraft/srp"
+	"github.com/superp00t/gophercraft/crypto/srp"
 )
 
 type navElement struct {

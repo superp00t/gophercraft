@@ -26,7 +26,15 @@ func UnmarshalSMSGAuthPacket(build vsn.Build, input []byte) (*SMSGAuthPacket, er
 
 	gp := &SMSGAuthPacket{}
 	gp.Size = in.ReadBigUint16()
-	gp.Type = WorldType(in.ReadUint16())
+
+	u16 := in.ReadUint16()
+
+	wType, err := LookupWorldType(build, uint32(u16))
+	if err != nil {
+		return nil, err
+	}
+
+	gp.Type = wType
 
 	if build.RemovedIn(8606) {
 		gp.Salt = in.ReadBytes(4)
@@ -45,19 +53,22 @@ func (s *SMSGAuthPacket) Encode(version vsn.Build) []byte {
 	smsg := NewWorldPacket(SMSG_AUTH_CHALLENGE)
 	if version == vsn.Alpha {
 		smsg.Write(make([]byte, 6))
-		return smsg.ServerMessage()
+		return smsg.ServerMessage(version)
 	}
 
 	if version.RemovedIn(8606) {
 		smsg.Write(s.Salt)
-		return smsg.ServerMessage()
+		return smsg.ServerMessage(version)
 	}
 
-	smsg.WriteUint32(0x01)
+	if version.AddedIn(vsn.V3_3_5a) {
+		smsg.WriteUint32(0x01)
+	}
+
 	smsg.Write(s.Salt)
 	smsg.Write(s.Seed1)
 	smsg.Write(s.Seed2)
-	return smsg.ServerMessage()
+	return smsg.ServerMessage(version)
 }
 
 type CMSGAuthSession struct {
@@ -74,7 +85,7 @@ type CMSGAuthSession struct {
 	AddonData       []byte
 }
 
-func UnmarshalCMSGAuthSession(input []byte) (*CMSGAuthSession, error) {
+func UnmarshalCMSGAuthSession(build vsn.Build, input []byte) (*CMSGAuthSession, error) {
 	// opcode = input[0:4]
 	// len    = input[4:6]
 	if len(input) < 36 {
@@ -83,7 +94,15 @@ func UnmarshalCMSGAuthSession(input []byte) (*CMSGAuthSession, error) {
 
 	in := etc.FromBytes(input)
 	length := in.ReadBigUint16()
-	opcode := WorldType(in.ReadUint32())
+
+	opcode, err := LookupWorldType(build, in.ReadUint32())
+	if err != nil {
+		return nil, err
+	}
+
+	if opcode != CMSG_AUTH_SESSION {
+		return nil, fmt.Errorf("invalid opcode %s", opcode)
+	}
 
 	yo.Ok(opcode, length)
 
@@ -94,12 +113,15 @@ func UnmarshalCMSGAuthSession(input []byte) (*CMSGAuthSession, error) {
 
 	yo.Ok("Account=", c.Account, "build=", c.Build)
 
-	if c.Build.RemovedIn(8606) {
+	switch {
+	case c.Build == vsn.V2_4_3:
 		c.Seed = in.ReadBytes(4)
 		c.Digest = in.ReadBytes(20)
-		return c, nil
-	} else {
-		yo.Warn("unknown type", c.Build)
+		c.AddonData = in.ReadRemainder()
+	case c.Build.RemovedIn(12340):
+		c.Seed = in.ReadBytes(4)
+		c.Digest = in.ReadBytes(20)
+	default:
 		c.LoginServerType = in.ReadUint32()
 		c.Seed = in.ReadBytes(4)
 		c.RegionID = in.ReadUint32()
@@ -113,13 +135,13 @@ func UnmarshalCMSGAuthSession(input []byte) (*CMSGAuthSession, error) {
 	return c, nil
 }
 
-func (c *CMSGAuthSession) Encode() []byte {
-	app := etc.NewBuffer()
+func (c *CMSGAuthSession) Encode(build vsn.Build) []byte {
+	app := NewWorldPacket(CMSG_AUTH_SESSION)
 	app.WriteUint32(uint32(c.Build))
 	app.WriteUint32(c.LoginServerID)
 	app.WriteCString(c.Account)
 
-	if c.Build.RemovedIn(8606) {
+	if c.Build.RemovedIn(vsn.V3_3_5a) {
 		app.Write(c.Seed)
 		app.Write(c.Digest)
 		app.Write(c.AddonData)
@@ -135,11 +157,7 @@ func (c *CMSGAuthSession) Encode() []byte {
 	}
 
 	// Addon data
-	env := etc.NewBuffer()
-	env.WriteBigUint16(uint16(app.Len() + 4))
-	env.WriteUint32(uint32(CMSG_AUTH_SESSION))
-	env.Write(app.Bytes())
-	return env.Bytes()
+	return app.ServerMessage(build)
 }
 
 type SMSGAuthResponse struct {

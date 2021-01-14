@@ -54,12 +54,26 @@ func NewEncoder(version vsn.Build, writer io.Writer, numBlocks int) (*Encoder, e
 }
 
 func (enc *Encoder) EncodeGUID(id guid.GUID) error {
+	if enc.Descriptor.DescriptorOptions&DescriptorOptionAlpha != 0 {
+		id.EncodeUnpacked(enc.Build, enc)
+		return nil
+	}
 	id.EncodePacked(enc.Build, enc)
 	return nil
 }
 
 func (enc *Encoder) EncodeBlockType(bt BlockType) error {
-	return writeUint8(enc, uint8(bt))
+	desc, ok := BlockTypeDescriptors[enc.Build]
+	if !ok {
+		return writeUint8(enc, uint8(bt))
+	}
+
+	value, ok := desc[bt]
+	if !ok {
+		panic("no type found for " + bt.String())
+	}
+
+	return writeUint8(enc, value)
 }
 
 func (enc *Encoder) AddBlock(id guid.GUID, data BlockData, viewMask VisibilityFlags) error {

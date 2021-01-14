@@ -20,11 +20,9 @@ const GameUtilitiesServiceHash = 0x3FC1274D
 type GameUtilitiesService interface {
 	ProcessClientRequest(*Conn, uint32, *v1.ClientRequest)
 	PresenceChannelCreated(*Conn, uint32, *v1.PresenceChannelCreatedRequest)
-	GetPlayerVariables(*Conn, uint32, *v1.GetPlayerVariablesRequest)
 	ProcessServerRequest(*Conn, uint32, *v1.ServerRequest)
 	OnGameAccountOnline(*Conn, uint32, *v1.GameAccountOnlineNotification)
 	OnGameAccountOffline(*Conn, uint32, *v1.GameAccountOfflineNotification)
-	GetAchievementsFile(*Conn, uint32, *v1.GetAchievementsFileRequest)
 	GetAllValuesForAttribute(*Conn, uint32, *v1.GetAllValuesForAttributeRequest)
 	RegisterUtilities(*Conn, uint32, *v1.RegisterUtilitiesRequest)
 	UnregisterUtilities(*Conn, uint32, *v1.UnregisterUtilitiesRequest)
@@ -46,13 +44,6 @@ func DispatchGameUtilitiesService(conn *Conn, svc GameUtilitiesService, token ui
 			return err
 		}
 		svc.PresenceChannelCreated(conn, token, &args)
-	case 3:
-		var args v1.GetPlayerVariablesRequest
-		err := proto.Unmarshal(data, &args)
-		if err != nil {
-			return err
-		}
-		svc.GetPlayerVariables(conn, token, &args)
 	case 6:
 		var args v1.ServerRequest
 		err := proto.Unmarshal(data, &args)
@@ -74,13 +65,6 @@ func DispatchGameUtilitiesService(conn *Conn, svc GameUtilitiesService, token ui
 			return err
 		}
 		svc.OnGameAccountOffline(conn, token, &args)
-	case 9:
-		var args v1.GetAchievementsFileRequest
-		err := proto.Unmarshal(data, &args)
-		if err != nil {
-			return err
-		}
-		svc.GetAchievementsFile(conn, token, &args)
 	case 10:
 		var args v1.GetAllValuesForAttributeRequest
 		err := proto.Unmarshal(data, &args)
@@ -114,9 +98,6 @@ func (e EmptyGameUtilitiesService) ProcessClientRequest(conn *Conn, token uint32
 func (e EmptyGameUtilitiesService) PresenceChannelCreated(conn *Conn, token uint32, args *v1.PresenceChannelCreatedRequest) {
 	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
 }
-func (e EmptyGameUtilitiesService) GetPlayerVariables(conn *Conn, token uint32, args *v1.GetPlayerVariablesRequest) {
-	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
-}
 func (e EmptyGameUtilitiesService) ProcessServerRequest(conn *Conn, token uint32, args *v1.ServerRequest) {
 	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
 }
@@ -124,9 +105,6 @@ func (e EmptyGameUtilitiesService) OnGameAccountOnline(conn *Conn, token uint32,
 	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
 }
 func (e EmptyGameUtilitiesService) OnGameAccountOffline(conn *Conn, token uint32, args *v1.GameAccountOfflineNotification) {
-	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
-}
-func (e EmptyGameUtilitiesService) GetAchievementsFile(conn *Conn, token uint32, args *v1.GetAchievementsFileRequest) {
 	conn.SendResponseCode(token, ERROR_RPC_NOT_IMPLEMENTED)
 }
 func (e EmptyGameUtilitiesService) GetAllValuesForAttribute(conn *Conn, token uint32, args *v1.GetAllValuesForAttributeRequest) {
@@ -166,22 +144,6 @@ func (c *Conn) GameUtilitiesService_Request_PresenceChannelCreated(args *v1.Pres
 	return nil
 }
 
-func (c *Conn) GameUtilitiesService_Request_GetPlayerVariables(args *v1.GetPlayerVariablesRequest) (*v1.GetPlayerVariablesResponse, error) {
-	header, bytes, err := c.Request(GameUtilitiesServiceHash, 3, args)
-	if err != nil {
-		return nil, err
-	}
-	if Status(header.GetStatus()) != ERROR_OK {
-		return nil, fmt.Errorf("bnet: non-ok status 0x%08X", header.GetStatus())
-	}
-	var out v1.GetPlayerVariablesResponse
-	err = proto.Unmarshal(bytes, &out)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
 func (c *Conn) GameUtilitiesService_Request_ProcessServerRequest(args *v1.ServerRequest) (*v1.ServerResponse, error) {
 	header, bytes, err := c.Request(GameUtilitiesServiceHash, 6, args)
 	if err != nil {
@@ -218,22 +180,6 @@ func (c *Conn) GameUtilitiesService_Request_OnGameAccountOffline(args *v1.GameAc
 		return fmt.Errorf("bnet: non-ok status 0x%08X", header.GetStatus())
 	}
 	return nil
-}
-
-func (c *Conn) GameUtilitiesService_Request_GetAchievementsFile(args *v1.GetAchievementsFileRequest) (*v1.GetAchievementsFileResponse, error) {
-	header, bytes, err := c.Request(GameUtilitiesServiceHash, 9, args)
-	if err != nil {
-		return nil, err
-	}
-	if Status(header.GetStatus()) != ERROR_OK {
-		return nil, fmt.Errorf("bnet: non-ok status 0x%08X", header.GetStatus())
-	}
-	var out v1.GetAchievementsFileResponse
-	err = proto.Unmarshal(bytes, &out)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
 }
 
 func (c *Conn) GameUtilitiesService_Request_GetAllValuesForAttribute(args *v1.GetAllValuesForAttributeRequest) (*v1.GetAllValuesForAttributeResponse, error) {

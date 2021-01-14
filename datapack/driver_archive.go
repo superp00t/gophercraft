@@ -4,18 +4,20 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
+	"strings"
 )
 
 var (
-	ErrFileNotFound = fmt.Errorf("update: file not found")
+	ErrFileNotFound = fmt.Errorf("datapack: file not found")
 )
 
 // archive implements Driver
 
 // .zip
 type archive struct {
-	Path string
-	zr   *zip.ReadCloser
+	Path   string
+	Prefix string
+	zr     *zip.ReadCloser
 }
 
 func (a *archive) Init(at string) (Opts, error) {
@@ -24,6 +26,21 @@ func (a *archive) Init(at string) (Opts, error) {
 	a.zr, err = zip.OpenReader(at)
 	if err != nil {
 		return 0, err
+	}
+
+	fl, err := a.ReadFile("Pack.txt")
+	if err != nil {
+		for _, file := range a.zr.File {
+			if file.FileInfo().IsDir() {
+				// Top level directory
+				if strings.HasSuffix(file.Name, "/") && strings.Count(file.Name, "/") == 1 {
+					a.Prefix = file.Name
+					break
+				}
+			}
+		}
+	} else {
+		fl.Close()
 	}
 
 	return Read, nil
@@ -35,7 +52,7 @@ func (a *archive) WriteFile(path string) (WriteFile, error) {
 
 func (a *archive) ReadFile(path string) (File, error) {
 	for _, v := range a.zr.File {
-		if path == v.Name {
+		if a.Prefix+path == v.Name {
 			return v.Open()
 		}
 	}
@@ -52,7 +69,9 @@ func (f *archive) List() []string {
 	var s []string
 
 	for _, v := range f.zr.File {
-		s = append(s, v.Name)
+		if v.Name != f.Prefix {
+			s = append(s, strings.TrimPrefix(v.Name, f.Prefix))
+		}
 	}
 
 	return s
@@ -60,12 +79,8 @@ func (f *archive) List() []string {
 
 func addFileToZip(zipWriter *zip.Writer, filename string, rdr io.Reader) error {
 	header := &zip.FileHeader{}
-	// Using FileInfoHeader() above only uses the basename of the file. If we want
-	// to preserve the folder structure we can overwrite this with the full path.
-	header.Name = filename
 
-	// Change to deflate to gain better compression
-	// see http://golang.org/pkg/archive/zip/#pkg-constants
+	header.Name = filename
 	header.Method = zip.Deflate
 
 	writer, err := zipWriter.CreateHeader(header)

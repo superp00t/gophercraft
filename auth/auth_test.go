@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/superp00t/gophercraft/packet"
 	"github.com/superp00t/gophercraft/srp"
 )
 
@@ -15,7 +14,7 @@ func TestAuth(t *testing.T) {
 
 	pktBytes, _ := hex.DecodeString(pkt)
 
-	data, err := packet.UnmarshalAuthLogonProof_C(pktBytes)
+	data, err := UnmarshalAuthLogonProof_C(pktBytes)
 	if err != nil {
 		panic(err)
 	}

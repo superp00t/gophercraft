@@ -3,8 +3,6 @@ package pkzip
 
 import (
 	"fmt"
-
-	"github.com/superp00t/etc/yo"
 )
 
 var (
@@ -387,22 +385,10 @@ func do_decompress_pkzip(param *info) error {
 	}
 
 	p.cmp_type = uint32(p.in_buf[0])
-	yo.Ok("Cmp type", p.cmp_type)
-	yo.Spew(p.in_buf)
 	p.dsize_bits = uint32(p.in_buf[1])
 	p.bit_buf = uint32(p.in_buf[2])
 	p.extra_bits = 0
 	p.in_pos = 3
-
-	// if p.dsize_bits == 0 {
-	// 	x := binary.LittleEndian.Uint32(p.in_buf[3:7])
-	// 	y := binary.LittleEndian.Uint32(p.in_buf[7:11])
-	// 	diff := (y - x) * 3
-	// 	ln := x - diff
-	// 	b := p.in_buf[11 : 11+ln]
-	// 	p.write_buf(b, uint32(len(b)), p.param)
-	// 	return nil
-	// }
 
 	if 4 > p.dsize_bits || p.dsize_bits > 6 {
 		return fmt.Errorf("pkzip: invalid dictionary size: %d", p.dsize_bits)

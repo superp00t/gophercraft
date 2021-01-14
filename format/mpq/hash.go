@@ -79,8 +79,7 @@ func (m *MPQ) ReadHashTable() {
 		panic(err)
 	}
 
-	encryptor := newBlockEncryptor("(hash table)", MPQ_HASH_FILE_KEY)
-	err = encryptor.decrypt(&buf)
+	err = decrypt(hashString("(hash table)", MPQ_HASH_FILE_KEY), buf)
 	if err != nil {
 		panic(err)
 	}
@@ -89,7 +88,6 @@ func (m *MPQ) ReadHashTable() {
 	mf.Write(buf)
 
 	for i := 0; i < sz; i++ {
-		// log.Println("Reading hash entry", i, "/", sz)
 		h := &HashEntry{}
 		h.ID_A = lu32(mf)
 		h.ID_B = lu32(mf)
@@ -97,6 +95,5 @@ func (m *MPQ) ReadHashTable() {
 		h.Platform = lu16(mf)
 		h.BlockIndex = lu32(mf)
 		m.HashTable[i] = h
-		// fmt.Println(spew.Sdump(h))
 	}
 }

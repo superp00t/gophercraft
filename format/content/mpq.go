@@ -25,7 +25,7 @@ func openMpq(version vsn.Build, path string) (*mpqp, error) {
 
 	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err == nil {
-			if strings.HasSuffix(path, ".MPQ") {
+			if strings.HasSuffix(path, ".MPQ") && !strings.HasSuffix(path, "wmo.MPQ") {
 				names = append(names, path)
 			}
 		}

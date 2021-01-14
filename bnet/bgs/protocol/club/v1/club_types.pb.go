@@ -101,6 +101,9 @@ type PrivacyInfo = v1.PrivacyInfo
 // ParentalControlInfo from public import account_types.proto
 type ParentalControlInfo = v1.ParentalControlInfo
 
+// PlayScheduleRestriction from public import account_types.proto
+type PlayScheduleRestriction = v1.PlayScheduleRestriction
+
 // GameLevelInfo from public import account_types.proto
 type GameLevelInfo = v1.GameLevelInfo
 
@@ -131,6 +134,9 @@ type CAIS = v1.CAIS
 // GameAccountList from public import account_types.proto
 type GameAccountList = v1.GameAccountList
 
+// SecurityStatus from public import account_types.proto
+type SecurityStatus = v1.SecurityStatus
+
 // AccountState from public import account_types.proto
 type AccountState = v1.AccountState
 
@@ -150,6 +156,7 @@ type AuthorizedData = v1.AuthorizedData
 type IgrId = v1.IgrId
 type IgrId_GameAccount = v1.IgrId_GameAccount
 type IgrId_ExternalId = v1.IgrId_ExternalId
+type IgrId_Uuid = v1.IgrId_Uuid
 
 // IgrAddress from public import account_types.proto
 type IgrAddress = v1.IgrAddress
@@ -261,6 +268,15 @@ const VoiceMuteReason_VOICE_MUTE_REASON_NONE = VoiceMuteReason(protocol.VoiceMut
 const VoiceMuteReason_VOICE_MUTE_REASON_PARENTAL_CONTROL_LISTEN_ONLY = VoiceMuteReason(protocol.VoiceMuteReason_VOICE_MUTE_REASON_PARENTAL_CONTROL_LISTEN_ONLY)
 const VoiceMuteReason_VOICE_MUTE_REASON_REQUESTED = VoiceMuteReason(protocol.VoiceMuteReason_VOICE_MUTE_REASON_REQUESTED)
 const VoiceMuteReason_VOICE_MUTE_REASON_SQUELCHED = VoiceMuteReason(protocol.VoiceMuteReason_VOICE_MUTE_REASON_SQUELCHED)
+
+// VoiceProviderVersion from public import voice_types.proto
+type VoiceProviderVersion = protocol.VoiceProviderVersion
+
+var VoiceProviderVersion_name = protocol.VoiceProviderVersion_name
+var VoiceProviderVersion_value = protocol.VoiceProviderVersion_value
+
+const VoiceProviderVersion_VOICE_PROVIDER_V4 = VoiceProviderVersion(protocol.VoiceProviderVersion_VOICE_PROVIDER_V4)
+const VoiceProviderVersion_VOICE_PROVIDER_V5 = VoiceProviderVersion(protocol.VoiceProviderVersion_VOICE_PROVIDER_V5)
 
 // NO_RESPONSE from public import rpc_types.proto
 type NO_RESPONSE = protocol.NO_RESPONSE

@@ -31,33 +31,53 @@ func _() {
 	_ = x[ItemFlagUniqueEquippable-524288]
 	_ = x[ItemFlagIgnoreForAuras-1048576]
 	_ = x[ItemFlagIgnoreDefaultArenaRestrictions-2097152]
+	_ = x[ItemFlagNoDurabilityLoss-4194304]
+	_ = x[ItemFlagUseWhenShapeshifted-8388608]
+	_ = x[ItemFlagHasQuestGlow-16777216]
+	_ = x[ItemFlagHideUnusableRecipe-33554432]
+	_ = x[ItemFlagNotUseableInArena-67108864]
+	_ = x[ItemFlagBindsToAccount-134217728]
+	_ = x[ItemFlagNoReagentCost-268435456]
+	_ = x[ItemFlagIsMillable-536870912]
+	_ = x[ItemFlagReportToGuildChat-1073741824]
+	_ = x[ItemFlagNoProgressiveLoot-2147483648]
 }
 
-const _ItemFlag_name = "ItemFlagNoPickupItemFlagConjuredItemFlagHasLootItemFlagHeroicTooltipItemFlagDeprecatedItemFlagNoUserDestroyItemFlagPlayerCastItemFlagNoEquipCooldownItemFlagMultiLootQuestItemFlagIsWrapperItemFlagUsesResourcesItemFlagMultiDropItemFlagItemPurchaseRecordItemFlagPetitionItemFlagHasTextItemFlagNoDisenchantItemFlagRealDurationItemFlagNoCreatorItemFlagIsProspectableItemFlagUniqueEquippableItemFlagIgnoreForAurasItemFlagIgnoreDefaultArenaRestrictions"
+const _ItemFlag_name = "ItemFlagNoPickupItemFlagConjuredItemFlagHasLootItemFlagHeroicTooltipItemFlagDeprecatedItemFlagNoUserDestroyItemFlagPlayerCastItemFlagNoEquipCooldownItemFlagMultiLootQuestItemFlagIsWrapperItemFlagUsesResourcesItemFlagMultiDropItemFlagItemPurchaseRecordItemFlagPetitionItemFlagHasTextItemFlagNoDisenchantItemFlagRealDurationItemFlagNoCreatorItemFlagIsProspectableItemFlagUniqueEquippableItemFlagIgnoreForAurasItemFlagIgnoreDefaultArenaRestrictionsItemFlagNoDurabilityLossItemFlagUseWhenShapeshiftedItemFlagHasQuestGlowItemFlagHideUnusableRecipeItemFlagNotUseableInArenaItemFlagBindsToAccountItemFlagNoReagentCostItemFlagIsMillableItemFlagReportToGuildChatItemFlagNoProgressiveLoot"
 
 var _ItemFlag_map = map[ItemFlag]string{
-	1:       _ItemFlag_name[0:16],
-	2:       _ItemFlag_name[16:32],
-	4:       _ItemFlag_name[32:47],
-	8:       _ItemFlag_name[47:68],
-	16:      _ItemFlag_name[68:86],
-	32:      _ItemFlag_name[86:107],
-	64:      _ItemFlag_name[107:125],
-	128:     _ItemFlag_name[125:148],
-	256:     _ItemFlag_name[148:170],
-	512:     _ItemFlag_name[170:187],
-	1024:    _ItemFlag_name[187:208],
-	2048:    _ItemFlag_name[208:225],
-	4096:    _ItemFlag_name[225:251],
-	8192:    _ItemFlag_name[251:267],
-	16384:   _ItemFlag_name[267:282],
-	32768:   _ItemFlag_name[282:302],
-	65536:   _ItemFlag_name[302:322],
-	131072:  _ItemFlag_name[322:339],
-	262144:  _ItemFlag_name[339:361],
-	524288:  _ItemFlag_name[361:385],
-	1048576: _ItemFlag_name[385:407],
-	2097152: _ItemFlag_name[407:445],
+	1:          _ItemFlag_name[0:16],
+	2:          _ItemFlag_name[16:32],
+	4:          _ItemFlag_name[32:47],
+	8:          _ItemFlag_name[47:68],
+	16:         _ItemFlag_name[68:86],
+	32:         _ItemFlag_name[86:107],
+	64:         _ItemFlag_name[107:125],
+	128:        _ItemFlag_name[125:148],
+	256:        _ItemFlag_name[148:170],
+	512:        _ItemFlag_name[170:187],
+	1024:       _ItemFlag_name[187:208],
+	2048:       _ItemFlag_name[208:225],
+	4096:       _ItemFlag_name[225:251],
+	8192:       _ItemFlag_name[251:267],
+	16384:      _ItemFlag_name[267:282],
+	32768:      _ItemFlag_name[282:302],
+	65536:      _ItemFlag_name[302:322],
+	131072:     _ItemFlag_name[322:339],
+	262144:     _ItemFlag_name[339:361],
+	524288:     _ItemFlag_name[361:385],
+	1048576:    _ItemFlag_name[385:407],
+	2097152:    _ItemFlag_name[407:445],
+	4194304:    _ItemFlag_name[445:469],
+	8388608:    _ItemFlag_name[469:496],
+	16777216:   _ItemFlag_name[496:516],
+	33554432:   _ItemFlag_name[516:542],
+	67108864:   _ItemFlag_name[542:567],
+	134217728:  _ItemFlag_name[567:589],
+	268435456:  _ItemFlag_name[589:610],
+	536870912:  _ItemFlag_name[610:628],
+	1073741824: _ItemFlag_name[628:653],
+	2147483648: _ItemFlag_name[653:678],
 }
 
 func (i ItemFlag) ToString() string {
@@ -113,6 +133,26 @@ func ItemFlagFromString(str string) (ItemFlag, error) {
 		return ItemFlag(1048576), nil
 	case "ItemFlagIgnoreDefaultArenaRestrictions":
 		return ItemFlag(2097152), nil
+	case "ItemFlagNoDurabilityLoss":
+		return ItemFlag(4194304), nil
+	case "ItemFlagUseWhenShapeshifted":
+		return ItemFlag(8388608), nil
+	case "ItemFlagHasQuestGlow":
+		return ItemFlag(16777216), nil
+	case "ItemFlagHideUnusableRecipe":
+		return ItemFlag(33554432), nil
+	case "ItemFlagNotUseableInArena":
+		return ItemFlag(67108864), nil
+	case "ItemFlagBindsToAccount":
+		return ItemFlag(134217728), nil
+	case "ItemFlagNoReagentCost":
+		return ItemFlag(268435456), nil
+	case "ItemFlagIsMillable":
+		return ItemFlag(536870912), nil
+	case "ItemFlagReportToGuildChat":
+		return ItemFlag(1073741824), nil
+	case "ItemFlagNoProgressiveLoot":
+		return ItemFlag(2147483648), nil
 	default:
 		return 0, fmt.Errorf("could not find code for string %s", str)
 	}

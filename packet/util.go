@@ -3,9 +3,9 @@ package packet
 import (
 	"bytes"
 	"compress/zlib"
-	"crypto/rand"
 	"crypto/sha1"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"math"
 	"time"
@@ -47,12 +47,6 @@ func packetString(input string) []byte {
 	data := []byte(input)
 	data = bytes.Replace(data, []byte("."), []byte{0}, -1)
 	return data
-}
-
-func RandomBuffer(l int) []byte {
-	buf := make([]byte, l)
-	rand.Read(buf)
-	return buf
 }
 
 func PutU32(u uint32) []byte {
@@ -104,8 +98,20 @@ func Uncompress(input []byte) []byte {
 
 func Compress(input []byte) []byte {
 	b := etc.NewBuffer()
-	z := zlib.NewWriter(b)
-	z.Write(input)
-	z.Flush()
+	z, err := zlib.NewWriterLevelDict(b, zlib.BestCompression, nil)
+	if err != nil {
+		panic(err)
+	}
+	// z := zlib.NewWriter(b)
+	w, err := z.Write(input)
+	if err != nil {
+		panic(err)
+	}
+	if w != len(input) {
+		panic(fmt.Errorf("%d/%d bytes compressed", w, len(input)))
+	}
+	if err := z.Close(); err != nil {
+		panic(err)
+	}
 	return b.Bytes()
 }

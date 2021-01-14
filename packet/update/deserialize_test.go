@@ -3,6 +3,7 @@ package update_test
 import (
 	"bytes"
 	"compress/zlib"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -27,12 +28,14 @@ func TestEncodeDecode(t *testing.T) {
 
 	id := guid.RealmSpecific(guid.Player, 0, 69420)
 
-	enc, err := update.NewEncoder(5875, writer, 1)
+	const build vsn.Build = 12340
+
+	enc, err := update.NewEncoder(build, writer, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	vblock, err := update.NewValuesBlock(5875, guid.TypeMaskObject|guid.TypeMaskUnit|guid.TypeMaskPlayer)
+	vblock, err := update.NewValuesBlock(build, guid.TypeMaskObject|guid.TypeMaskUnit|guid.TypeMaskPlayer)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,6 +44,7 @@ func TestEncodeDecode(t *testing.T) {
 	vblock.SetBit("PlayerControlled", true)
 	vblock.SetBit("DetectStealth", true)
 	vblock.SetGUID("Target", id)
+	vblock.SetUint32("MaxLevel", 43)
 
 	vblock.SetStructArrayValue("VisibleItems", 3, "Entry", uint32(50))
 
@@ -50,17 +54,24 @@ func TestEncodeDecode(t *testing.T) {
 		t.Fatal("failed to set")
 	}
 
-	enc.AddBlock(id, &update.CreateBlock{
-		BlockType:     update.SpawnObject,
-		ObjectType:    guid.TypePlayer,
-		ValuesBlock:   vblock,
-		MovementBlock: &update.MovementBlock{},
-	}, update.Owner)
+	if err := enc.AddBlock(id, &update.CreateBlock{
+		BlockType:   update.SpawnObject,
+		ObjectType:  guid.TypePlayer,
+		ValuesBlock: vblock,
+		MovementBlock: &update.MovementBlock{
+			UpdateFlags: update.UpdateFlagSelf | update.UpdateFlagHighGUID | update.UpdateFlagLiving | update.UpdateFlagHasPosition,
+			Info: &update.MovementInfo{
+				Position: update.Position{update.Point3{1, 2, 3}, 4},
+			},
+		},
+	}, update.Owner); err != nil {
+		panic(err)
+	}
 
 	yo.Spew(writer.Bytes())
 
 	reader := bytes.NewReader(writer.Bytes())
-	decoder, err := update.NewDecoder(5875, reader)
+	decoder, err := update.NewDecoder(build, reader)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,10 +96,18 @@ func TestEncodeDecode(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			etc.LocalDirectory().Concat("decoded.txt").WriteAll([]byte(spew.Sdump(createBlock.ValuesBlock.StorageDescriptor.Interface())))
+			if err := etc.LocalDirectory().Concat("decoded.txt").WriteAll([]byte(spew.Sdump(createBlock.MovementBlock) + "\n\n" + spew.Sdump(createBlock.ValuesBlock.StorageDescriptor.Interface()))); err != nil {
+				panic(err)
+			}
 		default:
 			fmt.Errorf("unhandled blocktype: %s", bt)
 		}
+	}
+
+	b, err := ioutil.ReadAll(reader)
+	if len(b) > 0 && (err == nil || err != io.EOF) {
+		yo.Spew(b)
+		t.Fatal(err)
 	}
 }
 
@@ -154,6 +173,7 @@ func TestDescriptor(t *testing.T) {
 }
 
 type capture struct {
+	Name        string
 	Version     uint32
 	Description string
 	Compression bool
@@ -175,19 +195,25 @@ func TestUnmarshal(t *testing.T) {
 
 	for _, v := range list {
 		if !v.IsDir() {
-			if strings.HasSuffix(v.Name(), ".bin") {
+			if strings.HasSuffix(v.Name(), ".txt") {
 				elements := strings.Split(v.Name(), ".")
 				vsn, err := strconv.ParseInt(elements[0], 0, 64)
 				if err != nil {
 					t.Fatal(err)
 				}
 
-				data, err := captureDir.Concat(v.Name()).ReadAll()
+				hdata, err := captureDir.Concat(v.Name()).ReadAll()
 				if err != nil {
 					t.Fatal(err)
 				}
 
+				data, err := hex.DecodeString(string(hdata))
+				if err != nil {
+					t.Fatal(vsn, err)
+				}
+
 				cap := capture{
+					Name:        v.Name(),
 					Version:     uint32(vsn),
 					Description: elements[1],
 					Compression: elements[2] == "compressed",
@@ -200,6 +226,8 @@ func TestUnmarshal(t *testing.T) {
 	}
 
 	for _, v := range captures {
+		fmt.Println("############################################################################################################################## reading", v.Name)
+
 		data := v.Data
 
 		if v.Compression {
@@ -246,10 +274,12 @@ func TestUnmarshal(t *testing.T) {
 
 				createBlock, err := decoder.DecodeCreateBlock()
 				if err != nil {
-					t.Fatal(err)
+					t.Fatal(v.Version, err)
 				}
 
-				yo.Spew(createBlock)
+				if createBlock.MovementBlock.UpdateFlags&update.UpdateFlagSelf != 0 {
+					etc.Import("github.com/superp00t/gophercraft/packet/update/testdata/results/").Concat(v.Name + ".txt").WriteAll([]byte(spew.Sdump(createBlock) + "\n\n" + spew.Sdump(createBlock.ValuesBlock.StorageDescriptor.Interface())))
+				}
 			default:
 				fmt.Errorf("unhandled blocktype: %s", bt)
 			}

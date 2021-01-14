@@ -1,6 +1,7 @@
 package update
 
 import (
+	"github.com/superp00t/etc/yo"
 	"github.com/superp00t/gophercraft/guid"
 )
 
@@ -21,6 +22,7 @@ func (cb *CreateBlock) WriteData(e *Encoder, mask VisibilityFlags, create bool) 
 	if err = cb.MovementBlock.WriteData(e, mask, true); err != nil {
 		return err
 	}
+
 	if err = cb.ValuesBlock.WriteData(e, mask, true); err != nil {
 		return err
 	}
@@ -55,6 +57,7 @@ func (decoder *Decoder) DecodeCreateBlock() (*CreateBlock, error) {
 
 	err = decoder.DecodeValuesBlockData(cBlock.ValuesBlock)
 	if err != nil {
+		yo.Spew(cBlock.MovementBlock)
 		return nil, err
 	}
 

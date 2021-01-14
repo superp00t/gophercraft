@@ -68,8 +68,6 @@ func _main(args []string) {
 		return nil
 	})
 
-	yo.Spew(cohorts)
-
 	gcraftPath := os.Getenv("GOPATH") + "src/github.com/superp00t/gophercraft/bnet/"
 
 	for k, v := range cohorts {

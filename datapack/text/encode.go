@@ -38,11 +38,18 @@ func (encoder *Encoder) Encode(i interface{}) error {
 }
 
 func (encoder *Encoder) encodeString(str string) error {
+	if str == "" {
+		// an empty word where a value should be can be confusing and/or perilous.
+		_, err := encoder.out.Write([]byte(`""`))
+		return err
+	}
+
 	if (strings.Contains(str, " ") ||
 		strings.Contains(str, "\n") ||
 		strings.Contains(str, "\t") ||
 		strings.Contains(str, "\r") ||
 		strings.Contains(str, "'") ||
+		strings.Contains(str, "\\") ||
 		strings.Contains(str, "\"")) == false {
 		_, err := encoder.out.Write([]byte(str))
 		return err
@@ -51,6 +58,7 @@ func (encoder *Encoder) encodeString(str string) error {
 	str = strings.Replace(str, "\n", "\\n", -1)
 	str = strings.Replace(str, "\t", "\\t", -1)
 	str = strings.Replace(str, "\r", "\\r", -1)
+	str = strings.Replace(str, "\\", "\\\\", -1)
 	str = strings.Replace(str, "\"", "\\\"", -1)
 
 	_, err := encoder.out.Write([]byte("\"" + str + "\""))
@@ -62,6 +70,15 @@ func isCurly(field reflect.Value) bool {
 }
 
 func (encoder *Encoder) encodeValue(depth int, value reflect.Value) error {
+	if value.Type().Implements(_word) {
+		str, err := value.Interface().(Word).EncodeWord()
+		if err != nil {
+			return err
+		}
+
+		return encoder.encodeString(str)
+	}
+
 	encoder.writeIndentation(depth)
 
 	switch value.Kind() {
@@ -138,6 +155,8 @@ func (encoder *Encoder) encodeValue(depth int, value reflect.Value) error {
 		sortValues(mKeys)
 
 		for _, key := range mKeys {
+			encoder.writeIndentation(depth + 1)
+
 			if err := encoder.encodeValue(depth+1, key); err != nil {
 				return err
 			}
@@ -176,11 +195,11 @@ func (vs valueSorter) Less(i, j int) bool {
 	switch vs[0].Kind() {
 	case reflect.String:
 		return vs[i].String() < vs[j].String()
-	case reflect.Uint:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return vs[i].Uint() < vs[j].Uint()
-	case reflect.Int:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return vs[i].Int() < vs[j].Int()
-	case reflect.Float32:
+	case reflect.Float32, reflect.Float64:
 		return vs[i].Float() < vs[j].Float()
 	default:
 		panic("unknown kind " + vs[0].Kind().String())

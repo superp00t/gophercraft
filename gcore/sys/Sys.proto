@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/empty.proto";
 
-option go_package = "sys";
+option go_package = "../sys";
 
 enum Status {
     SysOK = 0;
@@ -46,22 +46,42 @@ message VerifyWorldQuery {
 message VerifyWorldResponse {
     Status Status = 1;
     Tier   Tier = 2;
-    bytes  SessionKey = 3;
-    uint64 GameAccount = 4;
+    bytes  SessionKey = 3;  
+    uint64 Account = 4;
+    uint64 GameAccount = 5;
+    uint32 Locale = 6;
 }
 
 message AnnounceRealmMsg {
     uint64 RealmID = 1;
-    string Type = 3;
-    string RealmName = 4;
-    string RealmDescription = 5;
-    uint32 Build = 6;
-    string Address = 7;
-    uint32 ActivePlayers = 8;
+    uint32 Type = 2;
+    string RealmName = 3;
+    string RealmDescription = 4;
+    uint32 Build = 5;
+    string Address = 6;
+    uint32 ActivePlayers = 7;
+    uint32 TotalPlayers = 8;
+    uint32 Timezone = 9;
 }
 
+message Credentials {
+    string Account = 1;
+    string Password = 2;
+}
+
+message CredentialsResponse {
+    Status Status = 1;
+    Tier   Tier = 2;
+}
+
+message AddRealmRequest {
+    Credentials Credentials = 1;
+    uint64 RealmID = 2;
+    string RealmFingerprint = 3;
+}
 
 message Info {
+
 }
 
 service AuthService {
@@ -70,6 +90,9 @@ service AuthService {
     rpc AnnounceRealm(AnnounceRealmMsg) returns (StatusMsg) {}
     rpc VerifyWorld(VerifyWorldQuery) returns (VerifyWorldResponse) {}
     rpc ReportInfo(Info) returns (StatusMsg) {}
+    rpc CheckCredentials(Credentials) returns (CredentialsResponse) {}
+    rpc GetNextRealmID(google.protobuf.Empty) returns (AddRealmRequest) {}
+    rpc AddRealmToConfig(AddRealmRequest) returns (StatusMsg) {}
 }
 
 service WorldListener {

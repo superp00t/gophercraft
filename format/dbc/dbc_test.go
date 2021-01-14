@@ -57,6 +57,31 @@ func TestTagParse(t *testing.T) {
 			},
 		},
 	})
+
+	tag := tag{
+		rulesets: []ruleset{
+			{
+				[]int64{-1, 5875},
+				[]tagOpt{
+					{
+						Type: lengthOpt,
+						Len:  50,
+					},
+				},
+			},
+		},
+	}
+
+	tagTest(t, "-5875(len:50)", tag)
+
+	if !reflect.DeepEqual(tag.getValidOpts(3368), []tagOpt{
+		{
+			Type: lengthOpt,
+			Len:  50,
+		},
+	}) {
+		t.Fatal(spew.Sdump(tag.getValidOpts(3368)))
+	}
 }
 
 func tagTest(t *testing.T, str string, shouldBe tag) {

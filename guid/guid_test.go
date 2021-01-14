@@ -9,18 +9,19 @@ import (
 )
 
 func TestGUID(t *testing.T) {
-	var guid1 uint64 = 0x0000DEADC0DEBBBB
-
+	var guid1 uint64 = 0x0000BADC0DECBBBB
 	g := Classic(guid1)
 
 	if g.HighType() != Player {
-		t.Fatal("mismatch")
+		t.Fatal("mismatch", g.HighType())
 	}
 
 	if g.Classic() != guid1 {
 		fmt.Printf("0x%16X\n", guid1)
 		panic("data loss in encoded guid")
 	}
+
+	fmt.Println(g.HiClassic())
 
 	fmt.Println(g)
 
@@ -36,8 +37,11 @@ func TestGUID(t *testing.T) {
 	fmt.Println(g, gd)
 
 	if gd != g {
-		t.Fatal("Lossy codec", g, gd)
+		t.Fatal("GUID data loss detected", g, gd)
 	}
+
+	guid2 := uint64(0x1FC0000000000002)
+	fmt.Println(Classic(guid2))
 }
 
 // func testEncoding(t *testing.T, guid1 GUID) {

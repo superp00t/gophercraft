@@ -1,6 +1,8 @@
 package update
 
 import (
+	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/superp00t/etc"
@@ -16,4 +18,13 @@ func TestUpdateFlags(t *testing.T) {
 	if ac := buf.ReadUint32(); ac != plyrf {
 		t.Fatal(ac)
 	}
+
+	tbc := bytes.NewReader([]byte{0x71})
+
+	tbcUf, err := decodeUpdateFlags(8606, tbc)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fmt.Println(tbcUf)
 }

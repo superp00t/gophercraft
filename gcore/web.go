@@ -10,13 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/superp00t/gophercraft/gcore/sys"
-
 	"github.com/superp00t/etc"
+	"github.com/superp00t/etc/yo"
 
 	"github.com/dchest/captcha"
 	"github.com/gorilla/mux"
-	"github.com/superp00t/gophercraft/srp"
+	"github.com/superp00t/gophercraft/crypto/srp"
+	"github.com/superp00t/gophercraft/gcore/sys"
 )
 
 func (r *Request) ScanJSON(v interface{}) error {
@@ -34,8 +34,9 @@ func (c *Core) GetAuthStatus(r *Request) {
 	}{}
 
 	type getAuthStatusResponse struct {
-		Valid   bool   `json:"valid"`
-		Account string `json:"account"`
+		Valid   bool     `json:"valid"`
+		Account string   `json:"account"`
+		Tier    sys.Tier `json:"tier"`
 	}
 
 	err := r.ScanJSON(&getAuthStatusRequest)
@@ -70,9 +71,43 @@ func (c *Core) GetAuthStatus(r *Request) {
 	resp := getAuthStatusResponse{
 		Valid:   true,
 		Account: strings.ToLower(acc.Username),
+		Tier:    acc.Tier,
 	}
 
 	r.Encode(http.StatusOK, resp)
+}
+
+func (c *Core) ResetAccount(user, pass string, tier sys.Tier) error {
+	if user == "" {
+		return fmt.Errorf("empty name")
+	}
+
+	var acc Account
+	found, err := c.DB.Where("username = ?", user).Get(&acc)
+	if err != nil {
+		return err
+	}
+
+	acc.Username = user
+	acc.Tier = tier
+	acc.IdentityHash = srp.HashCredentials(user, pass)
+	yo.Spew(acc.IdentityHash)
+
+	if found {
+		if _, err := c.DB.Where("id = ?", acc.ID).Cols("tier", "identity_hash").Update(&acc); err != nil {
+			return err
+		}
+		return nil
+	} else {
+		if _, err := c.DB.Insert(&acc); err != nil {
+			return err
+		}
+		_, err = c.DB.Insert(&GameAccount{
+			Name:  "Zero",
+			Owner: acc.ID,
+		})
+		return err
+	}
 }
 
 func (c *Core) DoRegistration(u, p string) error {
@@ -96,11 +131,6 @@ func (c *Core) DoRegistration(u, p string) error {
 	_, err = c.DB.Insert(&acct)
 	if err != nil {
 		return err
-	}
-
-	if acct.ID == 1 {
-		acct.Tier = sys.Tier_Admin
-		c.DB.Cols("tier").Update(&acct)
 	}
 
 	_, err = c.DB.Insert(&GameAccount{

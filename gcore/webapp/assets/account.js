@@ -90,6 +90,11 @@ window.addLoginForm = (el) => {
 window.resetAccount = () => {
     window.getAuthStatus()
     .then((data) => {
+        if (data.tier == 3) {
+            document.querySelector(".nav-bar").innerHTML += `<a class="nav-elem" href="/admin"><p>Admin</p></a>`;
+            window.updateMenuSize();
+        }
+
         var area = document.querySelector(".accountInfoArea");
         area.innerHTML = "";
         var status = document.createElement("span");

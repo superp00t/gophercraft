@@ -8,8 +8,11 @@ package update
 // ChunkPad will move the chunk offset 1 forward. If the decoder detects an enabled value at a ChunkPad's offset, it will return an error.
 type ChunkPad struct{}
 
+// AlignPad is equivalent to ChunkPad except it always is included and encoded as zero.
+type AlignPad struct{}
+
 // BitPad will move the bit offset 1 forward. If a detected value is 1 at this location, it will not return an error.
 type BitPad struct{}
 
-// BytePad will move the bit offset 1 byte (8 bits) forward. In other words, if your bit offset is not aligned with a byte stream, it will move toward the next offset divisible by 8.
+// BytePad will move the bit offset 1 byte (8 bits) forward, or to the next byte. In other words, it will re-align your byte stream to the next bit offset divisible by 8.
 type BytePad struct{}

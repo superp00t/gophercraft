@@ -33,7 +33,7 @@ window.updateRealmlist = () => {
 
             var desc = document.createElement("p");
             desc.classList.add("realmdescription");
-            desc.innerHTML = val.description;
+            desc.innerText = val.description;
             el.appendChild(desc);
 
             rl.appendChild(el);
@@ -43,8 +43,10 @@ window.updateRealmlist = () => {
 
 window.addEventListener("load", () => {
     updateRealmlist();
+    updateMenuSize();
 
     window.setInterval(() => {
         updateRealmlist();
+        updateMenuSize();
     }, 10000);
 });

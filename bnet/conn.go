@@ -2,9 +2,12 @@ package bnet
 
 import (
 	"bufio"
+	"crypto/rand"
 	"crypto/tls"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"strings"
@@ -16,24 +19,25 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/superp00t/etc"
 	"github.com/superp00t/etc/yo"
-	"github.com/superp00t/gophercraft/auth"
 	p "github.com/superp00t/gophercraft/bnet/bgs/protocol"
 	"github.com/superp00t/gophercraft/bnet/realmlist"
+	"github.com/superp00t/gophercraft/gcore"
 )
 
 func GenerateTicket() string {
-	e := etc.NewBuffer()
-	e.WriteRandom(20)
-	return "TC-" + strings.ToUpper(hex.EncodeToString(e.Bytes()))
+	var random [16]byte
+	io.ReadFull(rand.Reader, random[:])
+	return "TC-" + strings.ToUpper(hex.EncodeToString(random[:]))
 }
 
 type Backend interface {
-	GetAccount(user string) *auth.Account
-	StoreKey(user string, K []byte)
+	GetAccount(user string) (*gcore.Account, []gcore.GameAccount, error)
+	StoreKey(user, locale, platform string, K []byte)
 	StoreLoginTicket(user, ticket string, expiry time.Time)
 	GetTicket(ticket string) (string, time.Time)
 	AccountID(user string) uint64
 	InfoHandler() http.Handler
+	ListRealms() []gcore.Realm
 }
 
 type Listener struct {
@@ -85,13 +89,24 @@ type Conn struct {
 	pendingRequests  map[uint32]chan response
 	pendingRequestsL sync.Mutex
 
-	user    string
-	ticket  string
-	version uint32
+	locale          string
+	platform        string
+	user            string
+	ticket          string
+	version         uint32
+	gameAccountName string
 
 	versionInfo *realmlist.ClientVersion
 
-	clientSecret [32]byte
+	SecretData [64]byte
+}
+
+func (c *Conn) Close() error {
+	return c.c.Close()
+}
+
+func (c *Conn) Read(b []byte) (int, error) {
+	return c.c.Read(b[:])
 }
 
 func (l *Listener) Accept() (*Conn, error) {
@@ -101,7 +116,7 @@ func (l *Listener) Accept() (*Conn, error) {
 	}
 	return &Conn{
 		c:               cn,
-		r:               bufio.NewReader(cn),
+		r:               bufio.NewReaderSize(cn, 0xFFFF),
 		server:          l,
 		pendingRequests: make(map[uint32]chan response),
 	}, nil
@@ -110,17 +125,12 @@ func (l *Listener) Accept() (*Conn, error) {
 func (c *Conn) Handle() {
 	spew.Config.DisableMethods = true
 	for {
-		yo.Ok("Waiting to read...")
 		header, data, err := c.ReadHeader()
 		if err != nil {
-			yo.Warn(err)
+			yo.Warn("reading header: ", err)
 			c.c.Close()
 			return
 		}
-
-		yo.Spew(header)
-		yo.Spew(data)
-
 		c.Dispatch(header, data)
 	}
 }
@@ -131,8 +141,6 @@ func (c *Conn) ReadHeader() (*p.Header, []byte, error) {
 		return nil, nil, err
 	}
 
-	yo.Ok("read msg bytes")
-
 	bn := new(p.Header)
 
 	err = proto.Unmarshal(bs, bn)
@@ -140,49 +148,47 @@ func (c *Conn) ReadHeader() (*p.Header, []byte, error) {
 		return nil, nil, err
 	}
 
-	yo.Println("Reading rest")
+	if bn.Size == nil {
+		return nil, nil, fmt.Errorf("no size header")
+	}
 
 	data := make([]byte, *bn.Size)
-	_, err = c.r.Read(data)
+	_, err = c.Read(data)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	yo.Println("Read rest")
 
 	return bn, data, nil
 }
 
 func (c *Conn) ReadMsgBytes() ([]byte, error) {
-	var currentLength int
+	var msgLength uint16
 
-	initData := make([]byte, 2)
+	err := binary.Read(c, binary.BigEndian, &msgLength)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("Getting ", msgLength, "bytes")
 
-	yo.Warn("Reading header...")
-	i, err := c.r.Read(initData)
+	msgData := make([]byte, msgLength)
+	// i, err := io.ReadFull(c, msgData)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	i, err := c.Read(msgData)
 	if err != nil {
 		return nil, err
 	}
 
-	yo.Warn("Read header length", i)
-	yo.Spew(initData)
+	fmt.Println("Recvd", msgLength)
 
-	if i < 2 {
-		return nil, fmt.Errorf("Invalid packet frame")
+	if i != int(msgLength) {
+		yo.Spew(msgData)
+		return nil, fmt.Errorf("Count of received bytes (%d) was not equal to length prefix (%d)", i, msgLength)
 	}
 
-	currentLength = int(etc.FromBytes(initData).ReadBigUint16())
-
-	yo.Ok("Reading", currentLength, "bytes")
-
-	initData = make([]byte, currentLength)
-	i, err = c.r.Read(initData)
-	if err != nil {
-		return nil, err
-	}
-
-	yo.Ok("Read", i, "bytes")
-	return initData, nil
+	return msgData, nil
 }
 
 func (c *Conn) Dispatch(header *p.Header, data []byte) {
@@ -201,8 +207,6 @@ func (c *Conn) Dispatch(header *p.Header, data []byte) {
 		c.pendingRequestsL.Unlock()
 		return
 	}
-
-	yo.Ok()
 
 	switch sid {
 	case AccountServiceHash:

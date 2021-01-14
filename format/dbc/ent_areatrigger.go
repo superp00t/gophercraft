@@ -7,8 +7,8 @@ type Ent_AreaTrigger struct {
 	Y      float32
 	Z      float32
 	Radius float32
-	BoxX   float32
-	BoxY   float32
-	BoxZ   float32
-	BoxO   float32
+	BoxX   float32 `dbc:"5875-(only)"`
+	BoxY   float32 `dbc:"5875-(only)"`
+	BoxZ   float32 `dbc:"5875-(only)"`
+	BoxO   float32 `dbc:"5875-(only)"`
 }

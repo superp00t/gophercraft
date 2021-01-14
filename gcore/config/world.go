@@ -3,7 +3,9 @@ package config
 import (
 	"crypto/tls"
 	"fmt"
+	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/superp00t/gophercraft/datapack/text"
 	"github.com/superp00t/gophercraft/gcore/sys"
@@ -15,13 +17,12 @@ import (
 type WorldVars map[string]string
 
 var (
-	Presets = map[string]WorldVars{}
+	Presets = map[RealmType]WorldVars{}
 )
 
 func init() {
-	Presets["allgm"] = WorldVars{
-		"XP.Rate":       "1.0",
-		"XP.StartLevel": "255",
+	Presets[RealmTypeRP] = WorldVars{
+		"XP.Rate": "1.0",
 
 		"Weather.On": "true",
 
@@ -29,16 +30,71 @@ func init() {
 
 		"PVP.Deathmatch":         "false",
 		"PVP.AtWar":              "false",
-		"PVP.LanguageBarrier":    "false",
 		"PVP.CrossFactionGroups": "true",
+
+		"Chat.LanguageBarrier":   "false",
+		"Char.StartLevel":        "255",
+		"Char.StartingCinematic": "true",
 	}
+}
+
+type RealmType uint8
+
+const (
+	RealmTypeNone   = 0
+	RealmTypePvP    = 1
+	RealmTypeNormal = 4
+	RealmTypeRP     = 6
+	RealmTypeRP_PvP = 8
+)
+
+func (rt RealmType) EncodeWord() (string, error) {
+	switch rt {
+	case RealmTypeNone:
+		return "None", nil
+	case RealmTypePvP:
+		return "PvP", nil
+	case RealmTypeNormal:
+		return "Normal", nil
+	case RealmTypeRP:
+		return "RP", nil
+	case RealmTypeRP_PvP:
+		return "RP-PvP", nil
+	default:
+		return "", fmt.Errorf("gcore: unknown RealmType %d", rt)
+	}
+}
+
+func (RealmType) DecodeWord(out reflect.Value, wdata string) error {
+	data := strings.ToLower(wdata)
+
+	var rt RealmType
+
+	switch data {
+	case "none", "":
+		rt = RealmTypeNone
+	case "pvp":
+		rt = RealmTypePvP
+	case "normal":
+		rt = RealmTypeNormal
+	case "rp":
+		rt = RealmTypeRP
+	case "rp-pvp":
+		rt = RealmTypeRP_PvP
+	default:
+		return fmt.Errorf("gcore: unrecognized realm type %s", wdata)
+	}
+
+	out.Set(reflect.ValueOf(rt))
+
+	return nil
 }
 
 type WorldFile struct {
 	Version               vsn.Build
 	Listen                string
-	Type                  string
 	RealmID               uint64
+	RealmType             RealmType
 	RealmName             string
 	RealmDescription      string
 	DBDriver              string
@@ -49,6 +105,7 @@ type WorldFile struct {
 	DatapackDir           string
 	AuthServer            string
 	AuthServerFingerprint string
+	CPUProfile            string
 	WorldVars
 }
 
@@ -89,25 +146,23 @@ func LoadWorld(at string) (*World, error) {
 
 	if wc.WorldFile.WorldVars != nil {
 		// Merge presets with user vars
-		preset := wc.WorldFile.WorldVars["Config.Preset"]
+		preset := wc.WorldFile.RealmType
 
-		if preset != "" {
-			wv := WorldVars{}
+		wv := WorldVars{}
 
-			if Presets[preset] == nil {
-				return nil, fmt.Errorf("Config.Preset '%s' not found", preset)
-			}
-
-			for k, v := range Presets[preset] {
-				wv[k] = v
-			}
-
-			for k, v := range wc.WorldFile.WorldVars {
-				wv[k] = v
-			}
-
-			wc.WorldFile.WorldVars = wv
+		if Presets[preset] == nil {
+			return nil, fmt.Errorf("Config.Preset '%s' not found", preset)
 		}
+
+		for k, v := range Presets[preset] {
+			wv[k] = v
+		}
+
+		for k, v := range wc.WorldFile.WorldVars {
+			wv[k] = v
+		}
+
+		wc.WorldFile.WorldVars = wv
 	}
 
 	return wc, nil
@@ -121,22 +176,27 @@ const DefaultWorld = `{
 	Listen 0.0.0.0:8085
 
 	// The display name of your server. You can change this as you please.
-	RealmName "Placeholder Name %d"
+	RealmName "%s"
+
+	// The type of server you want to create. A server of the type "RP" will allow for an all-GM roleplaying experience.
+	// Note: changing this value will also change the default WorldVars.
+	// You can always override these with custom values to fine-tune your server to the desired behavior!
+	RealmType RP	
 
 	// Description of your server. This will appear in the Gophercraft website.
 	RealmDescription "Put the description for your server here!"
 
-	// DO NOT EDIT after first run.
+	// Editing this can lead to duplicate entries in the realm list.
 	RealmID %d
 
 	// database driver
-	DBDriver mysql
+	DBDriver %s
 
 	// database URL
-	DBURL root:password@/gcraft_world_%d
+	DBURL "%s"
 
 	// external address (should be accessible from the client's computer)
-	PublicAddress 0.0.0.0:8085
+	PublicAddress 127.0.0.1:8085
 
 	// Address of RPC server (replace 127.0.0.1 with host_external in gcraft_auth/Config.txt)
 	AuthServer %s
@@ -144,15 +204,16 @@ const DefaultWorld = `{
 	// RPC server fingerprint
 	AuthServerFingerprint %s
 
+	// Uncomment to perform CPU usage profiling.
+	// CPUProfile "cpu.prof"
+
 	WorldVars
 	{
-		// Presets set default world vars for what kind of game you want to play.
-		Config.Preset allgm
 	}
 }
 `
 
-func GenerateDefaultWorld(version uint32, id uint64, at string, authServer, serverFingerprint string) error {
+func GenerateDefaultWorld(version uint32, name string, id uint64, sqlDriver, sqlDB string, at string, authServer, serverFingerprint string) error {
 	path := etc.ParseSystemPath(at)
 
 	if path.IsExtant() {
@@ -163,7 +224,7 @@ func GenerateDefaultWorld(version uint32, id uint64, at string, authServer, serv
 		return err
 	}
 
-	wfile := fmt.Sprintf(DefaultWorld, version, id, id, id, authServer, serverFingerprint)
+	wfile := fmt.Sprintf(DefaultWorld, version, name, id, sqlDriver, sqlDB, authServer, serverFingerprint)
 
 	path.Concat("World.txt").WriteAll([]byte(wfile))
 
@@ -176,13 +237,13 @@ func GenerateDefaultWorld(version uint32, id uint64, at string, authServer, serv
 	return nil
 }
 
-func (a *Auth) GenerateDefaultWorld(version uint32, id uint64, at string) error {
+func (a *Auth) GenerateDefaultWorld(version uint32, name string, id uint64, sqlDriver, sqlDB string, at string) error {
 	asf, err := sys.GetCertFileFingerprint(a.Path.Concat("cert.pem").Render())
 	if err != nil {
 		return err
 	}
 
-	if err = GenerateDefaultWorld(version, id, at, "127.0.0.1:3724", asf); err != nil {
+	if err = GenerateDefaultWorld(version, name, id, sqlDriver, sqlDB, at, "127.0.0.1:3724", asf); err != nil {
 		return nil
 	}
 

@@ -103,6 +103,11 @@ func (valenc *ValuesEncoder) setCreateBitsFor(value reflect.Value, tag FieldTag)
 		valenc.BitPos = 0
 		valenc.ChunkPos++
 		return nil
+	case alignPadType:
+		valenc.BitPos = 0
+		valenc.CurrentBitmask.Set(valenc.ChunkPos, true)
+		valenc.ChunkPos++
+		return nil
 	case guidType:
 		if valenc.includeValue(tag) {
 			id := value.Interface().(guid.GUID)
@@ -136,6 +141,20 @@ func (valenc *ValuesEncoder) setCreateBitsFor(value reflect.Value, tag FieldTag)
 				return err
 			}
 		}
+	case reflect.Uint64:
+		if valenc.includeValue(tag) {
+			var bytes [8]byte
+			binary.LittleEndian.PutUint64(bytes[:], value.Uint())
+			if u32(bytes[:4]) != 0 {
+				valenc.CurrentBitmask.Set(valenc.ChunkPos, true)
+			}
+
+			if u32(bytes[4:]) != 0 {
+				valenc.CurrentBitmask.Set(valenc.ChunkPos+1, true)
+			}
+		}
+		valenc.ChunkPos += 2
+		valenc.BitPos = 0
 	case reflect.Uint32:
 		if value.Uint() != 0 && valenc.includeValue(tag) {
 			valenc.CurrentBitmask.Set(valenc.ChunkPos, true)
@@ -176,6 +195,17 @@ func (valenc *ValuesEncoder) setCreateBitsFor(value reflect.Value, tag FieldTag)
 		}
 
 		valenc.BitPos += 8
+	case reflect.Uint16:
+		if valenc.BitPos == 32 {
+			valenc.BitPos = 0
+			valenc.ChunkPos++
+		}
+		if valenc.includeValue(tag) {
+			if value.Uint() != 0 {
+				valenc.CurrentBitmask.Set(valenc.ChunkPos, true)
+			}
+		}
+		valenc.BitPos += 16
 	default:
 		return fmt.Errorf("update: unhandled type detected while trying to write creation bitmask: %s", value.Type())
 	}
@@ -208,6 +238,9 @@ func (valenc *ValuesEncoder) EncodeValue(value reflect.Value, name string, tag F
 		valenc.ChunkPos++
 	}
 
+	// Uncomment to dump raw offsets
+	// fmt.Printf("%s 0x%04X\n", name, valenc.ChunkPos)
+
 	switch value.Type() {
 	case guidType:
 		var bytes [8]byte
@@ -234,6 +267,14 @@ func (valenc *ValuesEncoder) EncodeValue(value reflect.Value, name string, tag F
 
 		valenc.ChunkPos++
 		valenc.BitPos = 0
+	case alignPadType:
+		if valenc.CurrentBitmask.Enabled(valenc.ChunkPos) {
+			if err := writeUint32(valenc.Encoder, 0x00000000); err != nil {
+				return err
+			}
+		}
+		valenc.ChunkPos++
+		valenc.BitPos = 0
 	case bitPadType:
 		valenc.BitPos++
 	case bytePadType:
@@ -251,6 +292,11 @@ func (valenc *ValuesEncoder) EncodeValue(value reflect.Value, name string, tag F
 	}
 
 	switch value.Kind() {
+	case reflect.Uint16:
+		if valenc.CurrentBitmask.Enabled(valenc.ChunkPos) {
+			binary.LittleEndian.PutUint16(valenc.NextChunk[valenc.BitPos/8:], uint16(value.Uint()))
+		}
+		valenc.BitPos += 16
 	case reflect.Bool:
 		if valenc.CurrentBitmask.Enabled(valenc.ChunkPos) {
 			fmt.Printf("%s 0x%08X\n", name, (1 << valenc.BitPos))
@@ -282,6 +328,23 @@ func (valenc *ValuesEncoder) EncodeValue(value reflect.Value, name string, tag F
 				return err
 			}
 		}
+	case reflect.Uint64:
+		var bytes [8]byte
+		binary.LittleEndian.PutUint64(bytes[:], value.Uint())
+
+		if valenc.CurrentBitmask.Enabled(valenc.ChunkPos) {
+			if _, err := valenc.Encoder.Write(bytes[0:4]); err != nil {
+				return err
+			}
+		}
+
+		if valenc.CurrentBitmask.Enabled(valenc.ChunkPos + 1) {
+			if _, err := valenc.Encoder.Write(bytes[0:4]); err != nil {
+				return err
+			}
+		}
+		valenc.ChunkPos += 2
+		valenc.BitPos = 0
 	case reflect.Uint32:
 		if valenc.CurrentBitmask.Enabled(valenc.ChunkPos) {
 			if err := writeUint32(valenc.Encoder, uint32(value.Uint())); err != nil {
