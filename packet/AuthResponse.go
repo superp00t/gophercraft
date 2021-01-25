@@ -42,10 +42,10 @@ type AuthResponse struct {
 		AvailableClasses []RaceClassAvailability
 
 		IsExpansionTrial bool
-		SuccessInfoTrial
+		SuccessInfoTrial bool
 	}
 }
 
 func (ar *AuthResponse) Encode(build vsn.Build, to *WorldPacket) error {
-
+	return nil
 }
